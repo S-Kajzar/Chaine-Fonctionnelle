@@ -1,0 +1,2322 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chaîne de puissance : formulaire et exercices</title>
+<meta name="description" content="Formulaire de la chaîne de puissance en carte mentale interactive, et exercices à valeurs aléatoires pour s’entraîner à appliquer les formules.">
+<style>:root{
+  --beton:#E3E5E0; --papier:#FFFFFF; --encre:#1C2530; --encre-2:#46525C;
+  --trait:#A5ADAA; --trait-fin:#D3D8D5;
+  --jaune:#F2B705; --jaune-pale:#FFF3C4;
+  --bleu:#1F5FA8; --bleu-pale:#E6EEF8;
+  --vert:#1B7A43; --vert-pale:#E2F1E7; --rouge:#B42318; --rouge-pale:#FBE6E4;
+  --orange:#B26A00; --orange-pale:#FCEFD8;
+  --f-titre:"Bahnschrift","DIN Alternate","DIN Condensed","Roboto Condensed","Arial Narrow",sans-serif;
+  --f-texte:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --rail:58px; --panel:min(900px, 47vw); --banner:58px;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:16px; scroll-padding-bottom:calc(var(--banner) + 16px)}
+body{margin:0; background:var(--beton); color:var(--encre); font:16px/1.55 var(--f-texte);
+  font-variant-numeric:tabular-nums; padding-bottom:calc(var(--banner) + 40px)}
+img{max-width:100%; height:auto}
+sub,sup{line-height:0}
+button,input{font:inherit; color:inherit}
+:focus-visible{outline:3px solid var(--bleu); outline-offset:2px}
+.small{font-size:.9rem; color:var(--encre-2)}
+.print-only{display:none}
+
+/* ---------- mise en page ---------- */
+.page{max-width:900px; margin:0 auto; padding:28px 22px 0; transition:margin .25s ease}
+body.panel-open .page{margin-right:calc(var(--panel) + var(--rail) + 24px); margin-left:24px}
+@media (max-width:1180px){ body.panel-open .page{margin:0 auto} }
+
+/* ---------- cartouche ---------- */
+.cartouche{background:var(--papier); border:2px solid var(--encre); display:grid;
+  grid-template-columns:1fr; margin-bottom:26px}
+.cartouche>div{border-right:1px solid var(--encre); border-bottom:1px solid var(--encre); padding:8px 12px}
+.cartouche>div:nth-child(3n){border-right:0}
+.cartouche .k{display:block; font:600 .72rem/1.2 var(--f-titre); letter-spacing:.02em; color:var(--encre-2)}
+.cartouche .v{font:600 1rem/1.3 var(--f-titre)}
+.cartouche .title{grid-column:1/-1; border-right:0; padding:18px 16px 16px}
+.cartouche h1{margin-top:0}
+.cartouche h1{font:700 clamp(1.6rem,3.6vw,2.35rem)/1.08 var(--f-titre); margin:2px 0 6px; letter-spacing:-.01em}
+.cartouche .title p{margin:0; color:var(--encre-2)}
+.cartouche .nom{grid-column:1/-1; border-bottom:0; display:flex; gap:10px; align-items:center}
+.cartouche .nom label{font:600 .9rem var(--f-titre)}
+.cartouche .nom input{flex:1; border:0; border-bottom:1px dashed var(--trait); padding:4px 2px; background:transparent}
+
+
+.consignes{background:var(--papier); border-left:6px solid var(--jaune); padding:12px 16px; margin:0 0 30px}
+.consignes p{margin:.2rem 0}
+
+/* ---------- parties ---------- */
+.part{background:var(--papier); margin:0 0 34px; padding:0 0 22px; border:1px solid var(--trait-fin)}
+.part-head{display:grid; grid-template-columns:64px 1fr; border-bottom:2px solid var(--encre)}
+.part-num{background:var(--encre); color:var(--jaune); font:700 2.3rem/1 var(--f-titre);
+  display:flex; align-items:center; justify-content:center}
+.part-head h2{font:700 1.45rem/1.15 var(--f-titre); margin:0; padding:12px 16px 2px}
+.part-head .duree{padding:0 16px 10px; font-size:.9rem; color:var(--encre-2)}
+.part-body{padding:4px 22px 0}
+.part-body>p,.part-body>ul{max-width:72ch}
+h4.sub{font:700 1.1rem var(--f-titre); margin:26px 0 6px; padding-top:10px; border-top:1px dashed var(--trait)}
+
+/* barre de question (reprend l'en-tête du questionnaire) */
+.qbar{display:grid; grid-template-columns:auto 1fr auto; align-items:stretch; margin:30px 0 10px;
+  border:1.5px solid var(--encre); font:500 .95rem/1.2 var(--f-titre)}
+.qbar>*{padding:7px 10px; display:flex; align-items:center; gap:6px; flex-wrap:wrap}
+.qbar .qb-num{background:var(--jaune); font-weight:700; font-size:1.1rem; border-right:1.5px solid var(--encre); min-width:64px; justify-content:center}
+.qbar .qb-ans{border-left:1.5px solid var(--encre)}
+.qbar .qb-title{grid-column:1/-1; border-top:1px solid var(--encre); font-weight:700; font-style:italic}
+@media (max-width:640px){ .qbar{grid-template-columns:auto 1fr} .qbar .qb-ans{grid-column:1/-1; border-left:0; border-top:1px solid var(--encre)} }
+.doc-chip{border:1.5px solid var(--encre); background:var(--papier); padding:2px 8px; font:700 .88rem var(--f-titre);
+  cursor:pointer; border-radius:2px}
+.doc-chip:hover{background:var(--jaune-pale)}
+.doc-chip[aria-pressed="true"]{background:var(--jaune)}
+
+/* données */
+.data{border:1px solid var(--encre); padding:8px 14px; margin:12px 0; max-width:72ch; background:#FBFBF9}
+.data p{margin:.25rem 0}
+.data .data-title{font:700 .95rem var(--f-titre); text-decoration:underline; text-underline-offset:3px}
+.data ul{margin:.2rem 0; padding-left:1.1rem}
+.data ul.cols{columns:2; column-gap:28px}
+@media (max-width:560px){ .data ul.cols{columns:1} }
+
+figure{margin:14px 0}
+.fig img,.fig svg{display:block; width:100%; height:auto; border:1px solid var(--trait-fin); background:#fff}
+figcaption{font-size:.85rem; color:var(--encre-2); margin-top:4px}
+.fig1 .lead line{stroke:#6B7580; stroke-width:1}
+.fig1 .lab text{font:600 15px var(--f-titre); fill:var(--encre)}
+.fig1 .dir{stroke:var(--encre); stroke-width:3; fill:none}
+.fig1 .dirhead{fill:var(--encre)}
+.split{display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap}
+.small-fig{width:220px; margin:0}
+
+.chain{display:flex; align-items:center; flex-wrap:wrap; gap:0; margin:18px 0 8px}
+.chain-box{border:2px solid var(--encre); padding:8px 10px; min-width:130px; text-align:center; background:#fff}
+.chain-box span{display:block; font-size:.9rem}
+.chain-box b{font:700 .95rem var(--f-titre)}
+.chain-arrow{width:34px; height:2px; background:var(--encre); position:relative; margin:0 2px}
+.chain-arrow::after{content:""; position:absolute; right:-1px; top:-5px; border:6px solid transparent; border-left:9px solid var(--encre); border-right:0}
+.chain figcaption{flex-basis:100%}
+
+table.t{border-collapse:collapse; margin:10px 0; font-size:.93rem; width:100%}
+table.t th,table.t td{border:1px solid var(--trait); padding:4px 8px; text-align:left; vertical-align:top}
+table.t th{background:#EEF0EC; font:600 .88rem var(--f-titre)}
+table.nomencl{width:auto; min-width:210px}
+table.nomencl td:first-child{font-weight:700; text-align:center}
+
+.vec{position:relative; display:inline-block; font-style:italic}
+.vec::before{content:""; position:absolute; left:0; right:-1px; top:-.12em; height:1.2px; background:currentColor}
+.vec::after{content:""; position:absolute; right:-3px; top:-.32em; border:.2em solid transparent; border-left:.36em solid currentColor; border-right:0}
+
+/* ---------- questions ---------- */
+.q{margin:14px 0 6px; padding:10px 0 12px 14px; border-left:3px solid var(--trait-fin)}
+.q.is-ok{border-left-color:var(--vert)} .q.is-ko{border-left-color:var(--rouge)} .q.is-half{border-left-color:var(--orange)}
+.q-stem{margin:0 0 3px; max-width:74ch}
+.q-num{display:inline-block; font:700 .92rem var(--f-titre); background:var(--encre); color:#fff; padding:1px 7px; margin-right:6px; border-radius:2px}
+.q-hint{margin:0 0 8px; font-size:.88rem; color:var(--encre-2); max-width:74ch}
+.q-row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+.q-input{flex:1 1 240px; max-width:420px; border:1.5px solid var(--encre-2); background:#fff; padding:7px 10px; border-radius:2px}
+.q-input:disabled{background:#F2F3F1; color:var(--encre); -webkit-text-fill-color:var(--encre)}
+.is-ok .q-input{border-color:var(--vert); background:var(--vert-pale)}
+.is-half .q-input{border-color:var(--orange); background:var(--orange-pale)}
+.is-ko .q-input{border-color:var(--rouge); background:var(--rouge-pale)}
+.btn{border:1.5px solid var(--encre); background:var(--encre); color:#fff; padding:7px 14px; border-radius:2px; cursor:pointer; font-weight:600}
+.btn:hover{background:#2E3B47}
+.btn:disabled{background:#9AA2A8; border-color:#9AA2A8; cursor:not-allowed}
+.btn.ghost{background:#fff; color:var(--encre)}
+.btn.ghost:hover{background:var(--jaune-pale)}
+.q-status{font-weight:700; font-size:.95rem}
+.is-ok .q-status{color:var(--vert)} .is-ko .q-status{color:var(--rouge)} .is-half .q-status{color:var(--orange)}
+.q-msg{margin:4px 0 0; font-size:.88rem; color:var(--rouge); min-height:0}
+.q-msg:empty{display:none}
+.q-expl{margin-top:10px; background:#F6F7F4; border:1px solid var(--trait-fin); padding:8px 14px; max-width:78ch}
+.is-ok .q-expl{border-top:3px solid var(--vert)} .is-ko .q-expl{border-top:3px solid var(--rouge)} .is-half .q-expl{border-top:3px solid var(--orange)}
+.q-unit-msg{margin:.1rem 0 .4rem; font-weight:600; color:var(--orange)}
+.q-unit-msg[hidden]{display:none}
+.q-expl p{margin:.35rem 0}
+.q-expected span,.q-yours span.lab{font:700 .9rem var(--f-titre)}
+.q-expl ul,.q-expl ol{padding-left:1.2rem; margin:.3rem 0}
+.q-expl li{margin:.2rem 0}
+.cor-imgs{display:flex; gap:14px; flex-wrap:wrap; margin-top:8px}
+.cor-imgs figure{margin:0; flex:1 1 260px}
+.cor-imgs img{border:1px solid var(--trait-fin); background:#fff; display:block}
+.reveal{animation:reveal .35s ease-out}
+@keyframes reveal{from{opacity:0; transform:translateY(-4px)}to{opacity:1; transform:none}}
+
+/* ---------- FAST ---------- */
+.fast-wrap{overflow-x:auto; padding:6px 0 4px}
+.fast{display:grid; min-width:720px; grid-template-columns:138px 24px 112px 24px minmax(180px,1fr) 18px 178px; grid-auto-rows:minmax(64px,auto);
+  font-size:.84rem; line-height:1.25}
+.fast .box{border:1.5px solid var(--encre); background:#fff; padding:6px 8px; align-self:center}
+.fast .fp{grid-column:1; grid-row:1/9; font-weight:700}
+.fast .ft{grid-column:3}
+.fast .ft2{grid-column:5}
+.fast .sol{grid-column:7; align-self:center}
+.fast .sol input{width:100%; border:1.5px dashed var(--encre-2); padding:9px 8px; background:#fff; border-radius:0; font-size:.9rem}
+.fast .sol.is-ok input{border:2px solid var(--vert); background:var(--vert-pale)}
+.fast .sol.is-ko input{border:2px solid var(--rouge); background:var(--rouge-pale)}
+.fast .sol .mark{display:block; font-size:.78rem; font-weight:700; margin-top:2px; min-height:1em}
+.fast .sol.is-ok .mark{color:var(--vert)} .fast .sol.is-ko .mark{color:var(--rouge)}
+.fast .cn{position:relative}
+.fast .cn::before{content:""; position:absolute; left:0; right:0; top:50%; border-top:1.5px solid var(--encre)}
+.fast .bus{position:relative}
+.fast .bus::before{content:""; position:absolute; left:0; right:0; top:50%; border-top:1.5px solid var(--encre)}
+.fast .bus::after{content:""; position:absolute; left:0; top:0; bottom:0; border-left:1.5px solid var(--encre)}
+.fast .bus.first::after{top:50%} .fast .bus.last::after{bottom:50%}
+.fast .bus.mid::before{display:none}
+.fast .ft.grp{position:relative}
+.fast .ft.grp::before{content:""; position:absolute; right:100%; width:24px; top:50%; border-top:1.5px solid var(--encre)}
+.fast .dash::before{border-top-style:dashed}
+.fast .note{grid-column:5/8; align-self:center; color:var(--encre-2); font-style:italic; padding-left:8px}
+.fast-foot{display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap}
+
+/* ---------- tracés ---------- */
+.sketch{margin:14px 0 6px; padding:10px 0 12px 14px; border-left:3px dashed var(--bleu)}
+.sk-layout{display:flex; flex-direction:column-reverse; gap:8px}
+.sk-main{min-width:0}
+.sk-side{max-width:78ch}
+.sk-side p,.sk-side ul{margin:.2rem 0}
+.nomencl-grid{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); border:1px solid var(--trait); font-size:.85rem; margin:2px 0 4px}
+.nomencl-grid span{padding:3px 8px; border-right:1px solid var(--trait-fin); border-bottom:1px solid var(--trait-fin)}
+.nomencl-grid b{font-family:var(--f-titre); margin-right:6px}
+@media (max-width:640px){ .nomencl-grid{grid-template-columns:repeat(2, minmax(0,1fr))} }
+.sk-toolbar{display:flex; flex-wrap:wrap; gap:4px; align-items:center; background:#EEF1F4; border:1px solid var(--trait); border-bottom:0; padding:5px}
+.sk-toolbar button{border:1px solid var(--trait); background:#fff; padding:4px 9px; font-size:.86rem; cursor:pointer; border-radius:2px; line-height:1.2}
+.sk-toolbar button[aria-pressed="true"]{background:var(--bleu); color:#fff; border-color:var(--bleu)}
+.sk-toolbar button:disabled{opacity:.45; cursor:not-allowed}
+.sk-toolbar .sep{width:1px; align-self:stretch; background:var(--trait); margin:0 4px}
+.sk-toolbar .tb-group{display:inline-flex; align-items:center; gap:4px; white-space:nowrap}
+.sk-toolbar .tb-lab{font:600 .78rem var(--f-titre); color:var(--encre-2); padding:0 2px}
+.sk-toolbar .zoom-val{font:600 .82rem var(--f-titre); min-width:3.6em; text-align:center}
+.sk-toolbar .btn-drprint{font-weight:600; border-color:var(--encre)}
+.sk-toolbar .btn-drprint:hover{background:var(--jaune-pale)}
+.sk-toolbar .sw{width:24px; height:24px; padding:0; border-radius:50%; border:2px solid #fff; outline:1px solid var(--trait)}
+.sk-toolbar .sw[aria-pressed="true"]{outline:2px solid var(--encre)}
+.sk-toolbar .spacer{flex:1}
+.sk-stage{position:relative; border:1px solid var(--trait); background:#fff; line-height:0; overflow:hidden}
+.sk-stage.zoomed{overflow:auto; max-height:min(72vh,640px)}
+/* au zoom, seule la largeur pilote la taille : la hauteur suit, sinon l'image est écrasée */
+.sk-stage.zoomed canvas{max-width:none!important; max-height:none!important; height:auto!important}
+.sk-stage canvas{display:block; width:100%; height:auto; touch-action:none; cursor:crosshair}
+.sketch.locked .sk-stage canvas{cursor:default; touch-action:auto}
+.sketch.tool-erase .sk-stage canvas{cursor:cell}
+.sk-toolbar button[data-tool="erase"][aria-pressed="true"]{background:var(--rouge); border-color:var(--rouge)}
+.sk-text{position:absolute; line-height:1.2; font:600 15px var(--f-texte); border:1.5px solid var(--bleu); padding:1px 4px; min-width:90px; background:#fff; z-index:2}
+.sk-foot{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:8px}
+.sk-meas{font-size:.85rem; color:var(--bleu); font-weight:600}
+.sk-corr-toggle{display:none; align-items:center; gap:6px; font-size:.92rem; cursor:pointer}
+.sketch.revealed .sk-corr-toggle{display:inline-flex}
+.sk-note{font-size:.86rem; color:var(--encre-2)}
+.sketch.is-full{position:fixed; inset:0; z-index:60; background:var(--beton); margin:0; padding:10px; border:0; overflow:auto; display:flex; flex-direction:column}
+.sketch.is-full .sk-side,.sketch.is-full .q-stem,.sketch.is-full .q-expl,.sketch.is-full .sk-note-wrap{display:none}
+.sketch.is-full .sk-layout{flex:1; min-height:0}
+.sketch.is-full .sk-main{display:flex; flex-direction:column; align-items:center; height:100%}
+.sketch.is-full .sk-toolbar{width:100%}
+.sketch.is-full .sk-stage{max-width:100%}
+.sketch.is-full .sk-stage.zoomed{max-height:calc(100vh - 150px); width:100%; align-self:stretch}
+.sketch.is-full .sk-stage canvas{width:auto; max-width:100%; max-height:calc(100vh - 120px)}
+body.sk-full-open{overflow:hidden}
+body.sk-full-open .banner,body.sk-full-open .rail{display:none}
+
+/* ---------- rail d'onglets ---------- */
+.rail{position:fixed; right:0; top:0; bottom:var(--banner); width:var(--rail); z-index:40; display:flex; flex-direction:column;
+  justify-content:center; gap:3px; padding:8px 0}
+.rail .grp{height:14px}
+.tab{display:block; width:100%; border:1.5px solid var(--encre); border-right:0; background:var(--papier); color:var(--encre);
+  font:700 .9rem/1 var(--f-titre); padding:10px 0 10px 4px; cursor:pointer; border-radius:4px 0 0 4px; text-align:center;
+  transform:translateX(6px); transition:transform .15s ease, background .15s}
+.tab.dt{background:var(--jaune)}
+.tab:hover{transform:translateX(0)}
+.tab[aria-selected="true"]{transform:translateX(0); background:var(--encre); color:var(--jaune)}
+@media (max-width:760px){ .rail{display:none} }
+
+/* ---------- panneau documents ---------- */
+#docpanel{position:fixed; top:0; bottom:var(--banner); right:var(--rail); width:var(--panel); z-index:45; background:var(--papier);
+  border-left:2px solid var(--encre); box-shadow:-10px 0 28px rgba(28,37,48,.18); display:flex; flex-direction:column;
+  transform:translateX(calc(100% + var(--rail) + 20px)); transition:transform .25s ease; visibility:hidden}
+body.panel-open #docpanel{transform:none; visibility:visible}
+@media (max-width:1180px){ :root{--panel:min(720px, calc(100vw - var(--rail) - 40px))} }
+@media (max-width:760px){ #docpanel{right:0; width:100vw} }
+.dp-head{display:flex; align-items:center; gap:8px; padding:8px 10px; border-bottom:1.5px solid var(--encre); background:#F4F5F2; flex-wrap:wrap}
+.dp-head h3{margin:0; font:700 1.05rem/1.2 var(--f-titre); flex:1; min-width:180px}
+.dp-head h3 small{display:block; font:500 .78rem var(--f-titre); color:var(--encre-2)}
+.dp-head button{border:1px solid var(--trait); background:#fff; padding:4px 9px; cursor:pointer; border-radius:2px}
+.dp-tabs{display:flex; gap:3px; padding:6px 10px; border-bottom:1px solid var(--trait-fin); overflow-x:auto}
+.dp-tabs button{border:1px solid var(--trait); background:#fff; font:700 .82rem var(--f-titre); padding:3px 8px; cursor:pointer; white-space:nowrap; border-radius:2px}
+.dp-tabs button[aria-selected="true"]{background:var(--encre); color:var(--jaune); border-color:var(--encre)}
+.dp-body{flex:1; overflow:auto; padding:12px; --z:1; background:#E9EBE7}
+.doc{display:none}
+.doc.active{display:block}
+.doc .doc-img{display:block; width:calc(var(--z) * 100%); max-width:none; background:#fff; border:1px solid var(--trait-fin); margin:0 auto 8px}
+.doc .doc-text{background:#fff; padding:6px 16px; width:calc(var(--z) * 100%); margin:0 auto 8px; font-size:calc(var(--z) * .95rem)}
+.doc .doc-text h3{font:700 1.1rem var(--f-titre)}
+.doc .doc-cap{width:calc(var(--z) * 100%); margin:-2px auto 10px; font-size:.85rem; color:var(--encre-2); background:#fff; padding:4px 10px}
+dl.steps dt{font:700 .98rem var(--f-titre); margin-top:10px}
+dl.steps dd{margin:2px 0 0 0}
+
+/* ---------- bandeau de note ---------- */
+.banner{position:fixed; left:0; right:0; bottom:0; height:var(--banner); z-index:50; background:var(--encre); color:#fff;
+  display:flex; align-items:center; gap:18px; padding:0 calc(var(--rail) + 14px) 0 18px; border-top:3px solid var(--jaune)}
+.banner .score{font:700 1.7rem/1 var(--f-titre); color:var(--jaune); min-width:5.5ch; white-space:nowrap}
+.banner .score small{font-size:.95rem; color:#fff}
+.banner .lab{font:600 .8rem/1.15 var(--f-titre); color:#C9D1D8}
+.banner .count{font-size:.9rem; color:#E7EBEE}
+.banner .spacer{flex:1}
+.banner .btn-docs{display:none; background:var(--jaune); color:var(--encre); border:0; padding:8px 12px; font:700 .9rem var(--f-titre); border-radius:2px; cursor:pointer}
+@media (max-width:760px){ .banner{padding:0 12px; gap:10px} .banner .btn-docs{display:block} .banner .count{font-size:.78rem} }
+
+/* ---------- auto-évaluation des tracés ---------- */
+.selfeval{margin:12px 0 4px; border:1.5px solid var(--bleu); background:var(--bleu-pale); padding:10px 14px; max-width:78ch}
+.selfeval[hidden]{display:none}
+.se-title{margin:0 0 2px; font:700 1rem var(--f-titre)}
+.se-lead{margin:0 0 8px; font-size:.9rem; color:var(--encre-2)}
+.se-item{display:flex; gap:8px; align-items:flex-start; padding:4px 0; border-top:1px solid rgba(31,95,168,.18); cursor:pointer; font-size:.94rem}
+.se-item input{margin-top:.25rem; width:17px; height:17px; flex:0 0 auto; accent-color:var(--bleu)}
+.se-item input:disabled{cursor:default}
+.se-foot{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px}
+.se-score{font-weight:700; color:var(--bleu)}
+.sketch.is-ok{border-left-color:var(--vert)} .sketch.is-half{border-left-color:var(--orange)} .sketch.is-ko{border-left-color:var(--rouge)}
+
+/* ---------- récapitulatif ---------- */
+.recap{background:var(--papier); border:2px solid var(--encre); margin:0 0 36px; padding:0 0 18px}
+.recap-head{border-bottom:2px solid var(--encre); padding:14px 20px 12px; background:#F4F5F2}
+.recap-head h2{margin:0 0 4px; font:700 1.5rem var(--f-titre)}
+.recap-head p{margin:0; max-width:74ch}
+.recap-wrap{overflow-x:auto; padding:14px 20px 0}
+.recap-table{min-width:620px}
+.recap-table th[scope="row"]{font-weight:600; text-align:left}
+.recap-table td,.recap-table th{vertical-align:middle}
+.recap-table .rc-note{font:700 1.05rem var(--f-titre); text-align:right; white-space:nowrap}
+.recap-table thead th{white-space:nowrap}
+.recap-table td:nth-child(2),.recap-table td:nth-child(3),.recap-table td:nth-child(6){white-space:nowrap}
+.recap-table th[scope="row"]{width:38%}
+.recap-table tfoot th{background:var(--encre); color:#fff; font:700 1.1rem var(--f-titre); border-color:var(--encre)}
+.recap-table tfoot th.final-note{color:var(--jaune); text-align:right; white-space:nowrap}
+.recap .final-detail{padding:8px 20px 0; margin:0; max-width:80ch}
+.recap-foot{display:flex; gap:12px; align-items:center; flex-wrap:wrap; padding:14px 20px 0}
+.recap-foot .btn{padding:10px 18px; font-size:1.02rem}
+
+@media (prefers-reduced-motion:reduce){ *{transition:none!important; animation:none!important} }
+
+/* ---------- impression ---------- */
+@media print{
+  @page{size:A4; margin:12mm}
+  :root{--banner:0px}
+  body{background:#fff; padding:0; font-size:10.5pt}
+  .rail,#docpanel,.banner,.btn,.sk-toolbar,.sk-stage,.sk-foot,.fast-foot button,.se-foot,.no-print,.q-msg,.sk-corr-toggle{display:none!important}
+  .print-only{display:block!important}
+  span.print-only{display:inline!important}
+  .page{max-width:none; margin:0!important; padding:0}
+  .part{border:0; margin:0 0 8mm; break-before:auto}
+  .part-head{break-after:avoid}
+  .qbar{break-after:avoid}
+  .q{break-inside:avoid}
+  .q-row .q-status{display:none!important}
+  .q-expl,.q-expl[hidden],.sketch .q-expl[hidden]{display:block!important; background:#fff}
+  .q-unit-msg[hidden]{display:none!important}
+  .q-input{border:1px solid #555!important}
+  .fast-wrap{overflow:visible}
+  .fast{min-width:0; grid-template-columns:120px 16px 100px 16px 1fr 12px 160px; font-size:8pt}
+  .sk-print{display:block!important; width:auto; max-width:100%; max-height:115mm; border:1px solid #999; margin:2px 0 6px; break-inside:avoid}
+  .sk-print:not([src]),.sk-print[src=""]{display:none!important}
+  .sk-print-wrap{display:grid!important; grid-template-columns:1fr; gap:4px}
+  .sk-print-wrap p{margin:2px 0; font:600 9pt var(--f-titre); break-after:avoid}
+  .cor-imgs img{max-height:120mm; width:auto}
+  .print-summary{border:2px solid #000; padding:6px 10px; margin:0 0 6mm}
+  .print-summary strong{font-size:14pt}
+  .selfeval{background:#fff!important; border:1px solid #666; break-inside:avoid}
+  .se-lead{display:none}
+  .recap{break-before:page; border:1.5px solid #000}
+  .recap-head{background:#fff}
+  .recap-wrap{overflow:visible; padding:8px 10px 0}
+  .recap-table{min-width:0; font-size:9.5pt}
+  .recap-table tfoot th{background:#000!important; color:#fff!important; -webkit-print-color-adjust:exact; print-color-adjust:exact}
+  .recap-foot{display:none}
+  a{color:inherit}
+}
+
+
+/* ==================== PAGE D'ACCUEIL ==================== */
+body.no-mode .page,body.no-mode .rail,body.no-mode .banner,body.no-mode #docpanel{display:none!important}
+body.no-mode{padding-bottom:0}
+body:not(.no-mode) #home{display:none}
+#home{min-height:100vh; padding:32px 20px 48px}
+.home-inner{max-width:1040px; margin:0 auto}
+.home-head{background:var(--papier); border:2px solid var(--encre); border-left:10px solid var(--jaune); padding:20px 24px}
+#home h1{margin:0 0 8px; font:700 clamp(1.7rem,4vw,2.6rem)/1.06 var(--f-titre); letter-spacing:-.01em}
+.home-sub{margin:0; max-width:78ch; color:var(--encre-2)}
+.home-hero{margin:18px 0 0; background:var(--papier); border:1px solid var(--trait); padding:10px}
+.home-hero img{display:block; width:100%; height:auto}
+.home-hero figcaption{margin-top:6px; padding:0 4px}
+.home-facts{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:14px 0 26px}
+.home-facts div{background:var(--encre); color:#fff; padding:10px 14px}
+.home-facts b{display:block; font:700 1.25rem var(--f-titre); color:var(--jaune)}
+.home-facts span{font-size:.85rem; color:#D7DDE2}
+@media (max-width:820px){ .home-facts{grid-template-columns:repeat(2,1fr)} }
+.home-choose{font:700 1.4rem var(--f-titre); margin:0 0 12px}
+.modes{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+@media (max-width:820px){ .modes{grid-template-columns:1fr} }
+.mode-card{background:var(--papier); border:2px solid var(--encre); padding:18px 20px 20px; display:flex; flex-direction:column}
+.mode-card.exam{border-color:var(--bleu)}
+.mc-head{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:2px}
+.mc-tag{font:700 .74rem var(--f-titre); background:var(--jaune); padding:2px 8px; letter-spacing:.04em}
+.mode-card.exam .mc-tag{background:var(--bleu); color:#fff}
+.mode-card h3{margin:0; font:700 1.35rem var(--f-titre)}
+.mc-lead{margin:2px 0 8px; font-weight:600; color:var(--encre-2)}
+.mode-card ul{margin:0 0 16px; padding-left:1.1rem}
+.mode-card li{margin:.3rem 0}
+.mode-card .btn{margin-top:auto; align-self:flex-start; padding:11px 18px; font-size:1.02rem}
+.mode-card.exam .btn{background:var(--bleu); border-color:var(--bleu)}
+.mode-card.exam .btn:hover{background:#17508F}
+.home-note{margin:18px 0 0}
+
+/* ==================== MODES ==================== */
+body:not(.mode-training) .only-training,body:not(.mode-exam) .only-exam{display:none}
+.print-nograde{display:none}
+.mode-exam .btn-validate,.mode-exam .btn-fast,.mode-exam .btn-sketch,
+.mode-exam:not(.graded) .exam-only-hide{display:none!important}
+.mode-exam:not(.graded) .score-block,.mode-training .exam-block,.mode-exam.graded .exam-block{display:none}
+.mode-exam:not(.graded) #recap-graded,.mode-exam:not(.graded) #recap-foot,
+.mode-exam.graded #exam-submit-wrap,.mode-training #exam-submit-wrap{display:none}
+.banner .exam-state{font:700 1.05rem var(--f-titre); color:var(--jaune)}
+#exam-submit-wrap{padding:16px 20px 4px}
+.es-lead{margin:0 0 10px; max-width:74ch}
+.btn-exam{background:var(--bleu); border-color:var(--bleu); padding:12px 20px; font-size:1.05rem}
+.btn-exam:hover{background:#17508F}
+.es-warn{margin:8px 0 0; color:var(--rouge); font-weight:600}
+.es-warn:empty{display:none}
+
+/* ==================== CHRONOMÈTRE ==================== */
+.timer-block{padding-left:4px}
+.banner .timer{font:700 1.3rem/1 var(--f-titre); color:#fff; font-variant-numeric:tabular-nums}
+.banner .timer.over{color:var(--jaune)}
+@media (max-width:760px){ .banner .count{display:none} }
+
+@media print{
+  #home{display:none!important}
+  body:not(.corrections-open) .print-note-line{display:none!important}
+  body:not(.corrections-open) .print-nograde{display:block!important; font-weight:600}
+  .banner{display:none!important}
+  body:not(.corrections-open) .q-expl,body:not(.corrections-open) .selfeval,
+  body:not(.corrections-open) .sk-print-corr{display:none!important}
+  body:not(.corrections-open) #recap-graded{display:none!important}
+  #exam-submit-wrap{display:none!important}
+}
+
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+<style>
+/* ==================== COMPLÉMENTS : RÉGLAGES DE LA SÉRIE ==================== */
+.settings{display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:18px 18px; align-items:start}
+.set-block{margin:0; min-width:0; background:var(--papier); border:2px solid var(--encre); padding:10px 16px 16px}
+.set-block legend{font:700 1.08rem var(--f-titre); padding:0 6px}
+.set-themes{grid-row:span 2}
+.chips{display:flex; flex-wrap:wrap; gap:8px; margin:6px 0 0}
+.chip{position:relative; cursor:pointer}
+.chip input,.seg input{position:absolute; opacity:0; width:1px; height:1px; margin:0}
+.chip span{display:inline-block; border:1.5px solid var(--encre); background:#fff; padding:6px 12px 6px 17px; font-weight:600; font-size:.94rem;
+  box-shadow:inset 6px 0 0 var(--c); border-radius:2px}
+.chip span::before{content:"+ "; font-weight:700}
+.chip input:checked + span{background:var(--encre); color:#fff}
+.chip input:checked + span::before{content:"✓ "}
+.chip input:focus-visible + span,.seg input:focus-visible + span{outline:3px solid var(--bleu); outline-offset:2px}
+.set-links{margin:12px 0 0; display:flex; gap:14px; flex-wrap:wrap}
+.linkbtn{border:0; background:none; padding:0; color:var(--bleu); font-weight:600; text-decoration:underline; text-underline-offset:3px; cursor:pointer}
+.seg{display:flex; flex-wrap:wrap; margin:6px 0 0}
+.seg label{cursor:pointer; position:relative}
+.seg span{display:block; min-width:58px; text-align:center; border:1.5px solid var(--encre); margin-right:-1.5px; padding:7px 10px;
+  font:700 1.08rem var(--f-titre); background:#fff}
+.seg input:checked + span{background:var(--jaune)}
+.set-other{display:flex; align-items:center; gap:8px; margin:12px 0 0; font-size:.93rem}
+.set-other input{width:5.5em; border:1.5px solid var(--encre-2); padding:5px 8px; background:#fff; border-radius:2px}
+.lvl{display:block; position:relative; border:1.5px solid var(--trait); background:#fff; padding:8px 12px 9px 40px; margin-top:8px; cursor:pointer}
+.lvl input{position:absolute; left:12px; top:11px; width:17px; height:17px; accent-color:var(--encre); margin:0}
+.lvl b{display:block; font:700 1.02rem var(--f-titre)}
+.lvl span{display:block; font-size:.88rem; color:var(--encre-2)}
+.lvl:has(input:checked){border-color:var(--encre); box-shadow:inset 0 -3px 0 var(--jaune)}
+.set-go{display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin:20px 0 0}
+.btn-start{padding:12px 24px; font-size:1.08rem}
+.home-sub a{color:var(--bleu); font-weight:600}
+@media (max-width:820px){ .settings{grid-template-columns:1fr} .set-themes{grid-row:auto} }
+
+/* ==================== COMPLÉMENTS : QUESTIONS ==================== */
+.q-grid{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; margin:8px 0 10px; max-width:80ch}
+.q-grid .data{margin:0; max-width:none}
+.q-grid .data ul{padding-left:1rem}
+.fx{border:1.5px solid var(--encre); border-left:6px solid var(--jaune); background:#fff; padding:8px 14px}
+.fx-main{margin:.3rem 0 .4rem; font-size:1.12rem; font-weight:650; line-height:1.45}
+.fx-leg{margin:0; padding:0; list-style:none; font-size:.86rem; color:var(--encre-2)}
+.fx-leg li{margin:.12rem 0}
+.fx-leg b{color:var(--encre)}
+.q-why p{margin:.3rem 0}
+.fx .data-title{margin:.25rem 0; font:700 .95rem var(--f-titre); text-decoration:underline; text-underline-offset:3px}
+.home-choose{margin-top:28px}
+.cartouche .title .cart-sum{margin-top:4px}
+@media (max-width:680px){ .q-grid{grid-template-columns:1fr} }
+@media print{
+  .cartouche{margin-bottom:4mm} .cartouche .title{padding:6px 10px} .cartouche h1{font-size:15pt}
+  .consignes{margin:0 0 4mm; padding:4px 10px; font-size:9pt}
+  .part{margin:0 0 3mm; padding:0 0 2mm}
+  .part-head{grid-template-columns:34px 1fr; border-bottom-width:1.5px}
+  .part-num{font-size:15pt}
+  .part-head h2{font-size:12pt; padding:3px 10px 0}
+  .part-head .duree{padding:0 10px 3px; font-size:8.5pt}
+  .part-body{padding:0 4mm}
+  .q{margin:2mm 0 0; padding:1mm 0 2mm 3mm}
+  .q-stem{font-size:9.5pt}
+  .q-grid{grid-template-columns:1fr 1fr; gap:3mm; margin:1.5mm 0 2mm; font-size:9pt}
+  .q-grid .data,.fx{padding:1mm 3mm}
+  .data p,.fx .data-title,.fx-main{margin:.3mm 0}
+  .fx{border-left-width:3mm}
+  .fx-main{font-size:10pt}
+  .fx-leg{font-size:8pt} .fx-leg li{margin:0}
+  .q-input{padding:2px 6px}
+  .q-expl{margin-top:1.5mm; padding:1mm 3mm; font-size:9pt}
+  .q-expl p,.q-why p{margin:.4mm 0}
+}
+
+/* ==================== VUES : MENU, FORMULAIRE, EXERCICES ==================== */
+#menu,#view-map{display:none}
+body.view-menu #menu,body.view-map #view-map{display:block}
+body:not(.view-ex) #home,body:not(.view-ex) .page,body:not(.view-ex) .banner{display:none!important}
+body:not(.view-ex){padding-bottom:0}
+#menu{min-height:100vh; padding:32px 20px 48px}
+#menu h1{margin:0 0 8px; font:700 clamp(1.7rem,4vw,2.6rem)/1.06 var(--f-titre); letter-spacing:-.01em}
+#view-map{padding-bottom:20px}
+.crumb{margin:0 0 6px}
+h1[tabindex="-1"]:focus,h2[tabindex="-1"]:focus{outline:none}
+.linkbtn{border:0; background:none; padding:0; color:var(--bleu); font-weight:600; text-decoration:underline; text-underline-offset:3px; cursor:pointer}
+.banner .btn-menu{background:var(--jaune); color:var(--encre); border:0; padding:8px 14px; font:700 .92rem var(--f-titre); border-radius:2px; cursor:pointer}
+.banner .btn-menu:hover{background:#FFD24D}
+
+/* ==================== ÉCRITURE DES FORMULES ==================== */
+.fr{display:inline-flex; flex-direction:column; vertical-align:middle; text-align:center; margin:0 .15em; line-height:1.18; font-size:.95em}
+.fr>.fn{padding:0 .22em .1em}
+.fr>.fd{padding:.1em .22em 0; border-top:.09em solid currentColor}
+.fr .fr{font-size:1em}
+.rt{white-space:nowrap}
+.rt>.rad{display:inline-block; border-top:.09em solid currentColor; padding:.12em .1em 0; margin-left:.04em}
+.mm-printout{display:none}
+
+@media print{
+  body.view-map .page,body.view-map #home,body.view-map #menu,body.view-map .banner{display:none!important}
+  body.view-map{font-size:9.5pt}
+  body.view-map .mm-tools,body.view-map .mm-legend,body.view-map .mm-status,body.view-map .mm-stage,body.view-map .mm-panel,body.view-map .crumb{display:none!important}
+  body.view-map .mm-printout{display:block!important}
+  body.view-map .mm-head{padding:0; max-width:none}
+  body.view-map .mm-card{border-width:1.5px; border-left-width:6px; padding:6px 10px}
+  body.view-map .mm-card h1{font-size:16pt}
+  .pf{columns:2; column-gap:7mm; margin-top:4mm}
+  .pf-br{margin:0 0 3mm}
+  .pf-br h2{margin:0 0 1.5mm; padding:1mm 2mm; font:700 11pt var(--f-titre); border-left:4mm solid var(--c); background:#F2F3F0;
+    break-after:avoid; -webkit-print-color-adjust:exact; print-color-adjust:exact}
+  .pf-it{break-inside:avoid; padding:1mm 0 1.4mm; border-bottom:.3mm solid #D3D8D5}
+  .pf-it p{margin:0}
+  .pf-t{font-size:8pt; color:#46525C}
+  .pf-f{font-weight:700; font-size:10pt; line-height:1.5}
+  .pf-s,.pf-a{font-size:8pt; line-height:1.45}
+  .pf-homo{break-inside:avoid; margin-top:3mm; font-size:8pt}
+  .pf-homo h2{font:700 11pt var(--f-titre); margin:0 0 1mm}
+  .pf-homo p{margin:.5mm 0}
+}
+
+/* ==================== CARTE MENTALE ==================== */
+/* ---------- en-tête ---------- */
+.mm-head{max-width:1320px; margin:0 auto; padding:24px 18px 0}
+.mm-card{background:var(--papier); border:2px solid var(--encre); border-left:10px solid var(--jaune); padding:16px 20px 14px}
+.mm-card h1{margin:0 0 6px; font:700 clamp(1.6rem,3.4vw,2.35rem)/1.06 var(--f-titre); letter-spacing:-.01em}
+.mm-sub{margin:0; color:var(--encre-2); max-width:76ch}
+.mm-sub a{color:var(--bleu); font-weight:600}
+.mm-tools{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:14px 0 0}
+.mm-search{flex:1 1 300px; max-width:480px; border:1.5px solid var(--encre-2); background:#fff; padding:8px 12px; border-radius:2px}
+.tbtn{border:1.5px solid var(--encre); background:#fff; padding:7px 12px; font-weight:600; border-radius:2px; cursor:pointer}
+.tbtn:hover{background:var(--jaune-pale)}
+.mm-legend{display:flex; flex-wrap:wrap; gap:4px 18px; margin:12px 0 0; padding:0; list-style:none; font-size:.86rem; color:var(--encre-2)}
+.mm-legend li::before{content:""; display:inline-block; width:13px; height:13px; background:var(--c); margin-right:6px; vertical-align:-2px; border:1px solid rgba(28,37,48,.25)}
+.mm-status{margin:6px 0 0; min-height:1.4em; font-size:.9rem; color:var(--encre-2)}
+.mm-status.none{color:var(--rouge); font-weight:600}
+
+/* ---------- carte ---------- */
+.mm-stage{max-width:1640px; margin:10px auto 0; padding:0 12px 48px; overflow-x:auto; transition:margin .22s ease}
+.mm{position:relative; display:grid; grid-template-columns:1fr auto 1fr; align-items:center; column-gap:44px;
+  min-width:min-content; padding:30px 26px; border:1px solid var(--trait);
+  background-color:#F7F8F6;
+  background-image:linear-gradient(rgba(165,173,170,.16) 1px, transparent 1px), linear-gradient(90deg, rgba(165,173,170,.16) 1px, transparent 1px);
+  background-size:24px 24px}
+.mm-links{position:absolute; left:0; top:0; pointer-events:none; z-index:0; overflow:visible}
+.mm-links path{fill:none; stroke-linecap:round; transition:opacity .2s}
+.mm-links path.dim{opacity:.18}
+.mm-links.intro path{stroke-dasharray:1; stroke-dashoffset:1; animation:mm-draw .6s ease-out forwards}
+@keyframes mm-draw{to{stroke-dashoffset:0}}
+
+.mm-side{position:relative; z-index:1; display:flex; flex-direction:column; gap:18px}
+.mm-left{align-items:flex-end}
+.mm-right{align-items:flex-start}
+.br{display:flex; align-items:center; gap:36px}
+.mm-left .br{flex-direction:row-reverse}
+
+.br-node{position:relative; flex-shrink:0; width:192px; background:#fff; border:2px solid var(--encre); border-radius:0; cursor:pointer;
+  padding:9px 30px 9px 19px; text-align:left; box-shadow:inset 7px 0 0 var(--c)}
+.mm-left .br-node{padding:9px 19px 9px 30px; text-align:right; box-shadow:inset -7px 0 0 var(--c)}
+.br-node .bt{display:block; font:700 1.06rem/1.15 var(--f-titre)}
+.br-node .bc{display:block; font-size:.8rem; color:var(--encre-2); margin-top:2px}
+.br-node .bi{position:absolute; top:7px; right:9px; font:700 1.05rem/1 var(--f-titre)}
+.mm-left .br-node .bi{right:auto; left:9px}
+.br-node:hover{background:var(--jaune-pale)}
+.br-node[aria-expanded="true"]{background:var(--encre); color:#fff}
+.br-node[aria-expanded="true"] .bc{color:#C9D1D8}
+
+.leaves{display:none; flex-direction:column; gap:8px; flex-shrink:0}
+.br.open .leaves{display:flex; animation:mm-fade .22s ease-out}
+@keyframes mm-fade{from{opacity:0}to{opacity:1}}
+.mm-left .leaves{align-items:flex-end}
+.leaf{display:block; width:max-content; max-width:300px; background:#fff; border:1.5px solid var(--trait); border-left:4px solid var(--c);
+  border-radius:2px; padding:5px 11px 6px; text-align:left; cursor:pointer}
+.mm-left .leaf{border-left-width:1.5px; border-left-color:var(--trait); border-right:4px solid var(--c); text-align:right}
+.leaf .lt{display:block; font-size:.76rem; line-height:1.25; color:var(--encre-2)}
+.leaf .lf{display:block; font-weight:650; font-size:.97rem; line-height:1.4}
+.leaf:hover{background:var(--jaune-pale)}
+.leaf[aria-current="true"]{background:var(--jaune-pale); border-color:var(--encre); border-left-color:var(--c)}
+.mm-left .leaf[aria-current="true"]{border-left-color:var(--encre); border-right-color:var(--c)}
+.leaf.hit{outline:2.5px solid var(--bleu); outline-offset:1px}
+.dim{opacity:.3}
+
+.mm-hub{position:relative; z-index:1; background:var(--encre); color:#fff; border:3px solid var(--jaune); outline:1.5px solid var(--encre); outline-offset:3px;
+  padding:18px 22px; text-align:center; min-width:196px}
+.mm-hub b{display:block; font:700 1.55rem/1.05 var(--f-titre); color:var(--jaune); white-space:nowrap}
+.mm-hub span{display:block; margin-top:7px; font-weight:600}
+
+/* ---------- panneau de détail ---------- */
+.mm-panel{position:fixed; top:0; right:0; bottom:0; width:min(440px, 94vw); z-index:50; background:#fff;
+  border-left:2px solid var(--encre); box-shadow:-10px 0 28px rgba(28,37,48,.18); display:flex; flex-direction:column;
+  transform:translateX(105%); visibility:hidden; transition:transform .22s ease, visibility 0s linear .22s}
+.mm-panel.open{transform:none; visibility:visible; transition:transform .22s ease}
+.pn-head{display:flex; align-items:center; gap:10px; padding:10px 12px 10px 16px; border-bottom:1.5px solid var(--encre); background:#F4F5F2; border-top:6px solid var(--c, var(--jaune))}
+.pn-tag{flex:1; font:700 .9rem/1.2 var(--f-titre); color:var(--encre-2)}
+.pn-head button,.pn-nav button{border:1px solid var(--trait); background:#fff; padding:5px 10px; cursor:pointer; border-radius:2px; font-weight:600}
+.pn-head button:hover,.pn-nav button:hover{background:var(--jaune-pale)}
+.pn-body{flex:1; overflow:auto; padding:14px 18px 22px}
+.pn-body h2{margin:2px 0 10px; font:700 1.35rem/1.15 var(--f-titre)}
+.pn-body h2:focus{outline:none}
+.pn-fx{margin:0 0 14px; padding:11px 14px; background:#FBFBF9; border:1.5px solid var(--encre); border-left:7px solid var(--c, var(--jaune));
+  font-size:1.2rem; font-weight:650; line-height:1.5}
+.pn-body h3{margin:16px 0 4px; font:700 .95rem var(--f-titre); color:var(--encre-2)}
+table.sym{border-collapse:collapse; width:100%; font-size:.93rem}
+table.sym td{border-top:1px solid var(--trait-fin); padding:5px 6px; vertical-align:top}
+table.sym td:first-child{font-weight:700; white-space:nowrap; width:1%; padding-left:0}
+table.sym td:last-child{text-align:right; font-weight:600; white-space:nowrap; padding-right:0}
+.pn-alt{margin:0; padding-left:1.1rem}
+.pn-alt li{margin:.2rem 0}
+.pn-note{margin:0; max-width:60ch}
+.pn-vu{display:flex; flex-wrap:wrap; gap:6px; margin:4px 0 0; padding:0; list-style:none}
+.pn-vu li{border:1px solid var(--trait); background:#F4F5F2; padding:1px 8px; font-size:.82rem}
+table.homo{border-collapse:collapse; width:100%; font-size:.92rem}
+table.homo th,table.homo td{border-top:1px solid var(--trait-fin); padding:6px 6px; text-align:left; vertical-align:top}
+table.homo th{font:700 .82rem var(--f-titre); color:var(--encre-2)}
+table.homo td:first-child{font:700 1.15rem var(--f-titre); width:1%; padding-left:0}
+.pn-nav{display:flex; justify-content:space-between; gap:8px; padding:10px 12px; border-top:1px solid var(--trait-fin)}
+.pn-nav[hidden]{display:none}
+@media (min-width:1100px){ body.pn-open .mm-stage{margin-right:452px} }
+
+/* ---------- petits écrans : arbre vertical ---------- */
+@media (max-width:860px){
+  .mm-head{padding:16px 12px 0}
+  .mm{display:flex; flex-direction:column; align-items:stretch; gap:12px; padding:16px 12px; min-width:0}
+  .mm-hub{order:-1; margin:0 0 6px}
+  .mm-side,.mm-left,.mm-right{align-items:stretch; gap:10px}
+  .br,.mm-left .br{flex-direction:column; align-items:stretch; gap:8px}
+  .br-node,.mm-left .br-node{width:100%; text-align:left; padding:9px 34px 9px 19px; box-shadow:inset 7px 0 0 var(--c)}
+  .mm-left .br-node .bi{left:auto; right:10px}
+  .leaves,.mm-left .leaves{align-items:stretch; margin-left:12px; padding-left:12px; border-left:2px solid var(--c)}
+  .leaf,.mm-left .leaf{width:auto; max-width:none; text-align:left; border-left:4px solid var(--c); border-right:1.5px solid var(--trait)}
+  .mm-links{display:none}
+}
+@media (prefers-reduced-motion:reduce){ *{transition:none!important; animation:none!important} .mm-links.intro path{stroke-dashoffset:0} }
+
+
+/* ajustements liés à l’écriture en fractions */
+.fr{white-space:nowrap}
+.mm-hub{min-width:max-content}
+.leaf{max-width:340px}
+@media (max-width:860px){ .leaf,.mm-left .leaf{max-width:none} }
+</style>
+</head>
+<body class="no-mode view-menu">
+
+<section id="menu" aria-labelledby="menu-title">
+  <div class="home-inner">
+    <header class="home-head">
+      <h1 id="menu-title">Chaîne de puissance</h1>
+      <p class="home-sub">Le formulaire de la séquence, organisé en carte mentale, et des exercices pour apprendre à s’en servir.</p>
+    </header>
+    <figure class="home-hero">
+      <div class="chain" role="img" aria-label="Chaîne de puissance : alimenter, convertir, transmettre, agir">
+        <div class="chain-box"><span>Alimenter</span><b>P = U × I</b></div><div class="chain-arrow"></div>
+        <div class="chain-box"><span>Convertir</span><b>η = <span class="fr"><span class="fn">P<sub>u</sub></span><span class="fd">P<sub>a</sub></span></span></b></div><div class="chain-arrow"></div>
+        <div class="chain-box"><span>Transmettre</span><b>N<sub>s</sub> = r × N<sub>e</sub></b></div><div class="chain-arrow"></div>
+        <div class="chain-box"><span>Agir</span><b>P = F × v</b></div>
+      </div>
+      <figcaption>Le long de la chaîne, la puissance change de forme et chaque étage en perd une partie : ce sont ces relations que tu vas appliquer.</figcaption>
+    </figure>
+    <h2 class="home-choose">Que veux-tu faire ?</h2>
+    <div class="modes">
+      <article class="mode-card">
+        <div class="mc-head"><span class="mc-tag">Cours</span><h3>Formulaire</h3></div>
+        <p class="mc-lead">Les formules de la séquence, en carte mentale.</p>
+        <ul><li>Chaque formule avec ses grandeurs, leurs unités et ses autres écritures.</li>
+          <li>Recherche par mot ou par symbole : rendement, ω, tr/min…</li>
+          <li>Version imprimable sur trois pages.</li></ul>
+        <button type="button" class="btn" data-go="formulaire">Ouvrir le formulaire</button>
+      </article>
+      <article class="mode-card exam">
+        <div class="mc-head"><span class="mc-tag">Entraînement</span><h3>Exercices</h3></div>
+        <p class="mc-lead">Des séries de calculs courts, à valeurs aléatoires.</p>
+        <ul><li>Tu choisis les thèmes et le nombre de questions, de 1 à 40.</li>
+          <li>Les données sont en clair, la formule est à retrouver.</li>
+          <li>Correction détaillée et note sur 20, unités comprises.</li></ul>
+        <button type="button" class="btn" id="menu-ex" data-go="exercices">Choisir mes exercices</button>
+      </article>
+    </div>
+    <p class="home-note small">Rien n’est enregistré sur l’ordinateur. Une série commencée reste disponible tant que la page est ouverte.</p>
+  </div>
+</section>
+
+<div id="view-map">
+<header class="mm-head">
+  <div class="mm-card">
+    <p class="crumb no-print"><button type="button" class="linkbtn" data-go="menu">Retour au menu</button></p>
+    <h1>Formulaire de la chaîne de puissance</h1>
+    <p class="mm-sub"><span id="mm-count"></span> <span class="no-print">Ouvre un thème pour faire apparaître ses formules, puis clique sur une formule pour lire chaque grandeur avec son unité et ses autres écritures.</span></p>
+    <div class="mm-tools">
+      <label class="sr-only" for="mm-q">Chercher une formule</label>
+      <input id="mm-q" class="mm-search" type="search" placeholder="Chercher : rendement, ω, tr/min, batterie…" autocomplete="off" spellcheck="false">
+      <button type="button" class="tbtn" id="mm-open">Tout déplier</button>
+      <button type="button" class="tbtn" id="mm-close">Tout replier</button>
+      <button type="button" class="tbtn" id="mm-homo">Lettres à double sens</button>
+      <button type="button" class="tbtn" id="mm-print">Imprimer le formulaire</button>
+    </div>
+    <ul class="mm-legend" id="mm-legend" aria-label="Familles de thèmes"></ul>
+    <p class="mm-status" id="mm-status" aria-live="polite"></p>
+  </div>
+</header>
+
+<div class="mm-stage" id="mm-stage">
+  <div class="mm" id="mm">
+    <svg class="mm-links intro" id="mm-links" aria-hidden="true"></svg>
+    <div class="mm-side mm-left" id="mm-left"></div>
+    <div class="mm-hub" id="mm-hub"><b>Chaîne de puissance</b><span>P = effort × flux</span></div>
+    <div class="mm-side mm-right" id="mm-right"></div>
+  </div>
+</div>
+
+<aside class="mm-panel" id="mm-panel" aria-labelledby="pn-title" aria-hidden="true">
+  <div class="pn-head"><span class="pn-tag" id="pn-tag"></span><button type="button" id="pn-close">Fermer</button></div>
+  <div class="pn-body" id="pn-body"></div>
+  <div class="pn-nav" id="pn-nav"><button type="button" id="pn-prev">Formule précédente</button><button type="button" id="pn-next">Formule suivante</button></div>
+</aside>
+
+<section class="mm-printout" id="mm-printout" aria-hidden="true"></section>
+
+</div>
+
+<section id="home" aria-labelledby="home-title">
+  <div class="home-inner">
+    <header class="home-head">
+      <p class="crumb"><button type="button" class="linkbtn" data-go="menu">Retour au menu</button></p>
+      <h1 id="home-title">Exercices : appliquer les formules</h1>
+      <p class="home-sub">Des questions courtes, avec les données en clair : à toi de retrouver la bonne formule. Il faut parfois isoler une grandeur dans la formule avant de calculer. Les valeurs changent à chaque série, tu peux recommencer autant de fois que tu veux.</p>
+    </header>
+    <h2 class="home-choose">Règle ta série</h2>
+    <div class="settings">
+      <fieldset class="set-block set-themes">
+        <legend>Thèmes</legend>
+        <div class="chips" id="theme-chips"></div>
+        <p class="set-links"><button type="button" class="linkbtn" id="th-all">Tout cocher</button><button type="button" class="linkbtn" id="th-none">Tout décocher</button></p>
+      </fieldset>
+      <fieldset class="set-block">
+        <legend>Nombre de questions</legend>
+        <div class="seg" id="n-seg">
+          <label><input type="radio" name="nq" value="5"><span>5</span></label>
+          <label><input type="radio" name="nq" value="10" checked><span>10</span></label>
+          <label><input type="radio" name="nq" value="15"><span>15</span></label>
+          <label><input type="radio" name="nq" value="20"><span>20</span></label>
+        </div>
+        <label class="set-other">Autre nombre (1 à 40) <input type="number" id="n-other" min="1" max="40" step="1" inputmode="numeric"></label>
+      </fieldset>
+    </div>
+    <div class="set-go"><button type="button" class="btn btn-start" id="btn-start">Générer la série</button><p class="es-warn" id="set-warn" role="alert"></p></div>
+    <p class="home-note small">Rien n’est enregistré sur l’ordinateur : une nouvelle série remplace la précédente.</p>
+  </div>
+</section>
+
+<main class="page">
+  <section class="print-only print-summary">
+    <p>Élève : <span class="print-nom"></span> | Copie imprimée le <span class="print-date"></span></p>
+    <p>Série : <span class="print-mode"></span> | Temps de rédaction : <strong class="print-time"></strong></p>
+    <p class="print-note-line">Note : <strong class="final-note"></strong></p>
+  </section>
+
+  <header class="cartouche">
+    <div class="title">
+      <h1>Exercices : appliquer les formules</h1>
+      <p class="cart-sum" id="cart-sum"></p></div>
+    <div class="nom"><label for="nom-eleve">Nom et prénom</label><input id="nom-eleve" type="text" autocomplete="name"></div>
+  </header>
+
+  <div class="consignes">
+    <p><strong>Pour chaque question</strong>, lis les données, choisis la formule adaptée puis saisis le résultat avec son unité. « Valider » verrouille la réponse et affiche aussitôt la correction.</p>
+    <p><strong>Arrondis au centième</strong>, ou à trois chiffres significatifs si le résultat est inférieur à 1 (exemple : 0,0523). Les arrondis de π et de √2 sont tolérés.</p>
+    <p><strong>L’unité vaut la moitié des points.</strong> Une valeur juste sans unité, ou avec une unité fausse, ne rapporte qu’un demi-point. Une unité équivalente est acceptée (kW au lieu de W), sauf dans les questions de conversion.</p>
+  </div>
+
+  <div id="qlist"></div>
+
+  <section class="recap" id="recap" aria-labelledby="t-recap">
+    <header class="recap-head"><h2 id="t-recap">Bilan de la série</h2>
+      <p class="small">Chaque question vaut 1 point, dont la moitié pour l’unité. Les questions non validées comptent zéro.</p></header>
+    <div id="recap-graded">
+      <div class="recap-wrap">
+        <table class="t recap-table">
+          <thead><tr><th>Thème</th><th>Questions</th><th>Validées</th><th>Points</th><th>Note /20</th></tr></thead>
+          <tbody id="recap-body"></tbody>
+          <tfoot><tr><th colspan="4">Note de la série</th><th class="final-note"></th></tr></tfoot>
+        </table>
+      </div>
+      <p class="final-detail small"></p>
+    </div>
+    <div class="recap-foot" id="recap-foot">
+      <button type="button" class="btn btn-print">Imprimer ma copie</button>
+      <button type="button" class="btn ghost" id="btn-again">Nouvelle série, mêmes réglages</button>
+      <button type="button" class="btn ghost" id="btn-settings">Changer les réglages</button>
+    </div>
+  </section>
+</main>
+
+<footer class="banner" aria-label="Suivi de la série">
+  <div class="score-block"><div class="lab">Note provisoire</div><div class="score" id="score-val">?<small>/20</small></div></div>
+  <div class="timer-block"><div class="lab">Temps</div><div class="timer" id="timer-val">0:00:00</div></div>
+  <div class="count" id="score-count" aria-live="polite"></div>
+  <div class="spacer"></div>
+  <button type="button" class="btn-menu" data-go="menu">Menu</button>
+</footer>
+
+
+<script>/*GRADING-START*/
+var Grading = (function () {
+  "use strict";
+
+  function stripAccents(s) {
+    return String(s).normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/œ/g, "oe").replace(/Œ/g, "oe").replace(/æ/g, "ae").replace(/Æ/g, "ae");
+  }
+  function norm(s) {
+    return stripAccents(String(s == null ? "" : s).toLowerCase())
+      .replace(/[\u2019\u2018'`´]/g, " ").replace(/\s+/g, " ").trim();
+  }
+  function tokens(s) {
+    return norm(s).split(/[^a-z0-9]+/).filter(Boolean);
+  }
+  function compact(s) {
+    return norm(s).replace(/[^a-z0-9]/g, "");
+  }
+
+  // Distance de Damerau-Levenshtein (alignement optimal) : une inversion de deux lettres compte pour 1
+  function lev(a, b) {
+    if (a === b) return 0;
+    var m = a.length, n = b.length, i, j;
+    if (!m) return n;
+    if (!n) return m;
+    var d = [];
+    for (i = 0; i <= m; i++) { d[i] = [i]; }
+    for (j = 0; j <= n; j++) d[0][j] = j;
+    for (i = 1; i <= m; i++) {
+      for (j = 1; j <= n; j++) {
+        var c = a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1;
+        var v = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + c);
+        if (i > 1 && j > 1 && a.charAt(i - 1) === b.charAt(j - 2) && a.charAt(i - 2) === b.charAt(j - 1))
+          v = Math.min(v, d[i - 2][j - 2] + 1);
+        d[i][j] = v;
+      }
+    }
+    return d[m][n];
+  }
+  // Seuil adapté à la longueur du mot attendu : pas de tolérance sur les mots courts
+  function fuzzyEq(tok, word) {
+    if (tok === word) return true;
+    var L = word.length;
+    var thr = L <= 4 ? 0 : (L <= 8 ? 1 : 2);
+    if (thr === 0) return false;
+    if (Math.abs(tok.length - L) > thr) return false;
+    return lev(tok, word) <= thr;
+  }
+
+  // ---------- Nombres (locale FR) ----------
+  // Sépare la valeur numérique du reste de la saisie (qui porte l'unité)
+  function splitNum(raw) {
+    if (raw == null) return null;
+    var s = String(raw);
+    var cut = Math.max(s.lastIndexOf("="), s.lastIndexOf(":"));
+    if (cut >= 0) s = s.slice(cut + 1);
+    s = s.replace(/[\u2212\u2012\u2013\u2014\u2010\u2011]/g, "-")
+         .replace(/[\u00a0\u202f\u2009\u2007]/g, " ");
+    s = s.replace(/(\d) (?=\d{3}(?:\D|$))/g, "$1");
+    s = s.replace(/-\s+(?=\d)/g, "-");
+    s = s.replace(/,/g, ".");
+    s = s.replace(/\s*[x\u00d7*\u00b7]?\s*10\s*\^\s*\(?\s*([-+]?\d+)\s*\)?/gi, "e$1");
+    var m = s.match(/-?\d+(?:\.\d+)?(?:e[-+]?\d+)?|-?\.\d+/i);
+    if (!m) return null;
+    var txt = m[0];
+    if (/^-?e/i.test(txt)) return null;
+    var v = parseFloat(txt);
+    if (!isFinite(v)) return null;
+    return { value: v, rest: s.slice(m.index + txt.length) };
+  }
+  function parseNum(raw) {
+    var sp = splitNum(raw);
+    return sp ? sp.value : null;
+  }
+
+  // ---------- Unités ----------
+  var SUP = { "\u00b9": "1", "\u00b2": "2", "\u00b3": "3", "\u2070": "0", "\u2074": "4",
+              "\u2075": "5", "\u2076": "6", "\u2077": "7", "\u2078": "8", "\u2079": "9" };
+  function normUnit(raw) {
+    var s = stripAccents(String(raw == null ? "" : raw).toLowerCase());
+    s = s.replace(/[\u207b\u2212\u2013\u2014\u2010\u2011]/g, "-");
+    s = s.replace(/[\u00b9\u00b2\u00b3\u2070\u2074-\u2079]/g, function (c) { return SUP[c] || ""; });
+    s = s.replace(/\^/g, "");
+    s = s.replace(/[.\u00b7\u2219\u22c5*\u00d7_,;:()\[\]'"\u2019`]/g, " ");
+    s = s.replace(/\s+/g, " ").trim();
+    return s;
+  }
+  // Mots parasites fréquents autour d'une unité (« 84,8 kg au total »)
+  var UNIT_STOP = ["environ","soit","au","aux","du","de","des","la","le","les","un","une","en","par","sur","et",
+                   "total","totale","valeur","absolue","arrondi","arrondie","donc","ainsi","pres","peu","dans","cas","je","trouve"];
+  // 'ok' : unité attendue reconnue | 'missing' : aucune unité saisie | 'wrong' : autre unité
+  function unitCheck(rest, unit) {
+    var s = normUnit(rest);
+    if (!s || !/[a-z\u00b0]/.test(s)) return "missing";
+    var chunks = s.split(" ").filter(function (t) {
+      return t && UNIT_STOP.indexOf(t) < 0 && /[a-z\u00b0]/.test(t);
+    });
+    if (!chunks.length) return "missing";
+    // Une unité composée (« N.m », « m s-1 ») doit être jugée en entier, jamais sur un seul de ses morceaux
+    var forms = [chunks.join("")];
+    if (chunks.length === 1) forms.push(chunks[0]);
+    for (var i = 0; i < unit.accept.length; i++)
+      if (forms.indexOf(unit.accept[i]) >= 0) return "ok";
+    return "wrong";
+  }
+
+  function nearValue(x, g) {
+    var v = g.value;
+    if (g.abs) { x = Math.abs(x); v = Math.abs(v); }
+    var tol = Math.max(g.absTol || 0, (g.relTol || 0) * Math.abs(v));
+    return Math.abs(x - v) <= tol + 1e-12;
+  }
+  function gradeNum(ans, g) {
+    var sp = splitNum(ans);
+    if (!sp) return { ok: false, score: 0, invalid: "Aucune valeur numérique reconnue : saisis un nombre (ex. 12,5)." };
+    var cands = [g].concat(g.variants || []), best = null;
+    for (var i = 0; i < cands.length; i++) {
+      var c = cands[i];
+      if (!nearValue(sp.value, c)) continue;
+      var u = c.unit || (c === g ? g.unit : null);
+      if (!u) return { ok: true, score: 1 };
+      var r = unitCheck(sp.rest, u);
+      if (r === "ok") return { ok: true, score: 1, unit: "ok" };
+      // Une variante n'est retenue que si son unité est explicitement écrite
+      // (« 91 125 000 » sans unité ne peut pas valoir « 91,13 millions de tours »)
+      if (c.strictUnit) continue;
+      if (!best) best = { ok: true, score: 0.5, unit: r, unitLabel: u.label };
+    }
+    return best || { ok: false, score: 0 };
+  }
+
+  function tokenMatches(toks, word) {
+    for (var i = 0; i < toks.length; i++) if (fuzzyEq(toks[i], word)) return true;
+    return false;
+  }
+  function gradeKw(ans, g) {
+    var toks = tokens(ans);
+    if (!toks.length) return { ok: false, invalid: "Réponse vide." };
+    var f = g.forbid || [];
+    for (var k = 0; k < f.length; k++) if (tokenMatches(toks, f[k])) return { ok: false };
+    for (var p = 0; p < g.any.length; p++) {
+      var pattern = g.any[p], all = true;
+      for (var q = 0; q < pattern.length && all; q++) {
+        var alts = pattern[q], hit = false;
+        for (var r = 0; r < alts.length && !hit; r++) hit = tokenMatches(toks, alts[r]);
+        all = hit;
+      }
+      if (all) return { ok: true };
+    }
+    return { ok: false };
+  }
+
+  function gradeCode(ans, g) {
+    var c = compact(ans);
+    if (!c) return { ok: false, invalid: "Réponse vide." };
+    var rawNoSpace = norm(ans).replace(/\s+/g, "");
+    var rj = g.rejectRaw || [];
+    for (var i = 0; i < rj.length; i++) if (new RegExp(rj[i], "i").test(rawNoSpace)) return { ok: false };
+    var rc = g.rejectContains || [];
+    for (i = 0; i < rc.length; i++) if (c.indexOf(rc[i]) >= 0) return { ok: false };
+    var eq = g.equals || [];
+    for (i = 0; i < eq.length; i++) if (c === eq[i]) return { ok: true };
+    var ct = g.contains || [];
+    for (i = 0; i < ct.length; i++) if (c.indexOf(ct[i]) >= 0) return { ok: true };
+    return { ok: false };
+  }
+
+  function gradeIntSet(ans, g) {
+    var m = String(ans).match(/\d+/g);
+    if (!m) return { ok: false, invalid: "Aucun numéro reconnu." };
+    var set = {}, n = 0, i;
+    for (i = 0; i < m.length; i++) { if (!set[+m[i]]) { set[+m[i]] = 1; n++; } }
+    if (n !== g.value.length) return { ok: false };
+    for (i = 0; i < g.value.length; i++) if (!set[g.value[i]]) return { ok: false };
+    return { ok: true };
+  }
+
+  function yesNo(ans) {
+    var n = norm(ans).replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+    if (!n) return null;
+    var first = n.split(" ")[0];
+    if (["oui", "o", "yes", "ok", "vrai"].indexOf(first) >= 0) return true;
+    if (["non", "n", "no", "faux"].indexOf(first) >= 0) return false;
+    var neg = ["ne convient pas", "insuffisant", "pas suffisant", "sous dimensionne", "trop faible", "ne suffit pas", "incapable", "pas capable", "pas adapte", "n est pas"];
+    for (var i = 0; i < neg.length; i++) if (n.indexOf(neg[i]) >= 0) return false;
+    var pos = ["convient", "suffisant", "suffit", "bien dimensionne", "surdimensionne", "adapte", "capable", "correct"];
+    for (i = 0; i < pos.length; i++) if (n.indexOf(pos[i]) >= 0) return true;
+    return null;
+  }
+  function gradeYesNo(ans, g) {
+    var v = yesNo(ans);
+    if (v === null) return { ok: false, invalid: "Commence ta réponse par « oui » ou « non »." };
+    return { ok: v === g.value };
+  }
+
+  // ---------- Composition des vitesses (relation de Chasles) ----------
+  function termSolids(term, solids) {
+    var toks = norm(term).split(/[^a-z0-9]+/).filter(Boolean), out = [];
+    for (var i = 0; i < toks.length; i++) {
+      var t = toks[i], cands = [t];
+      if (/^v[ab]?[a-z]{2,}$/.test(t)) cands.push(t.replace(/^v[ab]?/, ""));
+      var found = null;
+      for (var key in solids) {
+        if (!Object.prototype.hasOwnProperty.call(solids, key)) continue;
+        var syn = solids[key];
+        for (var s = 0; s < syn.length && !found; s++)
+          for (var c = 0; c < cands.length && !found; c++)
+            if (fuzzyEq(cands[c], syn[s])) found = key;
+        if (found) break;
+      }
+      if (found && out[out.length - 1] !== found) out.push(found);
+    }
+    return out;
+  }
+  function gradeChasles(ans, g) {
+    var s = String(ans);
+    if (!s.trim()) return { ok: false, invalid: "Réponse vide." };
+    if (/[-\u2212]\s*v/i.test(s.replace(/\/\s*-/g, "/"))) {
+      // signe moins devant un vecteur : forme non retenue
+      return { ok: false };
+    }
+    var sides = s.split("=");
+    if (sides.length !== 2) return { ok: false, invalid: "La relation doit contenir un seul signe « = »." };
+    function parseSide(x) {
+      var terms = x.split("+"), res = [];
+      for (var i = 0; i < terms.length; i++) {
+        if (!terms[i].trim()) continue;
+        var sol = termSolids(terms[i], g.solids);
+        if (sol.length !== 2) return null;
+        res.push(sol);
+      }
+      return res;
+    }
+    var L = parseSide(sides[0]), R = parseSide(sides[1]);
+    if (!L || !R) return { ok: false };
+    if (L.length === 2 && R.length === 1) { var tmp = L; L = R; R = tmp; }
+    if (L.length !== 1 || R.length !== 2) return { ok: false };
+    var i1 = L[0][0], k1 = L[0][1];
+    if (i1 === k1) return { ok: false };
+    function same(p, a, b) { return p[0] === a && p[1] === b; }
+    var a = R[0], b = R[1];
+    var okForm =
+      (same(a, i1, a[1]) && a[1] !== i1 && a[1] !== k1 && same(b, a[1], k1)) ||
+      (same(b, i1, b[1]) && b[1] !== i1 && b[1] !== k1 && same(a, b[1], k1));
+    return { ok: !!okForm };
+  }
+
+  function grade(ans, g) {
+    if (ans == null || !String(ans).trim()) return { ok: false, score: 0, invalid: "Saisis une réponse avant de valider." };
+    var r;
+    switch (g.type) {
+      case "num": return gradeNum(ans, g);
+      case "kw": r = gradeKw(ans, g); break;
+      case "code": r = gradeCode(ans, g); break;
+      case "intset": r = gradeIntSet(ans, g); break;
+      case "yesno": r = gradeYesNo(ans, g); break;
+      case "chasles": r = gradeChasles(ans, g); break;
+      default: return { ok: false, score: 0, invalid: "Type de question inconnu." };
+    }
+    r.score = r.ok ? 1 : 0;
+    return r;
+  }
+
+  function fmt(x, d) {
+    if (d == null) d = 2;
+    return x.toLocaleString("fr-FR", { minimumFractionDigits: d, maximumFractionDigits: d });
+  }
+
+  return { norm: norm, tokens: tokens, compact: compact, lev: lev, fuzzyEq: fuzzyEq,
+           parseNum: parseNum, splitNum: splitNum, normUnit: normUnit, unitCheck: unitCheck,
+           yesNo: yesNo, termSolids: termSolids, grade: grade, fmt: fmt };
+})();
+if (typeof module !== "undefined") module.exports = Grading;
+/*GRADING-END*/</script>
+<script>var Gen = (function () {
+  "use strict";
+
+  // ===================== UNITÉS =====================
+  // a : formes acceptées après normalisation par Grading.normUnit ; d : dimension ; f : facteur vers l'unité de base
+  var UN = {
+    W: { l: "W", a: ["w", "watt", "watts"], d: "P", f: 1 },
+    kW: { l: "kW", a: ["kw", "kilowatt", "kilowatts"], d: "P", f: 1e3 },
+    J: { l: "J", a: ["j", "joule", "joules"], d: "E", f: 1 },
+    kJ: { l: "kJ", a: ["kj", "kilojoule", "kilojoules"], d: "E", f: 1e3 },
+    Wh: { l: "Wh", a: ["wh", "wattheure", "wattheures", "wattsheure", "wattsheures"], d: "E", f: 3600 },
+    kWh: { l: "kWh", a: ["kwh", "kilowattheure", "kilowattheures"], d: "E", f: 3.6e6 },
+    N: { l: "N", a: ["n", "newton", "newtons"], d: "F", f: 1 },
+    kN: { l: "kN", a: ["kn", "kilonewton", "kilonewtons"], d: "F", f: 1e3 },
+    Nm: { l: "N·m", a: ["nm", "mn", "newtonmetre", "newtonmetres"], d: "C", f: 1 },
+    rads: { l: "rad/s", a: ["rad/s", "rads-1", "radian/s", "radians/s", "rad/sec"], d: "w", f: 1 },
+    trmin: { l: "tr/min", a: ["tr/min", "trmin-1", "tr/mn", "trs/min", "tour/min", "tours/min", "rpm"], d: "n", f: 1 },
+    ms: { l: "m/s", a: ["m/s", "ms-1", "m/sec"], d: "v", f: 1 },
+    kmh: { l: "km/h", a: ["km/h", "kmh-1"], d: "v", f: 1 / 3.6 },
+    mmin: { l: "m/min", a: ["m/min", "mmin-1", "m/mn"], d: "v", f: 1 / 60 },
+    m: { l: "m", a: ["m", "metre", "metres"], d: "L", f: 1 },
+    cm: { l: "cm", a: ["cm", "centimetre", "centimetres"], d: "L", f: 1e-2 },
+    mm: { l: "mm", a: ["mm", "millimetre", "millimetres"], d: "L", f: 1e-3 },
+    km: { l: "km", a: ["km", "kilometre", "kilometres"], d: "L", f: 1e3 },
+    V: { l: "V", a: ["v", "volt", "volts"], d: "U", f: 1 },
+    A: { l: "A", a: ["a", "ampere", "amperes"], d: "I", f: 1 },
+    mA: { l: "mA", a: ["ma", "milliampere", "milliamperes"], d: "I", f: 1e-3 },
+    Ah: { l: "Ah", a: ["ah", "ampereheure", "ampereheures"], d: "Q", f: 1 },
+    mAh: { l: "mAh", a: ["mah"], d: "Q", f: 1e-3 },
+    ohm: { l: "Ω", a: ["ohm", "ohms"], d: "R", f: 1 },
+    Hz: { l: "Hz", a: ["hz", "hertz"], d: "f", f: 1 },
+    s: { l: "s", a: ["s", "seconde", "secondes", "sec"], d: "t", f: 1 },
+    min: { l: "min", a: ["min", "minute", "minutes", "mn"], d: "t", f: 60 },
+    h: { l: "h", a: ["h", "heure", "heures"], d: "t", f: 3600 },
+    kg: { l: "kg", a: ["kg", "kilogramme", "kilogrammes", "kilo", "kilos"], d: "m", f: 1 },
+    euro: { l: "€", a: ["euro", "euros"], d: "€", f: 1 },
+    an: { l: "ans", a: ["an", "ans", "annee", "annees"], d: "an", f: 1 },
+    pct: { l: "%", a: ["pourcent", "pourcents", "pourcentage"], d: "%", f: 1 },
+    kWhkm: { l: "kWh/km", a: ["kwh/km", "kwhkm-1"], d: "Ekm", f: 1e3 },
+    Whkm: { l: "Wh/km", a: ["wh/km", "whkm-1"], d: "Ekm", f: 1 },
+    Lkm: { l: "L/km", a: ["l/km", "lkm-1"], d: "Lkm", f: 1 },
+    ch: { l: "ch", a: ["ch", "cv", "cheval", "chevaux", "cheval-vapeur", "chevaux-vapeur", "chevalvapeur", "chevauxvapeur"], d: "Pch", f: 1 }
+  };
+  function ul(u) { return u == null ? "" : (UN[u] ? UN[u].l : u); }
+
+  // Saisie : symboles que Grading.normUnit ne transforme pas en lettres
+  function prep(s) {
+    return String(s == null ? "" : s).replace(/%/g, " pourcent ").replace(/€/g, " euro ").replace(/[\u03a9\u2126]/g, " ohm ");
+  }
+
+  // ===================== NOMBRES =====================
+  function clean(x) { return +(+x).toFixed(10); }
+  function rnd(a, b, step) { var n = Math.round((b - a) / step); return clean(a + step * Math.floor(Math.random() * (n + 1))); }
+  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+  function decOf(v) { var s = String(clean(v)); if (/e/i.test(s)) return 6; var i = s.indexOf("."); return i < 0 ? 0 : s.length - i - 1; }
+  function nf(x, d) { return x.toLocaleString("fr-FR", { minimumFractionDigits: d, maximumFractionDigits: d }); }
+  function roundTo(x, d) { var f = Math.pow(10, d); return Math.round(x * f) / f; }
+  function sigDec(x, minD) {
+    if (!x) return minD || 0;
+    return Math.min(6, Math.max(minD || 0, 2 - Math.floor(Math.log10(Math.abs(x)) + 1e-12)));
+  }
+  function trimDec(x, d) { while (d > 0 && Math.abs(roundTo(x, d - 1) - x) < 1e-9) d--; return d; }
+  function fv(v) { return nf(v, decOf(v)); }                       // donnée tirée au hasard
+  // Donnée calculée : trois chiffres significatifs au moins, zéros inutiles retirés
+  function niceVal(x, dp, fix) { var d = fix != null ? fix : sigDec(x, dp || 0); var r = roundTo(x, d); return { v: r, s: nf(r, trimDec(r, d)) }; }
+  // Réponse : au centième, ou trois chiffres significatifs sous 1
+  function ansDec(x) { return Math.abs(x) >= 1 ? 2 : sigDec(x, 2); }
+  function ansShow(x) { var d = ansDec(x), r = roundTo(x, d); return { r: r, s: nf(r, trimDec(r, d)), approx: Math.abs(r - x) > 1e-9 * Math.max(1, Math.abs(x)) }; }
+  // Tolérance : demi-unité du dernier chiffre demandé + 0,4 % (arrondis intermédiaires, π = 3,14, √2 = 1,41)
+  function tolFor(x) { return { absTol: 0.5 * Math.pow(10, -ansDec(x)) + 0.004 * Math.abs(x) + 1e-12, relTol: 0 }; }
+
+  // Écriture scientifique : barre de fraction et radical
+  function FR(n, d) { return '<span class="fr"><span class="fn">' + n + '</span><span class="fd">' + d + "</span></span>"; }
+  function RT(x) { return '<span class="rt">√<span class="rad">' + x + "</span></span>"; }
+  function strip(h) { return String(h).replace(/<[^>]+>/g, ""); }
+  function bare(n) { return n.replace(/^(le |la |les |l’|l')/, "").replace(/ %/, ""); }
+  // « % » marque la place du symbole dans l’énoncé : « la masse % de la batterie »
+  function askName(a) { return a.n.indexOf("%") >= 0 ? a.n.replace(/ %/, a.w ? "" : " " + a.s) : a.n + (a.w ? "" : " " + a.s); }
+  function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  // ===================== CORRECTEUR =====================
+  function grader(q) {
+    var t = tolFor(q.ans);
+    var g = { type: "num", value: q.ans, absTol: t.absTol, relTol: t.relTol };
+    var u = UN[q.unit];
+    if (u) {
+      g.unit = { label: u.l, accept: u.a };
+      if (!q.noAlt) {
+        g.variants = Object.keys(UN).filter(function (k) { return k !== q.unit && UN[k].d === u.d; }).map(function (k) {
+          var v = q.ans * u.f / UN[k].f, tv = tolFor(v);
+          return { value: v, absTol: tv.absTol, relTol: tv.relTol, unit: { label: UN[k].l, accept: UN[k].a }, strictUnit: true };
+        });
+      }
+    } else if (q.pct) {
+      var v = q.ans * 100, tv = tolFor(v);
+      g.variants = [{ value: v, absTol: tv.absTol, relTol: tv.relTol, unit: { label: "%", accept: UN.pct.a }, strictUnit: true }];
+    }
+    return g;
+  }
+
+  // ===================== ASSEMBLAGE D'UNE QUESTION =====================
+  // p : { th, id, stem, data:[{lab,s,v,u,w}], fx, leg:[[s,desc,u]], ask:{s,u,w}, ans, unit, pct, noAlt, iso, an, tip }
+  function finish(p) {
+    var a = ansShow(p.ans), sym = p.ask.w ? p.ask.s : p.ask.s, unitL = ul(p.unit);
+    var res = a.s + (unitL ? " " + unitL : "");
+    var work = ["<b>Formule :</b> " + p.fx];
+    if (p.iso) work.push("<b>On isole " + p.ask.s + " :</b> " + p.ask.s + " = " + p.iso);
+    work.push("<b>Application numérique :</b> " + sym + " = " + (p.an != null ? p.an + " " + (a.approx ? "≈" : "=") + " " : "") + res);
+    if (p.tip) work.push(p.tip);
+    var q = { id: p.id, th: p.th, stem: p.stem, data: p.data, fx: p.fx, leg: p.leg, ans: p.ans, unit: p.unit || null,
+      pct: !!p.pct, noAlt: !!p.noAlt, expected: sym + " = " + res + (p.pct ? " (soit " + ansShow(p.ans * 100).s + " %)" : ""),
+      expectedPlain: a.s + (unitL ? " " + unitL : ""), work: work, check: p.check || null };
+    q.grader = grader(q);
+    return q;
+  }
+  function D(lab, s, v, u, w) { return { lab: lab, s: s, v: typeof v === "string" ? v : fv(v), u: ul(u), w: !!w }; }
+
+  // ===================== FORMULES MONÔMES =====================
+  // res = K × produit(x_i ^ e_i) ; on peut demander le résultat ou isoler une grandeur
+  function pw(s, e) { return Math.abs(e) === 2 ? s + "<sup>2</sup>" : s; }
+  function build(num, den, root) {
+    var n = num.length ? num.join(" × ") : "1";
+    var r = den.length ? FR(n, den.join(" × ")) : n;
+    return root ? RT(r) : r;
+  }
+  function exprNat(o, S) {
+    var num = [], den = [], K = o.K || {};
+    if (K.num) num.push(K.num);
+    o.fac.forEach(function (f, i) { var e = f.e || 1; (e > 0 ? num : den).push(pw(S[i], e)); });
+    if (K.den) den.push(K.den);
+    return build(num, den, false);
+  }
+  function exprSolve(o, S, R, j) {
+    var num = [], den = [], K = o.K || {}, e = o.fac[j].e || 1, pos = [], neg = [];
+    o.fac.forEach(function (f, i) { if (i === j) return; var ei = f.e || 1; (ei > 0 ? pos : neg).push(pw(S[i], ei)); });
+    if (e > 0) { if (K.den) num.push(K.den); num.push(R); num = num.concat(neg); if (K.num) den.push(K.num); den = den.concat(pos); }
+    else { if (K.num) num.push(K.num); num = num.concat(pos); if (K.den) den.push(K.den); den.push(R); den = den.concat(neg); }
+    return build(num, den, Math.abs(e) === 2);
+  }
+  function evalNat(o, V) { var x = o.K ? o.K.v : 1; o.fac.forEach(function (f, i) { x *= Math.pow(V[i], f.e || 1); }); return x; }
+  function solve(o, V, R, j) {
+    var rest = o.K ? o.K.v : 1;
+    o.fac.forEach(function (f, i) { if (i !== j) rest *= Math.pow(V[i], f.e || 1); });
+    return Math.pow(R / rest, 1 / (o.fac[j].e || 1));
+  }
+  function genVal(g) {
+    if (typeof g === "function") return g();
+    if (g && g.pick) return pick(g.pick);
+    return rnd(g[0], g[1], g[2]);
+  }
+  function legOf(v) { return [v.s, v.d || bare(v.n), v.lu || ul(v.u) || "sans unité"]; }
+
+  function mono(o) {
+    return { id: o.id, th: o.th, make: function (level) {
+      var F = o.fac;
+      var askable = F.map(function (f, i) { return i; }).filter(function (i) {
+        return F[i].cst == null && (!o.inv || o.inv.indexOf(i) >= 0);
+      });
+      if (o.direct) askable = [];
+      var j = (level === "mixte" && askable.length && Math.random() < 0.6) ? pick(askable) : -1;
+      var V = o.vals ? o.vals() : F.map(function (f) { return f.cst != null ? f.cst : genVal(f.g); });
+      var Sv = V.map(function (v, i) { return F[i].cst != null && F[i].cs ? F[i].cs : fv(v); });
+      var resTrue = evalNat(o, V), ask, ans, iso = null, an, data = [], resDisp = null;
+      if (j < 0) {
+        ask = o.res; ans = resTrue; an = exprNat(o, Sv);
+        F.forEach(function (f, i) { data.push(D(cap(f.dl || bare(f.n)), f.s, Sv[i], f.u, f.w)); });
+      } else {
+        ask = F[j];
+        var nv = niceVal(resTrue, o.res.dp, o.res.fix);
+        resDisp = nv.v;
+        ans = solve(o, V, resDisp, j);
+        iso = exprSolve(o, F.map(function (f) { return f.s; }), o.res.s, j);
+        an = exprSolve(o, Sv, nv.s, j);
+        data.push(D(cap(o.res.dl || bare(o.res.n)), o.res.s, nv.s, o.res.u, o.res.w));
+        F.forEach(function (f, i) { if (i !== j) data.push(D(cap(f.dl || bare(f.n)), f.s, Sv[i], f.u, f.w)); });
+      }
+      var ctx = typeof o.ctx === "function" ? o.ctx(V) : pick(o.ctx);
+      var stem = ctx + " Calcule " + askName(ask) + ".";
+      var q = finish({ id: o.id, th: o.th, stem: stem, data: data, fx: o.fx,
+        leg: [legOf(o.res)].concat(F.map(legOf)), ask: ask, ans: ans, unit: ask.u, pct: ask.pct,
+        iso: iso, an: an, tip: o.tip ? o.tip(V, ans, j) : null });
+      q.check = { kind: "mono", o: o, V: V, j: j, resDisp: resDisp, ans: ans };
+      return q;
+    }};
+  }
+
+  // Variables usuelles
+  function v(s, n, u, g, extra) { var o = { s: s, n: n, u: u, g: g }; for (var k in extra) o[k] = extra[k]; return o; }
+  var G = { s: "g", n: "l’intensité de la pesanteur", u: "m/s²", cst: 9.81 };
+  var SQ = "√2";
+
+  // ===================== MODÈLES DE QUESTIONS =====================
+  var T = [];
+
+  // ---------- Puissance ----------
+  T.push(mono({ id: "p_fv", th: "puissance", fx: "P = F × v",
+    res: v("P", "la puissance mécanique", "W", null, { dp: 1 }),
+    fac: [v("F", "la force", "N", [150, 4000, 10]), v("v", "la vitesse", "ms", [0.2, 3, 0.05])],
+    ctx: ["Un tapis roulant entraîne un colis à vitesse constante.", "Un treuil hisse une charge à vitesse constante.", "Un vérin pousse une pièce à vitesse constante."] }));
+  T.push(mono({ id: "p_cw", th: "puissance", fx: "P = C × ω",
+    res: v("P", "la puissance mécanique", "W", null, { dp: 1 }),
+    fac: [v("C", "le couple", "Nm", [0.5, 60, 0.5]), v("ω", "la vitesse angulaire", "rads", [10, 320, 0.5])],
+    ctx: ["L’arbre de sortie d’un moteur tourne à vitesse constante.", "Une perceuse entraîne son foret à vitesse constante.", "Le tambour d’un treuil tourne à vitesse constante."] }));
+  T.push(mono({ id: "p_ui", th: "puissance", fx: "P = U × I",
+    res: v("P", "la puissance électrique", "W", null, { dp: 1 }),
+    fac: [v("U", "la tension", "V", { pick: [6, 12, 24, 36, 48, 72] }), v("I", "l’intensité", "A", [0.5, 16, 0.1])],
+    ctx: ["Un moteur à courant continu est alimenté par une batterie.", "Une batterie alimente un récepteur à courant constant.", "Un chargeur délivre un courant continu constant."] }));
+  T.push(mono({ id: "p_mg", th: "puissance", fx: "F = m × g",
+    res: v("F", "le poids", "N", null, { dp: 1 }),
+    fac: [v("m", "la masse", "kg", [1, 800, 0.5]), G],
+    ctx: ["Une charge est suspendue au crochet d’un pont roulant.", "Un sac de lest est accroché à une lampe gravitaire.", "Un colis repose sur le plateau d’un monte-charge."] }));
+
+  // ---------- Énergie ----------
+  T.push(mono({ id: "e_pt_j", th: "energie", fx: "E = P × t",
+    res: v("E", "l’énergie consommée", "J", null, { dp: 0 }),
+    fac: [v("P", "la puissance", "W", [20, 3000, 5]), v("t", "la durée de fonctionnement", "s", [5, 900, 5])],
+    ctx: ["Un moteur fonctionne à puissance constante.", "Un radiateur fonctionne à puissance constante.", "Un vérin électrique travaille à puissance constante."],
+    tip: function (V, a, j) { return j < 0 ? "Avec P en W et t en s, l’énergie sort en joules." : null; } }));
+  T.push(mono({ id: "e_pt_wh", th: "energie", fx: "E = P × t",
+    res: v("E", "l’énergie consommée", "Wh", null, { dp: 1 }),
+    fac: [v("P", "la puissance", "W", [5, 2500, 5]), v("t", "la durée de fonctionnement", "h", [0.25, 10, 0.25])],
+    ctx: ["Un appareil électroménager fonctionne à puissance constante.", "Un radiateur électrique fonctionne à puissance constante.", "Un chauffe-eau fonctionne à puissance constante."],
+    tip: function (V, a, j) { return j < 0 ? "Avec P en W et t en h, l’énergie sort en wattheures." : null; } }));
+  T.push(mono({ id: "e_epp", th: "energie", fx: "E<sub>pp</sub> = m × g × h",
+    res: v("E<sub>pp</sub>", "l’énergie potentielle de pesanteur", "J", null, { dp: 0 }),
+    fac: [v("m", "la masse", "kg", [0.5, 150, 0.5]), G, v("h", "la hauteur de chute", "m", [0.3, 25, 0.1])],
+    ctx: ["Une lampe gravitaire utilise un sac de lest qui descend.", "Un pont roulant lève une charge.", "Un monte-charge élève une palette."] }));
+
+  // ---------- Rendement et pertes ----------
+  function etaVals(lo, hi, step) { return function () { var Pa = rnd(lo, hi, step); return [Math.round(Pa * rnd(0.55, 0.95, 0.01)), Pa]; }; }
+  var ETA = v("η", "le rendement", null, null, { fix: 2, pct: true, lu: "sans unité ou %" });
+  T.push(mono({ id: "r_eta_p", th: "rendement", fx: "η = " + FR("P<sub>u</sub>", "P<sub>a</sub>"),
+    res: ETA,
+    fac: [v("P<sub>u</sub>", "la puissance utile", "W", [1, 1, 1], { d: "puissance utile, en sortie" }),
+      v("P<sub>a</sub>", "la puissance absorbée", "W", [1, 1, 1], { e: -1, d: "puissance absorbée, en entrée" })],
+    vals: etaVals(200, 6000, 10),
+    ctx: ["Un moteur électrique entraîne une pompe.", "Un réducteur transmet la puissance d’un moteur à un tambour.", "Un motoréducteur entraîne un convoyeur."],
+    tip: function (V, a, j) { return j < 0 ? "Un rendement s’écrit sans unité, ou en pourcentage." : null; } }));
+  T.push(mono({ id: "r_eta_e", th: "rendement", fx: "η = " + FR("E<sub>u</sub>", "E<sub>a</sub>"),
+    res: ETA,
+    fac: [v("E<sub>u</sub>", "l’énergie utile", "Wh", [1, 1, 1], { d: "énergie utile sur la durée" }),
+      v("E<sub>a</sub>", "l’énergie absorbée", "Wh", [1, 1, 1], { e: -1, d: "énergie absorbée sur la même durée" })],
+    vals: etaVals(50, 3000, 5),
+    ctx: ["Sur une journée, une pompe solaire reçoit de l’énergie électrique et fournit de l’énergie hydraulique.", "Pendant un levage, un treuil absorbe de l’énergie électrique et fournit de l’énergie mécanique."] }));
+  T.push(mono({ id: "r_primaire", th: "rendement", fx: "E<sub>primaire</sub> = " + FR("E<sub>électrique</sub>", "η<sub>production</sub>"), inv: [0],
+    res: v("E<sub>primaire</sub>", "l’énergie primaire nécessaire", "kWh", null, { dp: 1 }),
+    fac: [v("E<sub>électrique</sub>", "l’énergie électrique produite", "kWh", [10, 600, 1]),
+      v("η<sub>production</sub>", "le rendement de production", null, { pick: [0.33, 0.36, 0.38, 0.42, 0.45] }, { e: -1 })],
+    ctx: ["Une centrale thermique produit de l’électricité.", "L’électricité d’une voiture électrique est produite en centrale."] }));
+  T.push({ id: "r_global", th: "rendement", make: function () {
+    var sets = [["du variateur", "du moteur", "du réducteur"], ["du moteur", "du réducteur", "de la transmission par courroie"], ["du moteur", "de la transmission par chaîne"], ["du moteur", "du réducteur"]];
+    var names = pick(sets), et = names.map(function () { return rnd(0.7, 0.98, 0.01); });
+    var g = et.reduce(function (a, b) { return a * b; }, 1), n = et.length;
+    var sy = et.map(function (x, i) { return "η<sub>" + (i + 1) + "</sub>"; });
+    return finish({ id: "r_global", th: "rendement",
+      stem: "Une chaîne de puissance comporte " + n + " étages en série. Calcule le rendement global η<sub>g</sub>.",
+      data: et.map(function (x, i) { return D("Rendement " + names[i], sy[i], x, null); }),
+      fx: "η<sub>g</sub> = " + sy.join(" × "),
+      leg: [["η<sub>g</sub>", "rendement global", "sans unité"], [sy.join(", "), "rendements des étages", "sans unité"]],
+      ask: { s: "η<sub>g</sub>" }, ans: g, unit: null, pct: true, an: et.map(fv).join(" × "),
+      tip: "Le rendement global est plus faible que chacun des rendements des étages." });
+  }});
+  T.push({ id: "r_pertes", th: "rendement", make: function (level) {
+    var Pa = rnd(200, 8000, 10), Pu = Math.round(Pa * rnd(0.6, 0.95, 0.01)), L = Pa - Pu;
+    var f = level === "mixte" ? pick(["d", "d", "u", "a"]) : "d";
+    var base = { id: "r_pertes", th: "rendement", fx: "Pertes = P<sub>a</sub> − P<sub>u</sub>",
+      leg: [["Pertes", "puissance perdue", "W"], ["P<sub>a</sub>", "puissance absorbée", "W"], ["P<sub>u</sub>", "puissance utile", "W"]], unit: "W" };
+    var ctx = pick(["Un moteur électrique entraîne un ventilateur.", "Un réducteur transmet la puissance d’un moteur.", "Un alternateur fournit de la puissance électrique."]);
+    if (f === "d") return finish(Object.assign(base, { stem: ctx + " Calcule les pertes de puissance.", ask: { s: "Pertes", w: true },
+      data: [D("Puissance absorbée", "P<sub>a</sub>", Pa, "W"), D("Puissance utile", "P<sub>u</sub>", Pu, "W")], ans: L, an: fv(Pa) + " − " + fv(Pu),
+      tip: "Ces pertes sont dissipées en chaleur." }));
+    if (f === "u") return finish(Object.assign(base, { stem: ctx + " Calcule la puissance utile P<sub>u</sub>.", ask: { s: "P<sub>u</sub>" },
+      data: [D("Puissance absorbée", "P<sub>a</sub>", Pa, "W"), D("Pertes", "Pertes", L, "W", true)], ans: Pu,
+      iso: "P<sub>a</sub> − Pertes", an: fv(Pa) + " − " + fv(L) }));
+    return finish(Object.assign(base, { stem: ctx + " Calcule la puissance absorbée P<sub>a</sub>.", ask: { s: "P<sub>a</sub>" },
+      data: [D("Puissance utile", "P<sub>u</sub>", Pu, "W"), D("Pertes", "Pertes", L, "W", true)], ans: Pa,
+      iso: "P<sub>u</sub> + Pertes", an: fv(Pu) + " + " + fv(L) }));
+  }});
+  T.push(mono({ id: "r_joule", th: "rendement", fx: "P<sub>J</sub> = R × I<sup>2</sup>",
+    res: v("P<sub>J</sub>", "les pertes par effet Joule", "W", null, { dp: 1 }),
+    fac: [v("R", "la résistance", "ohm", [0.05, 12, 0.05]), v("I", "l’intensité", "A", [0.5, 25, 0.5], { e: 2 })],
+    ctx: ["Le bobinage d’un moteur est parcouru par un courant.", "Un câble d’alimentation transporte un courant.", "Une résistance chauffante est traversée par un courant."] }));
+
+  // ---------- Conversions ----------
+  T.push({ id: "k_energie", th: "conversions", make: function () {
+    var c = pick([
+      { from: "Wh", to: "J", f: 3600, g: [0.5, 500, 0.5], fx: "1 Wh = 3 600 J", op: " × 3 600", w: "en joules" },
+      { from: "kWh", to: "Wh", f: 1000, g: [0.05, 50, 0.05], fx: "1 kWh = 1 000 Wh", op: " × 1 000", w: "en wattheures" },
+      { from: "J", to: "Wh", f: 1 / 3600, g: [1800, 720000, 1800], fx: "1 Wh = 3 600 J", div: "3 600", w: "en wattheures" },
+      { from: "Wh", to: "kWh", f: 1e-3, g: [50, 90000, 10], fx: "1 kWh = 1 000 Wh", div: "1 000", w: "en kilowattheures" }]);
+    var x = rnd(c.g[0], c.g[1], c.g[2]);
+    return finish({ id: "k_energie", th: "conversions", stem: "Une batterie a stocké une énergie E = " + fv(x) + " " + c.from + ". Convertis cette énergie " + c.w + ".",
+      data: [D("Énergie", "E", x, c.from)], fx: c.fx, leg: [["E", "énergie", c.from + " puis " + c.to]],
+      ask: { s: "E" }, ans: x * c.f, unit: c.to, noAlt: true, an: c.div ? FR(fv(x), c.div) : fv(x) + c.op });
+  }});
+  T.push({ id: "k_ch", th: "conversions", make: function () {
+    if (Math.random() < 0.6) {
+      var ch = rnd(2, 180, 1);
+      return finish({ id: "k_ch", th: "conversions", stem: "Un moteur thermique développe une puissance de " + fv(ch) + " ch. Convertis cette puissance en watts.",
+        data: [D("Puissance", "P", ch, "ch")], fx: "1 ch = 736 W", leg: [["P", "puissance", "ch puis W"]],
+        ask: { s: "P" }, ans: ch * 736, unit: "W", noAlt: true, an: fv(ch) + " × 736" });
+    }
+    var w = rnd(1500, 90000, 50);
+    return finish({ id: "k_ch", th: "conversions", stem: "Un moteur développe une puissance de " + fv(w) + " W. Convertis cette puissance en chevaux-vapeur.",
+      data: [D("Puissance", "P", w, "W")], fx: "1 ch = 736 W", leg: [["P", "puissance", "W puis ch"]],
+      ask: { s: "P" }, ans: w / 736, unit: "ch", noAlt: true, an: FR(fv(w), "736") });
+  }});
+  T.push({ id: "k_vitesse", th: "conversions", make: function () {
+    var c = pick([
+      { from: "kmh", to: "ms", g: [5, 130, 1], k: 1 / 3.6, div: "3,6", fx: "v (m/s) = " + FR("v (km/h)", "3,6"), ctx: "Une voiture roule à" },
+      { from: "ms", to: "kmh", g: [0.5, 40, 0.5], k: 3.6, op: " × 3,6", fx: "v (km/h) = v (m/s) × 3,6", ctx: "Un chariot se déplace à" },
+      { from: "mmin", to: "ms", g: [1, 120, 0.5], k: 1 / 60, div: "60", fx: "v (m/s) = " + FR("v (m/min)", "60"), ctx: "Le crochet d’un palan monte à" }]);
+    var x = rnd(c.g[0], c.g[1], c.g[2]);
+    return finish({ id: "k_vitesse", th: "conversions", stem: c.ctx + " v = " + fv(x) + " " + ul(c.from) + ". Convertis cette vitesse en " + ul(c.to) + ".",
+      data: [D("Vitesse", "v", x, c.from)], fx: c.fx, leg: [["v", "vitesse", ul(c.from) + " puis " + ul(c.to)]],
+      ask: { s: "v" }, ans: x * c.k, unit: c.to, noAlt: true, an: c.div ? FR(fv(x), c.div) : fv(x) + c.op });
+  }});
+
+  // ---------- Coût et rentabilité ----------
+  T.push(mono({ id: "c_amort", th: "cout", fx: "n = " + FR("P<sub>achat</sub>", "B"), direct: true,
+    res: v("n", "la durée d’amortissement", "an", null),
+    fac: [v("P<sub>achat</sub>", "le prix d’achat", "euro", [150, 3000, 10]),
+      v("B", "le bénéfice annuel", "€/an", [20, 400, 1], { e: -1 })],
+    ctx: ["Un réfrigérateur économe remplace un ancien modèle.", "Une pompe à chaleur remplace un chauffage électrique.", "Un moteur à haut rendement remplace un moteur ancien."] }));
+  T.push({ id: "c_roi", th: "cout", make: function () {
+    var Pa = rnd(300, 3000, 10), B = rnd(40, 400, 1), n = rnd(3, 15, 1), roi = (n * B - Pa) / Pa * 100;
+    return finish({ id: "c_roi", th: "cout",
+      stem: "Un équipement économe en énergie est étudié sur " + n + " ans. Calcule le retour sur investissement ROI.",
+      data: [D("Prix d’achat", "P<sub>achat</sub>", Pa, "€"), D("Bénéfice annuel", "B", B, "€/an"), D("Durée étudiée", "n", n, "ans")],
+      fx: "ROI = " + FR("n × B − P<sub>achat</sub>", "P<sub>achat</sub>") + " × 100",
+      leg: [["ROI", "retour sur investissement", "%"], ["n", "nombre d’années", "ans"], ["prix d’achat", "investissement", "€"], ["bénéfice annuel", "économie par an", "€/an"]],
+      ask: { s: "ROI" }, ans: roi, unit: "pct",
+      an: FR(fv(n) + " × " + fv(B) + " − " + fv(Pa), fv(Pa)) + " × 100",
+      tip: roi >= 0 ? "ROI positif : l’équipement est remboursé et rapporte." : "ROI négatif : l’équipement n’est pas encore remboursé au bout de cette durée." });
+  }});
+
+  // ---------- Rotation et transmission ----------
+  T.push(mono({ id: "t_omega", th: "rotation", fx: "ω = " + FR("2π × N", "60") + " = " + FR("π × N", "30"), K: { v: Math.PI / 30, num: "π", den: "30" },
+    res: v("ω", "la vitesse angulaire", "rads", null, { dp: 1 }),
+    fac: [v("N", "la fréquence de rotation", "trmin", [50, 3000, 5])],
+    ctx: ["Un moteur tourne à vitesse constante.", "La broche d’une perceuse tourne à vitesse constante.", "Un tambour d’enroulement tourne à vitesse constante."] }));
+  function ratioVals() { var Ne = rnd(700, 3000, 10), r = Math.random() < 0.2 ? rnd(1.2, 3, 0.05) : rnd(0.02, 0.8, 0.01); return [Math.round(Ne * r * 10) / 10, Ne]; }
+  function ratioTip(V, ans, j) { var r = V[0] / V[1]; return j < 0 ? (r < 1 ? "r < 1 : la transmission est un réducteur." : "r > 1 : la transmission est un multiplicateur.") : null; }
+  T.push(mono({ id: "t_ratio", th: "rotation", fx: "r = " + FR("N<sub>sortie</sub>", "N<sub>entrée</sub>"),
+    res: v("r", "le rapport de transmission", null, null, { dp: 2 }),
+    fac: [v("N<sub>sortie</sub>", "la fréquence de rotation de sortie", "trmin", [1, 1, 1]), v("N<sub>entrée</sub>", "la fréquence de rotation d’entrée", "trmin", [1, 1, 1], { e: -1 })],
+    vals: ratioVals, tip: ratioTip,
+    ctx: ["Une transmission est placée entre un moteur et un tambour.", "Une transmission relie un moteur à la broche d’une machine."] }));
+  T.push(mono({ id: "t_ns", th: "rotation", fx: "N<sub>sortie</sub> = r × N<sub>entrée</sub>", inv: [1],
+    res: v("N<sub>sortie</sub>", "la fréquence de rotation de sortie", "trmin", null, { dp: 1 }),
+    fac: [v("r", "le rapport de transmission", null, [0.02, 0.9, 0.01]), v("N<sub>entrée</sub>", "la fréquence de rotation d’entrée", "trmin", [700, 3000, 10])],
+    ctx: ["Un réducteur est monté en sortie d’un moteur.", "Un motoréducteur entraîne un convoyeur."] }));
+  T.push(mono({ id: "t_k", th: "rotation", fx: "N<sub>sortie</sub> = " + FR("N<sub>entrée</sub>", "k"), inv: [0],
+    res: v("N<sub>sortie</sub>", "la fréquence de rotation de sortie", "trmin", null, { dp: 1 }),
+    fac: [v("N<sub>entrée</sub>", "la fréquence de rotation d’entrée", "trmin", [700, 3000, 10]),
+      v("k", "le rapport de réduction du catalogue", null, [5, 60, 1], { e: -1, d: "rapport de réduction" })],
+    ctx: ["Le catalogue d’un réducteur indique son rapport de réduction k."],
+    tip: function () { return "Le catalogue donne k = " + FR("1", "r") + " : la sortie tourne k fois moins vite que l’entrée."; } }));
+  T.push(mono({ id: "t_poulies", th: "rotation", fx: "r = " + FR("D<sub>menant</sub>", "D<sub>mené</sub>"), inv: [1],
+    res: v("r", "le rapport de transmission", null, null, { dp: 2 }),
+    fac: [v("D<sub>menant</sub>", "le diamètre primitif % de la poulie menante", "mm", [60, 250, 5]),
+      v("D<sub>mené</sub>", "le diamètre primitif % de la poulie menée", "mm", [80, 400, 5], { e: -1 })],
+    ctx: ["Une perceuse à colonne transmet le mouvement par poulies et courroie.", "Un ventilateur est entraîné par poulies et courroie."] }));
+  T.push({ id: "t_dprim", th: "rotation", make: function (level) {
+    var Dext = rnd(70, 300, 1), e = 5, inv = level === "mixte" && Math.random() < 0.4;
+    var base = { id: "t_dprim", th: "rotation", fx: "D<sub>primitif</sub> = D<sub>extérieur</sub> − e",
+      leg: [["D<sub>primitif</sub>", "diamètre primitif", "mm"], ["D<sub>extérieur</sub>", "diamètre extérieur", "mm"], ["e", "écart lié au profil de courroie", "mm"]], unit: "mm" };
+    if (!inv) return finish(Object.assign(base, { stem: "Une poulie reçoit une courroie trapézoïdale de profil A. Calcule son diamètre primitif D<sub>primitif</sub>.",
+      data: [D("Diamètre extérieur", "D<sub>extérieur</sub>", Dext, "mm"), D("Écart du profil A", "e", e, "mm")], ask: { s: "D<sub>primitif</sub>" },
+      ans: Dext - e, an: fv(Dext) + " − " + fv(e) }));
+    return finish(Object.assign(base, { stem: "Une poulie pour courroie trapézoïdale de profil A doit avoir un diamètre primitif imposé. Calcule son diamètre extérieur D<sub>extérieur</sub>.",
+      data: [D("Diamètre primitif", "D<sub>primitif</sub>", Dext - e, "mm"), D("Écart du profil A", "e", e, "mm")], ask: { s: "D<sub>extérieur</sub>" },
+      ans: Dext, iso: "D<sub>primitif</sub> + e", an: fv(Dext - e) + " + " + fv(e) }));
+  }});
+  T.push({ id: "t_engr", th: "rotation", make: function () {
+    var two = Math.random() < 0.6, z1 = rnd(12, 30, 1), z2 = rnd(36, 90, 1), z3 = rnd(12, 30, 1), z4 = rnd(36, 90, 1);
+    if (!two) return finish({ id: "t_engr", th: "rotation", stem: "Un pignon menant engrène avec une roue menée. Calcule le rapport de transmission r.",
+      data: [D("Nombre de dents du pignon menant", "Z<sub>1</sub>", z1, null), D("Nombre de dents de la roue menée", "Z<sub>2</sub>", z2, null)],
+      fx: "r = " + FR("Z<sub>menante</sub>", "Z<sub>menée</sub>"), leg: [["r", "rapport de transmission", "sans unité"], ["Z", "nombre de dents", "sans unité"]],
+      ask: { s: "r" }, ans: z1 / z2, unit: null, an: FR(fv(z1), fv(z2)) });
+    return finish({ id: "t_engr", th: "rotation", stem: "Un réducteur comporte deux engrenages en série. Les roues 1 et 3 sont menantes, les roues 2 et 4 sont menées. Calcule le rapport de transmission r.",
+      data: [D("Roue 1 (menante)", "Z<sub>1</sub>", z1, null), D("Roue 2 (menée)", "Z<sub>2</sub>", z2, null), D("Roue 3 (menante)", "Z<sub>3</sub>", z3, null), D("Roue 4 (menée)", "Z<sub>4</sub>", z4, null)],
+      fx: "r = " + FR("produit des Z menantes", "produit des Z menées"), leg: [["r", "rapport de transmission", "sans unité"], ["Z", "nombre de dents", "sans unité"]],
+      ask: { s: "r" }, ans: z1 * z3 / (z2 * z4), unit: null, an: FR(fv(z1) + " × " + fv(z3), fv(z2) + " × " + fv(z4)) });
+  }});
+  T.push({ id: "t_rglob", th: "rotation", make: function () {
+    var opts = pick([["du réducteur", "de la transmission par courroie"], ["du premier étage", "du deuxième étage", "du troisième étage"], ["de la transmission par chaîne", "du réducteur"]]);
+    var rs = opts.map(function () { return rnd(0.1, 0.9, 0.05); }), g = rs.reduce(function (a, b) { return a * b; }, 1);
+    var sy = rs.map(function (x, i) { return "r<sub>" + (i + 1) + "</sub>"; });
+    return finish({ id: "t_rglob", th: "rotation", stem: "Plusieurs transmissions sont montées en série. Calcule le rapport de transmission global r<sub>global</sub>.",
+      data: rs.map(function (x, i) { return D("Rapport " + opts[i], sy[i], x, null); }),
+      fx: "r<sub>global</sub> = " + sy.join(" × "), leg: [["r<sub>global</sub>", "rapport global", "sans unité"], [sy.join(", "), "rapports des étages", "sans unité"]],
+      ask: { s: "r<sub>global</sub>" }, ans: g, unit: null, an: rs.map(fv).join(" × ") });
+  }});
+
+  // ---------- Rotation → translation ----------
+  T.push(mono({ id: "v_wr", th: "translation", fx: "v = ω × R",
+    res: v("v", "la vitesse linéaire", "ms", null, { dp: 2 }),
+    fac: [v("ω", "la vitesse angulaire", "rads", [2, 40, 0.5]), v("R", "le rayon", "m", [0.02, 0.25, 0.005])],
+    ctx: ["Un galet entraîne un tapis sans glisser.", "Une roue motrice entraîne un chariot sans glisser.", "Un tambour enroule un câble."] }));
+  T.push(mono({ id: "v_wd", th: "translation", fx: "v = " + FR("ω × D", "2"), K: { v: 0.5, den: "2" },
+    res: v("v", "la vitesse linéaire", "ms", null, { dp: 2 }),
+    fac: [v("ω", "la vitesse angulaire", "rads", [2, 40, 0.5]), v("D", "le diamètre", "m", [0.04, 0.5, 0.005])],
+    ctx: ["Un pignon engrène sur une crémaillère.", "Une poulie entraîne une courroie.", "Une roue de chariot roule sans glisser."] }));
+
+  // ---------- Électrotechnique ----------
+  T.push(mono({ id: "x_cosphi", th: "electrotech", fx: "P = U × I × cos φ", inv: [1, 2],
+    res: v("P", "la puissance active", "W", null, { dp: 1 }),
+    fac: [v("U", "la tension efficace", "V", { pick: [230] }), v("I", "l’intensité efficace", "A", [0.5, 16, 0.1]), v("cos φ", "le facteur de puissance", null, [0.7, 0.98, 0.01])],
+    ctx: ["Un moteur monophasé est branché sur le réseau.", "Le compresseur d’un réfrigérateur fonctionne sur le réseau.", "Une perceuse à colonne est branchée sur le réseau."] }));
+  T.push(mono({ id: "x_eff", th: "electrotech", fx: "U = " + FR("Û", "√2"), K: { v: 1 / Math.SQRT2, den: SQ },
+    res: v("U", "la valeur efficace", "V", null, { dp: 1 }),
+    fac: [v("Û", "la valeur maximale", "V", [5, 400, 0.5])],
+    ctx: ["On relève une tension sinusoïdale à l’oscilloscope."] }));
+  T.push(mono({ id: "x_f", th: "electrotech", fx: "f = " + FR("1", "T"),
+    res: v("f", "la fréquence", "Hz", null, { dp: 1 }),
+    fac: [v("T", "la période", "s", [0.002, 0.1, 0.0005], { e: -1 })],
+    ctx: ["On relève une tension périodique à l’oscilloscope.", "Un signal alternatif est observé à l’oscilloscope."] }));
+  T.push(mono({ id: "x_kv", th: "electrotech", fx: "E = k<sub>v</sub> × ω", inv: [1],
+    res: v("E", "la force électromotrice", "V", null, { dp: 2 }),
+    fac: [v("k<sub>v</sub>", "la constante de vitesse", "V·s/rad", [0.01, 0.4, 0.005]), v("ω", "la vitesse angulaire", "rads", [20, 500, 1])],
+    ctx: ["Une machine à courant continu tourne à vitesse constante.", "Un moteur à courant continu tourne à vitesse constante."] }));
+  T.push({ id: "x_mcc", th: "electrotech", make: function (level) {
+    var E = rnd(6, 220, 0.5), r = rnd(0.1, 3, 0.05), I = rnd(0.5, 20, 0.5), gen = Math.random() < 0.35;
+    var leg = [["U", "tension aux bornes", "V"], ["E", "force électromotrice", "V"], ["r", "résistance de l’induit", "Ω"], ["I", "intensité", "A"]];
+    if (gen) {
+      return finish({ id: "x_mcc", th: "electrotech", stem: "Une machine à courant continu fonctionne en génératrice. Calcule la tension U à ses bornes.",
+        data: [D("Force électromotrice", "E", E, "V"), D("Résistance de l’induit", "r", r, "ohm"), D("Intensité débitée", "I", I, "A")],
+        fx: "U = E − r × I", leg: leg, ask: { s: "U" }, ans: E - r * I, unit: "V", an: fv(E) + " − " + fv(r) + " × " + fv(I),
+        tip: "En génératrice, la chute de tension dans l’induit se retranche de la fém." });
+    }
+    var U = clean(E + r * I);
+    if (level === "mixte" && Math.random() < 0.5) {
+      return finish({ id: "x_mcc", th: "electrotech", stem: "Un moteur à courant continu est alimenté sous une tension U. Calcule sa force électromotrice E.",
+        data: [D("Tension d’alimentation", "U", U, "V"), D("Résistance de l’induit", "r", r, "ohm"), D("Intensité absorbée", "I", I, "A")],
+        fx: "U = E + r × I", leg: leg, ask: { s: "E" }, ans: U - r * I, unit: "V", iso: "U − r × I", an: fv(U) + " − " + fv(r) + " × " + fv(I) });
+    }
+    return finish({ id: "x_mcc", th: "electrotech", stem: "Un moteur à courant continu fonctionne en charge. Calcule la tension U à appliquer à ses bornes.",
+      data: [D("Force électromotrice", "E", E, "V"), D("Résistance de l’induit", "r", r, "ohm"), D("Intensité absorbée", "I", I, "A")],
+      fx: "U = E + r × I", leg: leg, ask: { s: "U" }, ans: E + r * I, unit: "V", an: fv(E) + " + " + fv(r) + " × " + fv(I) });
+  }});
+  T.push(mono({ id: "x_ns", th: "electrotech", fx: "n<sub>s</sub> = " + FR("60 × f", "p"), K: { v: 60, num: "60" }, inv: [1],
+    res: v("n<sub>s</sub>", "la vitesse de synchronisme", "trmin", null, { dp: 0 }),
+    fac: [v("f", "la fréquence du réseau", "Hz", { pick: [50, 60] }), v("p", "le nombre de paires de pôles", null, { pick: [1, 2, 3, 4] }, { e: -1 })],
+    ctx: ["Un moteur asynchrone est alimenté par le réseau."] }));
+
+  // ---------- Stockage et autonomie ----------
+  T.push(mono({ id: "s_cit", th: "stockage", fx: "C = I × t",
+    res: v("C", "la capacité", "Ah", null, { dp: 1 }),
+    fac: [v("I", "l’intensité débitée", "A", [0.1, 20, 0.1]), v("t", "la durée de décharge", "h", [0.5, 24, 0.25])],
+    ctx: ["Une batterie alimente un récepteur à courant constant.", "Une batterie de vélo électrique se décharge à courant constant."] }));
+  T.push(mono({ id: "s_euc", th: "stockage", fx: "E = U × C",
+    res: v("E", "l’énergie stockée", "Wh", null, { dp: 1 }),
+    fac: [v("U", "la tension nominale", "V", { pick: [3.7, 7.4, 12, 24, 36, 48] }), v("C", "la capacité", "Ah", [1, 120, 0.5])],
+    ctx: ["Une batterie lithium-ion est entièrement chargée.", "Une batterie au plomb est entièrement chargée."] }));
+  T.push(mono({ id: "s_tep", th: "stockage", fx: "t = " + FR("E", "P"),
+    res: v("t", "l’autonomie théorique", "h", null, { dp: 2 }),
+    fac: [v("E", "l’énergie stockée", "Wh", [10, 5000, 5]), v("P", "la puissance consommée", "W", [2, 800, 1], { e: -1 })],
+    ctx: ["Une batterie alimente un appareil à puissance constante.", "Une batterie de secours alimente un éclairage."] }));
+  T.push({ id: "s_deriv", th: "stockage", make: function () {
+    var n = rnd(2, 4, 1), cap_ = Math.random() < 0.5, xs = [], i;
+    for (i = 0; i < n; i++) xs.push(cap_ ? rnd(2, 100, 0.5) : rnd(5, 1500, 5));
+    var s = xs.reduce(function (a, b) { return a + b; }, 0), L = cap_ ? "C" : "P", u = cap_ ? "Ah" : "W";
+    var sy = xs.map(function (x, k) { return L + "<sub>" + (k + 1) + "</sub>"; });
+    return finish({ id: "s_deriv", th: "stockage",
+      stem: cap_ ? n + " batteries de même tension sont montées en dérivation. Calcule la capacité totale C<sub>totale</sub>."
+        : n + " récepteurs sont branchés en dérivation sur la même batterie. Calcule la puissance totale P<sub>totale</sub>.",
+      data: xs.map(function (x, k) { return D(cap_ ? "Capacité de la batterie " + (k + 1) : "Puissance du récepteur " + (k + 1), sy[k], x, u); }),
+      fx: L + "<sub>totale</sub> = " + sy.join(" + "), leg: [[L + "<sub>totale</sub>", cap_ ? "capacité totale" : "puissance totale", ul(u)], [sy.join(", "), cap_ ? "capacités" : "puissances", ul(u)]],
+      ask: { s: L + "<sub>totale</sub>" }, ans: s, unit: u, an: xs.map(fv).join(" + ") });
+  }});
+  T.push({ id: "s_serie", th: "stockage", make: function (level) {
+    var n = rnd(2, 6, 1), U = pick([1.2, 3.2, 3.7, 6, 12]), C = U >= 6 ? rnd(20, 120, 5) : rnd(1.5, 5, 0.1), Ut = clean(n * U);
+    var f = level === "mixte" ? pick(["U", "U", "C", "n"]) : pick(["U", "U", "C"]);
+    var ctx = n + " batteries identiques sont montées en série.";
+    var dEl = [D("Tension d’un élément", "U<sub>élément</sub>", U, "V"), D("Capacité d’un élément", "C<sub>élément</sub>", C, "Ah")];
+    if (f === "U") return finish({ id: "s_serie", th: "stockage", stem: ctx + " Calcule la tension totale U<sub>totale</sub>.",
+      data: [D("Nombre d’éléments", "n", n, null)].concat(dEl), fx: "U<sub>totale</sub> = n × U<sub>élément</sub>", leg: [],
+      ask: { s: "U<sub>totale</sub>" }, ans: Ut, unit: "V", an: fv(n) + " × " + fv(U),
+      tip: "En série, les tensions s’additionnent." });
+    if (f === "C") return finish({ id: "s_serie", th: "stockage", stem: ctx + " Calcule la capacité totale C<sub>totale</sub>.",
+      data: [D("Nombre d’éléments", "n", n, null)].concat(dEl), fx: "C<sub>totale</sub> = C<sub>élément</sub>", leg: [],
+      ask: { s: "C<sub>totale</sub>" }, ans: C, unit: "Ah", an: null,
+      tip: "En série, la capacité ne s’additionne pas : le même courant traverse tous les éléments, elle reste celle d’un élément." });
+    return finish({ id: "s_serie", th: "stockage",
+      stem: "On veut obtenir une tension U<sub>totale</sub> en montant en série des batteries identiques. Calcule le nombre d’éléments n.",
+      data: [D("Tension à obtenir", "U<sub>totale</sub>", Ut, "V"), D("Tension d’un élément", "U<sub>élément</sub>", U, "V")],
+      fx: "U<sub>totale</sub> = n × U<sub>élément</sub>", leg: [], ask: { s: "n" }, ans: n, unit: null,
+      iso: FR("U<sub>totale</sub>", "U<sub>élément</sub>"), an: FR(fv(Ut), fv(U)) });
+  }});
+  T.push({ id: "s_mixte", th: "stockage", make: function (level) {
+    var ns = rnd(2, 20, 1), np = rnd(1, 6, 1), U = pick([3.2, 3.6, 3.7]), C = pick([2.5, 3, 3.4, 4, 5]);
+    var f = level === "mixte" ? pick(["U", "C", "E", "ns"]) : pick(["U", "C", "E"]);
+    var ctx = "Une batterie lithium-ion est montée en " + ns + "S" + np + "P : " + ns + " éléments en série par branche, " + np + (np > 1 ? " branches" : " branche") + " en parallèle.";
+    var data = [D("Éléments en série par branche", "n<sub>s</sub>", ns, null), D("Branches en parallèle", "n<sub>p</sub>", np, null),
+      D("Tension d’un élément", "U<sub>élément</sub>", U, "V"), D("Capacité d’un élément", "C<sub>élément</sub>", C, "Ah")];
+    var base = { id: "s_mixte", th: "stockage", leg: [], data: data };
+    if (f === "U") return finish(Object.assign(base, { stem: ctx + " Calcule la tension du pack U<sub>pack</sub>.",
+      fx: "U<sub>pack</sub> = n<sub>s</sub> × U<sub>élément</sub>", ask: { s: "U<sub>pack</sub>" }, ans: ns * U, unit: "V", an: fv(ns) + " × " + fv(U),
+      tip: "Seuls les éléments en série additionnent leurs tensions : le nombre de branches ne compte pas." }));
+    if (f === "C") return finish(Object.assign(base, { stem: ctx + " Calcule la capacité du pack C<sub>pack</sub>.",
+      fx: "C<sub>pack</sub> = n<sub>p</sub> × C<sub>élément</sub>", ask: { s: "C<sub>pack</sub>" }, ans: np * C, unit: "Ah", an: fv(np) + " × " + fv(C),
+      tip: "Seules les branches en parallèle additionnent leurs capacités : le nombre d’éléments en série ne compte pas." }));
+    if (f === "E") return finish(Object.assign(base, { stem: ctx + " Calcule l’énergie stockée dans le pack E<sub>pack</sub>.",
+      fx: "E<sub>pack</sub> = n<sub>s</sub> × n<sub>p</sub> × U<sub>élément</sub> × C<sub>élément</sub>", ask: { s: "E<sub>pack</sub>" }, ans: ns * np * U * C, unit: "Wh",
+      an: fv(ns) + " × " + fv(np) + " × " + fv(U) + " × " + fv(C), tip: "C’est aussi E<sub>pack</sub> = U<sub>pack</sub> × C<sub>pack</sub>." }));
+    var Up = clean(ns * U);
+    return finish({ id: "s_mixte", th: "stockage", leg: [],
+      stem: "On assemble un pack de batterie avec des éléments lithium-ion identiques. Calcule le nombre d’éléments à placer en série n<sub>s</sub> pour obtenir la tension voulue.",
+      data: [D("Tension voulue pour le pack", "U<sub>pack</sub>", Up, "V"), D("Tension d’un élément", "U<sub>élément</sub>", U, "V")],
+      fx: "U<sub>pack</sub> = n<sub>s</sub> × U<sub>élément</sub>", ask: { s: "n<sub>s</sub>" }, ans: ns, unit: null,
+      iso: FR("U<sub>pack</sub>", "U<sub>élément</sub>"), an: FR(fv(Up), fv(U)) });
+  }});
+
+  // ---------- Mesures et écarts ----------
+  T.push(mono({ id: "m_vdt", th: "mesures", fx: "v = " + FR("d", "t"),
+    res: v("v", "la vitesse moyenne", "ms", null, { dp: 2 }),
+    fac: [v("d", "la distance % entre les repères", "m", [0.2, 20, 0.1]), v("t", "la durée de parcours", "s", [0.5, 30, 0.05], { e: -1 })],
+    ctx: ["On chronomètre le déplacement d’un chariot entre deux repères.", "On chronomètre la montée d’une charge entre deux repères."] }));
+  T.push({ id: "m_moy", th: "mesures", make: function () {
+    var k = rnd(3, 5, 1), base = rnd(2, 12, 0.01), ts = [], i;
+    for (i = 0; i < k; i++) ts.push(clean(Math.round(base * (1 + (Math.random() - 0.5) * 0.06) * 100) / 100));
+    var s = ts.reduce(function (a, b) { return a + b; }, 0), sy = ts.map(function (x, j) { return "t<sub>" + (j + 1) + "</sub>"; });
+    return finish({ id: "m_moy", th: "mesures", stem: "On mesure " + k + " fois la durée d’une montée de charge. Calcule la durée moyenne t<sub>moy</sub>.",
+      data: ts.map(function (x, j) { return D("Mesure " + (j + 1), sy[j], nf(x, 2), "s"); }),
+      fx: "t<sub>moy</sub> = " + FR(sy.join(" + "), k), leg: [["t<sub>moy</sub>", "durée moyenne", "s"], [sy.join(", "), "durées mesurées", "s"]],
+      ask: { s: "t<sub>moy</sub>" }, ans: s / k, unit: "s", an: FR(ts.map(function (x) { return nf(x, 2); }).join(" + "), k) });
+  }});
+  function measPair() {
+    return pick([
+      { n: "vitesse de déplacement du chariot", s: "v", u: "ms", g: [0.2, 2.5, 0.01] },
+      { n: "fréquence de rotation de la broche", s: "N", u: "trmin", g: [200, 3000, 5] },
+      { n: "puissance absorbée par le moteur", s: "P", u: "W", g: [100, 3000, 5] },
+      { n: "durée de montée de la charge", s: "t", u: "s", g: [2, 20, 0.01] }]);
+  }
+  T.push({ id: "m_delta", th: "mesures", make: function () {
+    var c = measPair(), calc = rnd(c.g[0], c.g[1], c.g[2]), mes = clean(roundTo(calc * (1 + (Math.random() - 0.5) * 0.2), decOf(c.g[2])));
+    if (mes === calc) mes = clean(calc + c.g[2]);
+    return finish({ id: "m_delta", th: "mesures", stem: "On compare la valeur mesurée et la valeur calculée de la " + c.n + ". Calcule l’écart absolu Δ.",
+      data: [D("Valeur mesurée", c.s + "<sub>mes</sub>", mes, c.u), D("Valeur calculée", c.s + "<sub>calc</sub>", calc, c.u)],
+      fx: "Δ = | " + c.s + "<sub>mes</sub> − " + c.s + "<sub>calc</sub> |", leg: [["Δ", "écart absolu", "unité de la grandeur"]],
+      ask: { s: "Δ" }, ans: Math.abs(mes - calc), unit: c.u, an: "| " + fv(mes) + " − " + fv(calc) + " |",
+      tip: "L’écart absolu est toujours positif et garde l’unité de la grandeur." });
+  }});
+  T.push({ id: "m_eps", th: "mesures", make: function () {
+    var c = measPair(), ref = rnd(c.g[0], c.g[1], c.g[2]), mes = clean(roundTo(ref * (1 + (Math.random() - 0.5) * 0.24), decOf(c.g[2])));
+    if (mes === ref) mes = clean(ref + c.g[2]);
+    var eps = (mes - ref) / ref * 100;
+    return finish({ id: "m_eps", th: "mesures", stem: "On compare la valeur mesurée de la " + c.n + " à la valeur de référence calculée. Calcule l’écart relatif ε.",
+      data: [D("Valeur mesurée", c.s + "<sub>mes</sub>", mes, c.u), D("Valeur de référence", c.s + "<sub>réf</sub>", ref, c.u)],
+      fx: "ε = " + FR(c.s + "<sub>mes</sub> − " + c.s + "<sub>réf</sub>", c.s + "<sub>réf</sub>") + " × 100", leg: [["ε", "écart relatif", "%"]],
+      ask: { s: "ε" }, ans: eps, unit: "pct", an: FR(fv(mes) + " − " + fv(ref), fv(ref)) + " × 100",
+      tip: eps > 0 ? "ε > 0 : la mesure est supérieure à la référence (écart par excès)." : "ε < 0 : la mesure est inférieure à la référence (écart par défaut)." });
+  }});
+
+  // ===================== THÈMES =====================
+  var THEMES = [
+    { id: "puissance", t: "Puissance", c: "#F2B705" },
+    { id: "energie", t: "Énergie", c: "#F2B705" },
+    { id: "rendement", t: "Rendement et pertes", c: "#F2B705" },
+    { id: "conversions", t: "Conversions", c: "#F2B705" },
+    { id: "rotation", t: "Rotation et transmission", c: "#1F5FA8" },
+    { id: "translation", t: "Rotation → translation", c: "#1F5FA8" },
+    { id: "electrotech", t: "Électrotechnique", c: "#0E7C66" },
+    { id: "stockage", t: "Stockage et autonomie", c: "#0E7C66" },
+    { id: "mesures", t: "Mesures et écarts", c: "#5B6670" },
+    { id: "cout", t: "Coût et rentabilité", c: "#5B6670" }
+  ];
+  function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+
+  // Répartit n questions entre les thèmes choisis, sans répéter un modèle tant que le thème en a d'autres
+  function series(themes, n, level) {
+    var order = shuffle(themes.slice()), pools = {}, count = {};
+    themes.forEach(function (t) { pools[t] = []; count[t] = 0; });
+    for (var i = 0; i < n; i++) count[order[i % order.length]]++;
+    var out = [];
+    THEMES.forEach(function (th) {
+      if (!count[th.id]) return;
+      var mods = T.filter(function (m) { return m.th === th.id; }), last = null;
+      for (var k = 0; k < count[th.id]; k++) {
+        if (!pools[th.id].length) pools[th.id] = shuffle(mods.slice());
+        var m = pools[th.id].shift();
+        if (m === last && pools[th.id].length) { pools[th.id].push(m); m = pools[th.id].shift(); }
+        last = m;
+        out.push(m.make(level));
+      }
+    });
+    return out;
+  }
+
+  return { FR: FR, RT: RT, UN: UN, T: T, THEMES: THEMES, series: series, prep: prep, ul: ul, nf: nf, ansShow: ansShow, evalNat: evalNat };
+})();
+if (typeof module !== "undefined") module.exports = Gen;
+</script>
+<script>var FR = Gen.FR, RT = Gen.RT;
+var FAM = {
+  en: { name: "Puissance et énergie", c: "#F2B705", l: "#C29200" },
+  me: { name: "Mécanique", c: "#1F5FA8", l: "#1F5FA8" },
+  el: { name: "Électricité", c: "#0E7C66", l: "#0E7C66" },
+  ex: { name: "Exploitation des résultats", c: "#5B6670", l: "#5B6670" }
+};
+var VU = {
+  "Cours": "Cours : chaîne d’énergie des produits",
+  "TD": "TD : la chaîne de puissance des produits",
+  "A1": "A1 Clio vs Zoé", "A2": "A2 GravityLight", "A3": "A3 Batterie lithium-ion",
+  "A4": "A4 Perceuse à colonne", "A5": "A5 Pont roulant", "A6": "A6 Axe Z",
+  "A7": "A7 Réfrigérateur-congélateur", "Éval": "Évaluation"
+};
+var MAP = [
+  { id: "puissance", side: "L", fam: "en", t: "Puissance", sub: "effort × flux", leaves: [
+    { t: "Translation", f: "P = F × v",
+      sym: [["P", "puissance", "W"], ["F", "force (grandeur d’effort)", "N"], ["v", "vitesse (grandeur de flux)", "m/s"]],
+      alt: ["F = "+FR("P","v"), "v = "+FR("P","F")],
+      note: "Toute puissance est le produit d’une grandeur d’effort par une grandeur de flux.",
+      vu: ["Cours", "TD", "A1", "A2", "Éval"] },
+    { t: "Rotation", f: "P = C × ω",
+      sym: [["P", "puissance", "W"], ["C", "couple (grandeur d’effort)", "N·m"], ["ω", "vitesse angulaire (grandeur de flux)", "rad/s"]],
+      alt: ["C = "+FR("P","ω"), "ω = "+FR("P","C")],
+      note: "ω doit être en rad/s : une fréquence de rotation N en tr/min se convertit avec ω = " + FR("π × N", "30") + ".",
+      vu: ["Cours", "TD", "A2", "Éval"] },
+    { t: "Électrique (continu)", f: "P = U × I",
+      sym: [["P", "puissance", "W"], ["U", "tension (grandeur d’effort)", "V"], ["I", "intensité (grandeur de flux)", "A"]],
+      alt: ["I = "+FR("P","U")+" (courant débité par la source)", "U = "+FR("P","I")],
+      note: "En alternatif monophasé, le facteur de puissance s’ajoute : P = U × I × cos φ (thème Électrotechnique).",
+      vu: ["Cours", "TD", "A1", "A2", "A3", "Éval"] },
+    { t: "Poids d’une masse", f: "F = m × g",
+      sym: [["F", "poids", "N"], ["m", "masse", "kg"], ["g", "intensité de la pesanteur, g = 9,81", "m/s²"]],
+      alt: ["m = "+FR("F","g")],
+      vu: ["A2"] }
+  ]},
+  { id: "energie", side: "L", fam: "en", t: "Énergie", sub: "puissance × durée", leaves: [
+    { t: "Énergie et puissance", f: "E = P × t",
+      sym: [["E", "énergie", "J ou Wh"], ["P", "puissance", "W"], ["t", "durée", "s ou h"]],
+      alt: ["P<sub>moy</sub> = "+FR("E","t")+" (puissance moyenne sur la durée t)", "t = "+FR("E","P")],
+      note: "P en W et t en s donnent E en J ; P en W et t en h donnent E en Wh.",
+      vu: ["Cours", "A2", "A7", "Éval"] },
+    { t: "Énergie potentielle de pesanteur", f: "E<sub>pp</sub> = m × g × h",
+      sym: [["E<sub>pp</sub>", "énergie potentielle", "J"], ["m", "masse", "kg"], ["g", "intensité de la pesanteur, g = 9,81", "m/s²"], ["h", "hauteur de chute", "m"]],
+      alt: ["h = "+FR("E<sub>pp</sub>","m × g")],
+      vu: ["A2"] }
+  ]},
+  { id: "rendement", side: "L", fam: "en", t: "Rendement et pertes", sub: "sortie sur entrée", leaves: [
+    { t: "Rendement", f: "η = "+FR("P<sub>u</sub>","P<sub>a</sub>")+" = "+FR("E<sub>u</sub>","E<sub>a</sub>"),
+      sym: [["η", "rendement", "sans unité ou %"], ["P<sub>u</sub>", "puissance utile, en sortie", "W"], ["P<sub>a</sub>", "puissance absorbée, en entrée", "W"], ["E<sub>u</sub>, E<sub>a</sub>", "énergies utile et absorbée sur la même durée", "J ou Wh"]],
+      alt: ["P<sub>a</sub> = "+FR("P<sub>u</sub>","η")+" (puissance à fournir en entrée)", "P<sub>u</sub> = η × P<sub>a</sub>", "E<sub>primaire</sub> = "+FR("E<sub>électrique</sub>","η<sub>production</sub>")],
+      note: "η est toujours inférieur à 1. L’énergie primaire d’une centrale est la même relation : l’énergie électrique produite y joue le rôle d’énergie utile.",
+      vu: ["Cours", "TD", "A1", "A2", "Éval"] },
+    { t: "Rendement global", f: "η<sub>g</sub> = η<sub>1</sub> × η<sub>2</sub> × … × η<sub>n</sub>",
+      sym: [["η<sub>g</sub>", "rendement global de la chaîne", "sans unité"], ["η<sub>1</sub> … η<sub>n</sub>", "rendements des n étages en série", "sans unité"]],
+      note: "Le rendement global est plus faible que le plus faible des rendements des étages.",
+      vu: ["Cours", "TD", "A1", "Éval"] },
+    { t: "Pertes", f: "Pertes = P<sub>a</sub> − P<sub>u</sub>",
+      sym: [["Pertes", "puissance perdue (ou énergie perdue)", "W (ou J)"]],
+      alt: ["P<sub>u</sub> = P<sub>a</sub> − Pertes"],
+      note: "Les pertes sont dissipées, le plus souvent en chaleur. C’est la base du diagramme de Sankey.",
+      vu: ["Cours", "Éval"] },
+    { t: "Effet Joule", f: "P<sub>J</sub> = R × I<sup>2</sup>",
+      sym: [["P<sub>J</sub>", "pertes par effet Joule", "W"], ["R", "résistance", "Ω"], ["I", "intensité", "A"]],
+      alt: ["R = "+FR("P<sub>J</sub>","I<sup>2</sup>"), "I = "+RT(FR("P<sub>J</sub>","R"))],
+      vu: ["Éval"] }
+  ]},
+  { id: "conversions", side: "L", fam: "en", t: "Conversions", sub: "énergie, puissance, vitesse", leaves: [
+    { t: "Énergie", f: "1 Wh = 3 600 J<br>1 kWh = 1 000 Wh",
+      alt: ["E (J) = E (Wh) × 3 600", "E (Wh) = E (kWh) × 1 000", "1 kWh = 3,6 × 10<sup>6</sup> J"],
+      vu: ["Cours", "A1", "A2", "A7"] },
+    { t: "Puissance", f: "1 ch = 736 W",
+      alt: ["P (W) = P (ch) × 736"],
+      note: "Le cheval-vapeur reste utilisé pour les moteurs thermiques. 736 W est la valeur arrondie de 735,5 W.",
+      vu: ["TD"] },
+    { t: "Vitesse linéaire", f: "v (m/s) = "+FR("v (km/h)","3,6"),
+      alt: ["v (m/s) = "+FR("v (m/min)","60"), "v (km/h) = v (m/s) × 3,6"],
+      vu: ["TD", "A1", "A5", "Éval"] }
+  ]},
+  { id: "cout", side: "L", fam: "ex", t: "Coût et rentabilité", sub: "euros et années", leaves: [
+    { t: "Durée d’amortissement", f: "n = "+FR("P<sub>achat</sub>","B"),
+      sym: [["n", "durée d’amortissement", "années"], ["P<sub>achat</sub>", "prix d’achat, investissement de départ", "€"], ["B", "bénéfice annuel, économie réalisée chaque année", "€/an"]],
+      vu: ["A7"] },
+    { t: "Retour sur investissement", f: "ROI = "+FR("n × B − P<sub>achat</sub>","P<sub>achat</sub>")+" × 100",
+      sym: [["ROI", "retour sur investissement", "%"], ["n", "nombre d’années considéré", "années"], ["B", "bénéfice annuel", "€/an"], ["P<sub>achat</sub>", "prix d’achat", "€"]],
+      note: "Ici n est une durée choisie, pas la durée d’amortissement. ROI > 0 : l’achat est remboursé et rapporte.",
+      vu: ["A7"] }
+  ]},
+  { id: "rotation", side: "R", fam: "me", t: "Rotation et transmission", sub: "ω, rapports, réducteurs", leaves: [
+    { t: "Vitesse angulaire", f: "ω = "+FR("2π × N","60")+" = "+FR("π × N","30"),
+      sym: [["ω", "vitesse angulaire", "rad/s"], ["N", "fréquence de rotation", "tr/min"]],
+      alt: ["N = "+FR("30 × ω","π")],
+      note: "1 tour = 2π rad et 1 min = 60 s.",
+      vu: ["TD", "A2", "A5", "A6", "Éval"] },
+    { t: "Rapport de transmission", f: "r = "+FR("N<sub>sortie</sub>","N<sub>entrée</sub>")+" = "+FR("ω<sub>sortie</sub>","ω<sub>entrée</sub>"),
+      sym: [["r", "rapport de transmission", "sans unité"], ["N", "fréquences de rotation", "tr/min"], ["ω", "vitesses angulaires", "rad/s"]],
+      alt: ["N<sub>sortie</sub> = r × N<sub>entrée</sub>", "k = "+FR("1","r")],
+      note: "r < 1 : réducteur ; r > 1 : multiplicateur. Les catalogues de réducteurs donnent souvent la forme inverse k = " + FR("1", "r") + " : « i = 34 » signifie N<sub>sortie</sub> = " + FR("N<sub>entrée</sub>", "34") + ". Toujours vérifier le sens.",
+      vu: ["TD", "A2", "A4", "A5", "A6"] },
+    { t: "Poulies et courroie", f: "r = "+FR("D<sub>menant</sub>","D<sub>mené</sub>"),
+      sym: [["D<sub>menant</sub>, D<sub>mené</sub>", "diamètres primitifs des poulies (même unité)", "mm ou m"]],
+      alt: ["D<sub>primitif</sub> = D<sub>extérieur</sub> − e"],
+      note: "Courroie trapézoïdale : e dépend du profil (profil A : e = 5 mm).",
+      vu: ["A4"] },
+    { t: "Engrenages", f: "r = "+FR("produit des Z menantes","produit des Z menées"),
+      sym: [["Z", "nombre de dents d’une roue", "sans unité"]],
+      alt: ["r = "+FR("Z<sub>menante</sub>","Z<sub>menée</sub>")+" (un seul engrenage)"],
+      vu: ["TD", "A2"] },
+    { t: "Transmissions en série", f: "r<sub>global</sub> = r<sub>1</sub> × r<sub>2</sub> × …",
+      sym: [["r<sub>1</sub>, r<sub>2</sub> …", "rapports des étages successifs", "sans unité"]],
+      vu: ["TD", "A2"] }
+  ]},
+  { id: "translation", side: "R", fam: "me", t: "Rotation → translation", sub: "roues, pignons, galets", leaves: [
+    { t: "Vitesse linéaire", f: "v = ω × R = "+FR("ω × D","2"),
+      sym: [["v", "vitesse linéaire", "m/s"], ["ω", "vitesse angulaire", "rad/s"], ["R", "rayon", "m"], ["D", "diamètre", "m"]],
+      alt: ["ω = "+FR("v","R"), "v = "+FR("π × d × r × N<sub>moteur</sub>","60")+" (moteur, réducteur r, pignon de diamètre d en m)"],
+      note: "Galet, roue, pignon, poulie. La dernière écriture enchaîne ω = " + FR("π × N", "30") + ", N<sub>sortie</sub> = r × N<sub>entrée</sub> et v = " + FR("ω × d", "2") + ".",
+      vu: ["TD", "A2", "A5", "A6"] }
+  ]},
+  { id: "electrotech", side: "R", fam: "el", t: "Électrotechnique", sub: "alternatif et moteurs", leaves: [
+    { t: "Puissance en alternatif", f: "P = U × I × cos φ",
+      sym: [["P", "puissance active", "W"], ["U, I", "valeurs efficaces de la tension et de l’intensité", "V, A"], ["cos φ", "facteur de puissance", "sans unité"]],
+      alt: ["I = "+FR("P","U × cos φ")],
+      note: "En monophasé. Sans le cos φ, on retrouve P = U × I du courant continu.",
+      vu: ["A1"] },
+    { t: "Valeur efficace", f: "U = "+FR("Û","√2"),
+      sym: [["U", "valeur efficace", "V"], ["Û", "valeur maximale", "V"]],
+      alt: ["Û = U × √2"],
+      note: "Valable pour une tension sinusoïdale.",
+      vu: ["Éval"] },
+    { t: "Fréquence et période", f: "f = "+FR("1","T"),
+      sym: [["f", "fréquence", "Hz"], ["T", "période", "s"]],
+      alt: ["T = "+FR("1","f")],
+      vu: ["Éval"] },
+    { t: "Machine à courant continu", f: "E = k<sub>v</sub> × ω<br>U = E + r × I",
+      sym: [["E", "force électromotrice", "V"], ["k<sub>v</sub>", "constante de vitesse", "V·s/rad"], ["ω", "vitesse angulaire", "rad/s"], ["U", "tension aux bornes", "V"], ["r", "résistance de l’induit", "Ω"], ["I", "intensité", "A"]],
+      alt: ["U = E − r × I (fonctionnement en génératrice)"],
+      note: "U = E + r × I en moteur : la tension d’alimentation compense la fém et la chute de tension dans l’induit.",
+      vu: ["A2"] },
+    { t: "Moteur asynchrone", f: "n<sub>s</sub> = "+FR("60 × f","p"),
+      sym: [["n<sub>s</sub>", "vitesse de synchronisme", "tr/min"], ["f", "fréquence du réseau", "Hz"], ["p", "nombre de paires de pôles", "sans unité"]],
+      note: "Le rotor tourne un peu moins vite que n<sub>s</sub> (glissement).",
+      vu: ["A4"] }
+  ]},
+  { id: "stockage", side: "R", fam: "el", t: "Stockage et autonomie", sub: "batteries et montages", leaves: [
+    { t: "Capacité", f: "C = I × t",
+      sym: [["C", "capacité", "Ah"], ["I", "intensité débitée", "A"], ["t", "durée", "h"]],
+      alt: ["t = "+FR("C","I")+" (autonomie théorique)"],
+      vu: ["Cours", "TD", "A3"] },
+    { t: "Énergie stockée", f: "E = U × C",
+      sym: [["E", "énergie stockée", "Wh"], ["U", "tension", "V"], ["C", "capacité", "Ah"]],
+      alt: ["t = "+FR("E","P")+" (autonomie théorique)"],
+      note: "Autonomie théorique : courant ou puissance supposés constants.",
+      vu: ["TD", "A3"] },
+    { t: "Éléments en série", f: "U<sub>totale</sub> = U<sub>1</sub> + U<sub>2</sub> + …<br>C<sub>totale</sub> = C",
+      sym: [["U<sub>totale</sub>", "tension aux bornes de l’ensemble", "V"], ["U<sub>1</sub>, U<sub>2</sub> …", "tensions des éléments", "V"], ["C", "capacité d’un élément, la même pour tous", "Ah"]],
+      alt: ["n éléments identiques : U<sub>totale</sub> = n × U<sub>élément</sub>"],
+      note: "La tension s’additionne, la capacité reste celle d’un élément : le même courant traverse tous les éléments. On n’associe en série que des éléments de même capacité.",
+      vu: ["TD", "A3"] },
+    { t: "Éléments en parallèle", f: "C<sub>totale</sub> = C<sub>1</sub> + C<sub>2</sub> + …<br>U<sub>totale</sub> = U",
+      sym: [["C<sub>totale</sub>", "capacité de l’ensemble", "Ah"], ["C<sub>1</sub>, C<sub>2</sub> …", "capacités des éléments", "Ah"], ["U", "tension d’un élément, la même pour tous", "V"]],
+      alt: ["n éléments identiques : C<sub>totale</sub> = n × C<sub>élément</sub>", "Récepteurs en dérivation : P<sub>totale</sub> = P<sub>1</sub> + P<sub>2</sub> + …"],
+      note: "La capacité s’additionne, la tension reste celle d’un élément. On n’associe en parallèle que des éléments de même tension.",
+      vu: ["TD", "A3"] },
+    { t: "Montage série-parallèle", f: "U<sub>pack</sub> = n<sub>s</sub> × U<sub>élément</sub><br>C<sub>pack</sub> = n<sub>p</sub> × C<sub>élément</sub>",
+      sym: [["n<sub>s</sub>", "nombre d’éléments en série dans une branche", "sans unité"], ["n<sub>p</sub>", "nombre de branches en parallèle", "sans unité"],
+            ["U<sub>élément</sub>, C<sub>élément</sub>", "tension et capacité d’un élément", "V, Ah"]],
+      alt: ["E<sub>pack</sub> = U<sub>pack</sub> × C<sub>pack</sub> = n<sub>s</sub> × n<sub>p</sub> × U<sub>élément</sub> × C<sub>élément</sub>"],
+      note: "Notation des fabricants : « 10S3P » désigne 10 éléments en série par branche et 3 branches en parallèle, soit 30 éléments.",
+      vu: ["A3"] }
+  ]},
+  { id: "mesures", side: "R", fam: "ex", t: "Mesures et écarts", sub: "mesure contre calcul", leaves: [
+    { t: "Vitesse moyenne mesurée", f: "v = "+FR("d","t"),
+      sym: [["v", "vitesse moyenne entre deux repères", "m/s"], ["d", "distance", "m"], ["t", "durée", "s"]],
+      vu: ["A2", "A5", "A6"] },
+    { t: "Moyenne de k mesures", f: "t<sub>moy</sub> = "+FR("t<sub>1</sub> + t<sub>2</sub> + … + t<sub>k</sub>","k"),
+      vu: ["A4", "A5", "A6"] },
+    { t: "Écart absolu", f: "Δ = | X<sub>mes</sub> − X<sub>calc</sub> |",
+      sym: [["Δ", "écart absolu", "unité de X"], ["X<sub>mes</sub>", "valeur mesurée", "unité de X"], ["X<sub>calc</sub>", "valeur calculée", "unité de X"]],
+      note: "Δ a la même unité que la grandeur comparée.",
+      vu: ["A6"] },
+    { t: "Écart relatif", f: "ε = "+FR("X<sub>mes</sub> − X<sub>réf</sub>","X<sub>réf</sub>")+" × 100",
+      sym: [["ε", "écart relatif", "%"], ["X<sub>mes</sub>", "valeur mesurée", "unité de X"], ["X<sub>réf</sub>", "valeur de référence", "unité de X"]],
+      note: "La référence est la valeur calculée, simulée ou annoncée. ε > 0 : écart par excès ; ε < 0 : écart par défaut.",
+      vu: ["A2", "A4", "A5", "A6", "A7"] }
+  ]}
+];
+var HOMONYMES = [
+  ["E", "énergie (J, Wh)", "force électromotrice d’une machine à courant continu (V)"],
+  ["C", "couple (N·m)", "capacité d’une batterie (Ah)"],
+  ["r", "rapport de transmission (sans unité)", "résistance de l’induit (Ω)"],
+  ["R", "rayon d’une roue (m)", "résistance électrique (Ω)"]
+];
+</script>
+<script>(function () {
+  "use strict";
+  function $(s, r) { return (r || document).querySelector(s); }
+  function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+  function mk(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
+
+  var mm = $("#mm"), svg = $("#mm-links"), hub = $("#mm-hub"), stage = $("#mm-stage");
+  var panel = $("#mm-panel"), status = $("#mm-status"), search = $("#mm-q");
+  var ALL = [], BR = [], cur = -1, lastOpener = null;
+  var GREEK = { "ω": " omega ", "η": " eta ", "ρ": " rho ", "φ": " phi ", "Δ": " delta ", "ε": " epsilon ", "π": " pi ", "Ω": " ohm " };
+
+  // ---------- légende ----------
+  Object.keys(FAM).forEach(function (k) {
+    var li = mk("li", null, FAM[k].name); li.style.setProperty("--c", FAM[k].c); $("#mm-legend").appendChild(li);
+  });
+
+  // ---------- construction de la carte ----------
+  MAP.forEach(function (b) {
+    var col = $(b.side === "L" ? "#mm-left" : "#mm-right");
+    var br = mk("div", "br"); br.style.setProperty("--c", FAM[b.fam].c); br.dataset.line = FAM[b.fam].l;
+    var node = mk("button", "br-node",
+      '<span class="bt">' + b.t + '</span><span class="bc">' + b.sub + '</span><span class="bi" aria-hidden="true">+</span>');
+    node.type = "button"; node.setAttribute("aria-expanded", "false"); node.setAttribute("aria-controls", "lv-" + b.id);
+    var lv = mk("div", "leaves"); lv.id = "lv-" + b.id; lv.setAttribute("role", "group"); lv.setAttribute("aria-label", b.t);
+    b.leaves.forEach(function (L) {
+      var idx = ALL.length;
+      var btn = mk("button", "leaf", '<span class="lt">' + L.t + '</span><span class="lf">' + L.f + "</span>");
+      btn.type = "button"; btn.setAttribute("aria-haspopup", "dialog");
+      btn.addEventListener("click", function () { openLeaf(idx, btn); });
+      lv.appendChild(btn);
+      ALL.push({ b: b, L: L, el: btn, br: br, key: indexText(b, L) });
+    });
+    node.addEventListener("click", function () { setOpen(br, !br.classList.contains("open")); draw(); });
+    br.appendChild(node); br.appendChild(lv); col.appendChild(br);
+    BR.push({ b: b, el: br, node: node });
+  });
+
+  function setOpen(br, on) {
+    br.classList.toggle("open", on);
+    var n = $(".br-node", br); n.setAttribute("aria-expanded", on ? "true" : "false");
+    $(".bi", n).textContent = on ? "−" : "+";
+  }
+
+  // ---------- liaisons (SVG) ----------
+  var raf = 0, intro = true;
+  function draw() { cancelAnimationFrame(raf); raf = requestAnimationFrame(drawNow); }
+  function drawNow() {
+    if (getComputedStyle(svg).display === "none" || !mm.offsetParent) return;
+    var box = mm.getBoundingClientRect(), ox = box.left + mm.clientLeft, oy = box.top + mm.clientTop;
+    var W = mm.scrollWidth, H = mm.scrollHeight;
+    svg.setAttribute("width", W); svg.setAttribute("height", H); svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+    function rel(e) { var r = e.getBoundingClientRect(); return { l: r.left - ox, r: r.right - ox, y: (r.top + r.bottom) / 2 - oy }; }
+    var h = rel(hub), out = [], k = 0;
+    function path(x1, y1, x2, y2, c, w, dim) {
+      var mx = (x1 + x2) / 2, d = intro ? ' style="animation-delay:' + (k++ * 45) + 'ms"' : "";
+      return '<path pathLength="1" d="M' + x1.toFixed(1) + " " + y1.toFixed(1) + " C" + mx.toFixed(1) + " " + y1.toFixed(1) + " " + mx.toFixed(1) + " " +
+        y2.toFixed(1) + " " + x2.toFixed(1) + " " + y2.toFixed(1) + '" stroke="' + c + '" stroke-width="' + w + '"' + (dim ? ' class="dim"' : "") + d + "/>";
+    }
+    BR.forEach(function (B) {
+      var left = B.b.side === "L", n = rel(B.node), c = B.el.dataset.line;
+      out.push(path(left ? h.l : h.r, h.y, left ? n.r : n.l, n.y, c, 3, B.el.classList.contains("dim")));
+      if (B.el.classList.contains("open"))
+        $$(".leaf", B.el).forEach(function (lf) {
+          var q = rel(lf);
+          out.push(path(left ? n.l : n.r, n.y, left ? q.r : q.l, q.y, c, 1.6, lf.classList.contains("dim")));
+        });
+    });
+    svg.innerHTML = out.join("");
+    if (intro) { intro = false; setTimeout(function () { svg.classList.remove("intro"); }, 1400); }
+  }
+  if (window.ResizeObserver) new ResizeObserver(draw).observe(mm);
+  window.addEventListener("resize", draw);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
+
+  // ---------- recherche ----------
+  function strip(h) { return String(h).replace(/<\/span>/g, " ").replace(/<[^>]+>/g, ""); }
+  function norm(s) { return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
+  function indexText(b, L) {
+    var parts = [b.t, b.sub, L.t, L.f, L.note || ""].concat(L.alt || []);
+    (L.sym || []).forEach(function (s) { parts.push(s.join(" ")); });
+    var raw = strip(parts.join(" "));
+    return norm(raw) + " " + norm(raw.replace(/[ωηρφΔεπΩ]/g, function (c) { return GREEK[c]; }));
+  }
+  function runSearch() {
+    var q = norm(search.value.trim());
+    var words = q.split(/\s+/).filter(Boolean);
+    ALL.forEach(function (it) { it.el.classList.remove("hit", "dim"); });
+    BR.forEach(function (B) { B.el.classList.remove("dim"); });
+    status.classList.remove("none");
+    if (!words.length || (words.length === 1 && words[0].length < 2 && !/[^a-z0-9]/.test(words[0]))) {
+      status.textContent = ""; draw(); return;
+    }
+    var n = 0;
+    BR.forEach(function (B) {
+      var any = false;
+      ALL.forEach(function (it) {
+        if (it.br !== B.el) return;
+        var ok = words.every(function (w) { return it.key.indexOf(w) >= 0; });
+        it.el.classList.add(ok ? "hit" : "dim");
+        if (ok) { any = true; n++; }
+      });
+      setOpen(B.el, any);
+      B.el.classList.toggle("dim", !any);
+    });
+    if (n) status.textContent = n + (n > 1 ? " formules trouvées." : " formule trouvée.");
+    else { status.textContent = "Aucune formule ne contient « " + search.value.trim() + " ». Essaie un autre mot : vitesse, rendement, Wh, batterie."; status.classList.add("none"); }
+    draw();
+  }
+  search.addEventListener("input", runSearch);
+  search.addEventListener("keydown", function (e) { if (e.key === "Escape" && search.value) { e.stopPropagation(); search.value = ""; runSearch(); } });
+
+  // ---------- panneau ----------
+  function openPanel(color, opener) {
+    panel.style.setProperty("--c", color);
+    panel.classList.add("open"); panel.setAttribute("aria-hidden", "false");
+    document.body.classList.add("pn-open");
+    if (opener) lastOpener = opener;
+    var t = $("#pn-title"); if (t) t.focus({ preventScroll: true });
+    setTimeout(draw, 240);
+  }
+  function closePanel() {
+    panel.classList.remove("open"); panel.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("pn-open");
+    ALL.forEach(function (it) { it.el.removeAttribute("aria-current"); });
+    cur = -1; setTimeout(draw, 240);
+    if (lastOpener && document.contains(lastOpener)) lastOpener.focus();
+  }
+  function openLeaf(i, opener) {
+    var it = ALL[i]; if (!it) return;
+    cur = i;
+    if (!it.br.classList.contains("open")) { setOpen(it.br, true); draw(); }
+    ALL.forEach(function (x) { x.el.removeAttribute("aria-current"); });
+    it.el.setAttribute("aria-current", "true");
+    var L = it.L, h = "";
+    h += '<h2 id="pn-title" tabindex="-1">' + L.t + "</h2>";
+    h += '<p class="pn-fx">' + L.f + "</p>";
+    if (L.sym && L.sym.length) {
+      h += "<h3>Grandeurs et unités</h3><table class=\"sym\"><tbody>";
+      L.sym.forEach(function (s) { h += "<tr><td>" + s[0] + "</td><td>" + s[1] + "</td><td>" + s[2] + "</td></tr>"; });
+      h += "</tbody></table>";
+    }
+    if (L.alt && L.alt.length) {
+      h += "<h3>" + (L.sym ? "Autres écritures" : "Équivalences") + '</h3><ul class="pn-alt">';
+      L.alt.forEach(function (a) { h += "<li>" + a + "</li>"; });
+      h += "</ul>";
+    }
+    if (L.note) h += '<h3>À retenir</h3><p class="pn-note">' + L.note + "</p>";
+    if (L.vu && L.vu.length) {
+      h += '<h3>Vu dans</h3><ul class="pn-vu">';
+      L.vu.forEach(function (v) { h += "<li>" + (VU[v] || v) + "</li>"; });
+      h += "</ul>";
+    }
+    $("#pn-body").innerHTML = h; $("#pn-body").scrollTop = 0;
+    $("#pn-tag").textContent = it.b.t;
+    $("#pn-nav").hidden = false;
+    $("#pn-prev").disabled = i === 0; $("#pn-next").disabled = i === ALL.length - 1;
+    openPanel(FAM[it.b.fam].c, opener);
+    setTimeout(function () { it.el.scrollIntoView({ block: "nearest", inline: "nearest" }); }, 250);
+  }
+  function openHomonymes(opener) {
+    var h = '<h2 id="pn-title" tabindex="-1">Une lettre, deux grandeurs</h2>' +
+      '<p class="pn-note">Le formulaire réutilise certaines lettres pour des grandeurs différentes. Avant d’appliquer une formule, regarde l’unité attendue : elle lève le doute.</p>' +
+      '<table class="homo"><thead><tr><th>Lettre</th><th>Sens 1</th><th>Sens 2</th></tr></thead><tbody>';
+    HOMONYMES.forEach(function (r) { h += "<tr><td>" + r[0] + "</td><td>" + r[1] + "</td><td>" + r[2] + "</td></tr>"; });
+    h += "</tbody></table>";
+    $("#pn-body").innerHTML = h; $("#pn-tag").textContent = "Pièges de notation";
+    $("#pn-nav").hidden = true;
+    ALL.forEach(function (x) { x.el.removeAttribute("aria-current"); });
+    cur = -1;
+    openPanel("#B42318", opener);
+  }
+  $("#pn-close").addEventListener("click", closePanel);
+  $("#pn-prev").addEventListener("click", function () { if (cur > 0) openLeaf(cur - 1); });
+  $("#pn-next").addEventListener("click", function () { if (cur < ALL.length - 1) openLeaf(cur + 1); });
+  $("#mm-homo").addEventListener("click", function () { openHomonymes(this); });
+  $("#mm-open").addEventListener("click", function () { BR.forEach(function (B) { setOpen(B.el, true); }); draw(); });
+  $("#mm-close").addEventListener("click", function () { BR.forEach(function (B) { setOpen(B.el, false); }); draw(); });
+  $("#mm-print").addEventListener("click", function () { window.print(); });
+  document.addEventListener("keydown", function (e) {
+    if (!panel.classList.contains("open")) return;
+    if (e.key === "Escape") { closePanel(); return; }
+    var tag = (e.target && e.target.tagName) || "";
+    if (tag === "INPUT" || cur < 0) return;
+    if (e.key === "ArrowRight" && cur < ALL.length - 1) { e.preventDefault(); openLeaf(cur + 1); }
+    if (e.key === "ArrowLeft" && cur > 0) { e.preventDefault(); openLeaf(cur - 1); }
+  });
+
+  // ---------- version imprimable ----------
+  (function () {
+    var h = '<div class="pf">';
+    MAP.forEach(function (b) {
+      h += '<section class="pf-br" style="--c:' + FAM[b.fam].c + '"><h2>' + b.t + "</h2>";
+      b.leaves.forEach(function (L) {
+        h += '<div class="pf-it"><p class="pf-t">' + L.t + '</p><p class="pf-f">' + L.f.replace(/<br>/g, " ; ") + "</p>";
+        if (L.sym) h += '<p class="pf-s">' + L.sym.map(function (s) { return "<b>" + s[0] + "</b> " + s[1] + " (" + s[2] + ")"; }).join(" ; ") + "</p>";
+        if (L.alt) h += '<p class="pf-a">' + (L.sym ? "Aussi : " : "") + L.alt.join(" ; ") + "</p>";
+        h += "</div>";
+      });
+      h += "</section>";
+    });
+    h += '<section class="pf-homo"><h2>Une lettre, deux grandeurs</h2>';
+    HOMONYMES.forEach(function (r) { h += "<p><b>" + r[0] + "</b> : " + r[1] + " ou " + r[2] + "</p>"; });
+    h += "</section></div>";
+    $("#mm-printout").innerHTML = h;
+  })();
+
+  $("#mm-count").textContent = ALL.length + " formules regroupées en " + BR.length + " thèmes.";
+  draw();
+  window.__map__ = { ALL: ALL, BR: BR, openLeaf: openLeaf, closePanel: closePanel, draw: draw,
+    isOpen: function () { return panel.classList.contains("open"); } };
+})();
+</script>
+<script>(function () {
+  "use strict";
+  var G = Grading;
+  function $(s, r) { return (r || document).querySelector(s); }
+  function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+  function fr(x, d) { return G.fmt(x, d); }
+  function plur(n, s, p) { return n + " " + (n > 1 ? (p || s + "s") : s); }
+
+  var TH = {}; Gen.THEMES.forEach(function (t) { TH[t.id] = t; });
+  var settings = { themes: Gen.THEMES.map(function (t) { return t.id; }), n: 10, level: "direct" };
+  var Q = [], state = [], dirty = false;
+
+  // ====================== RÉGLAGES ======================
+  var chips = $("#theme-chips");
+  Gen.THEMES.forEach(function (t) {
+    var l = document.createElement("label"); l.className = "chip"; l.style.setProperty("--c", t.c);
+    l.innerHTML = '<input type="checkbox" value="' + t.id + '" checked><span>' + t.t + "</span>";
+    chips.appendChild(l);
+  });
+  $("#th-all").addEventListener("click", function () { $$("input", chips).forEach(function (c) { c.checked = true; }); $("#set-warn").textContent = ""; });
+  $("#th-none").addEventListener("click", function () { $$("input", chips).forEach(function (c) { c.checked = false; }); });
+  var other = $("#n-other");
+  other.addEventListener("input", function () { if (other.value) $$("#n-seg input").forEach(function (r) { r.checked = false; }); });
+  $$("#n-seg input").forEach(function (r) { r.addEventListener("change", function () { other.value = ""; }); });
+
+  function readSettings() {
+    var th = $$("input:checked", chips).map(function (c) { return c.value; });
+    var r = $("#n-seg input:checked"), n = r ? +r.value : Math.round(+other.value);
+    var lv = "mixte";
+    if (!th.length) return "Coche au moins un thème.";
+    if (!n || n < 1 || n > 40) return "Choisis un nombre de questions entre 1 et 40.";
+    settings = { themes: th, n: n, level: lv };
+    return null;
+  }
+  $("#btn-start").addEventListener("click", function () {
+    var err = readSettings();
+    $("#set-warn").textContent = err || "";
+    if (!err) startSeries();
+  });
+
+  // ====================== SÉRIE ======================
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function dataLine(d) {
+    return "<li>" + d.lab + " : " + (d.w ? "" : "<b>" + d.s + "</b> = ") + d.v + (d.u ? " " + d.u : "") + "</li>";
+  }
+  function qHTML(q, i) {
+    var id = "q" + (i + 1);
+    return '<div class="q" id="' + id + '" data-i="' + i + '">' +
+      '<p class="q-stem"><span class="q-num">Q' + (i + 1) + "</span> <strong>" + q.stem + "</strong></p>" +
+      '<div class="data"><p class="data-title">Données</p><ul>' + q.data.map(dataLine).join("") + "</ul></div>" +
+      '<div class="q-row"><input type="text" class="q-input" id="in-' + id + '" aria-label="Réponse Q' + (i + 1) + '" autocomplete="off" autocapitalize="off" spellcheck="false">' +
+      '<button type="button" class="btn btn-validate">Valider</button><span class="q-status" aria-live="polite"></span>' +
+      '<span class="print-only pstat">Non validée : comptée fausse</span></div>' +
+      '<p class="q-msg" role="alert"></p>' +
+      '<div class="q-expl" hidden><p class="q-unit-msg" hidden></p><p class="q-expected"><span>Réponse attendue :</span> ' + q.expected + "</p>" +
+      '<div class="q-why">' + q.work.map(function (w) { return "<p>" + w + "</p>"; }).join("") + "</div></div></div>";
+  }
+  function renderQuestions() {
+    var html = "", part = 0, i = 0;
+    while (i < Q.length) {
+      var th = Q[i].th, start = i;
+      while (i < Q.length && Q[i].th === th) i++;
+      part++;
+      var n = i - start;
+      html += '<section class="part" id="partie-' + part + '" aria-labelledby="t-partie-' + part + '">' +
+        '<header class="part-head"><div class="part-num" aria-hidden="true">' + part + "</div><div>" +
+        '<h2 id="t-partie-' + part + '"><span class="sr-only">Partie ' + part + " : </span>" + TH[th].t + "</h2>" +
+        '<div class="duree">' + plur(n, "question") + ", 1 point chacune</div></div></header><div class=\"part-body\">";
+      for (var k = start; k < i; k++) html += qHTML(Q[k], k);
+      html += "</div></section>";
+    }
+    $("#qlist").innerHTML = html;
+    $$("#qlist .q").forEach(function (root) {
+      var i = +root.getAttribute("data-i"), input = $(".q-input", root);
+      $(".btn-validate", root).addEventListener("click", function () { validate(i); });
+      input.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); validate(i); } });
+      input.addEventListener("input", function () { dirty = true; $(".q-msg", root).textContent = ""; });
+    });
+    var names = settings.themes.map(function (t) { return TH[t].t; });
+    var thTxt = names.length === Gen.THEMES.length ? "sur les " + names.length + " thèmes" : "sur " + plur(names.length, "thème") + " (" + names.join(", ") + ")";
+    $("#cart-sum").textContent = plur(Q.length, "question") + " " + thTxt + ". Chaque question vaut 1 point.";
+  }
+
+  function startSeries() {
+    Q = Gen.series(settings.themes, settings.n, settings.level);
+    state = Q.map(function () { return { validated: false, score: 0 }; });
+    dirty = false;
+    renderQuestions();
+    document.body.classList.remove("no-mode");
+    document.body.classList.add("mode-training", "corrections-open");
+    resetConfirm();
+    resetTimer(); startTimer();
+    updateScore();
+    window.scrollTo(0, 0);
+    var h1 = $(".cartouche h1"); h1.setAttribute("tabindex", "-1"); h1.focus();
+  }
+
+  // ====================== VALIDATION ======================
+  function statusText(r) {
+    if (r.score === 1) return "✓ Juste";
+    if (r.score === 0.5) return r.unit === "wrong" ? "≈ Valeur juste, unité incorrecte : ½ point" : "≈ Valeur juste, unité manquante : ½ point";
+    return "✗ Faux";
+  }
+  function validate(i) {
+    if (!Q[i] || state[i].validated) return;
+    var root = document.getElementById("q" + (i + 1)), input = $(".q-input", root), msg = $(".q-msg", root);
+    var r = G.grade(Gen.prep(input.value), Q[i].grader);
+    if (r.invalid) { msg.textContent = r.invalid; input.focus(); return; }
+    msg.textContent = "";
+    state[i] = { validated: true, score: r.score, unit: r.unit, value: input.value };
+    input.disabled = true; input.setAttribute("aria-invalid", r.score === 1 ? "false" : "true");
+    $(".btn-validate", root).disabled = true;
+    root.classList.remove("is-ok", "is-ko", "is-half");
+    root.classList.add(r.score === 1 ? "is-ok" : (r.score === 0.5 ? "is-half" : "is-ko"));
+    $(".q-status", root).textContent = statusText(r);
+    $(".pstat", root).textContent = statusText(r).replace(/^[✓≈✗] /, "");
+    var um = $(".q-unit-msg", root);
+    if (r.score === 0.5) {
+      um.textContent = (r.unit === "wrong" ? "Unité incorrecte" : "Unité manquante") + " : la valeur est juste, mais l’unité attendue (" + r.unitLabel + ") vaut la moitié des points.";
+      um.hidden = false;
+    } else um.hidden = true;
+    var ex = $(".q-expl", root); ex.hidden = false; ex.classList.add("reveal");
+    dirty = true;
+    updateScore();
+  }
+
+  // ====================== NOTE ======================
+  function updateScore() {
+    var done = 0, pts = 0, half = 0;
+    state.forEach(function (s) { if (s.validated) { done++; pts += s.score; if (s.score === 0.5) half++; } });
+    var n = Q.length;
+    $("#score-val").innerHTML = (done ? fr(Math.round(pts / done * 200) / 10, 1) : "?") + "<small>/20</small>";
+    $("#score-count").textContent = done + " question" + (done > 1 ? "s" : "") + " validée" + (done > 1 ? "s" : "") + " sur " + n +
+      ", " + fr(pts, 1) + " point" + (pts > 1 ? "s" : "") + (half ? ", " + half + " demi-point" + (half > 1 ? "s" : "") + " d’unité" : "");
+    var fin = n ? Math.round(pts / n * 200) / 10 : 0;
+    $$(".final-note").forEach(function (el) { el.textContent = fr(fin, 1) + "/20"; });
+    var rows = [], i = 0;
+    while (i < n) {
+      var th = Q[i].th, c = 0, v = 0, p = 0;
+      while (i < n && Q[i].th === th) { c++; if (state[i].validated) { v++; p += state[i].score; } i++; }
+      rows.push('<tr><th scope="row">' + TH[th].t + "</th><td>" + c + "</td><td>" + v + "</td><td>" + fr(p, 1) + " / " + c +
+        '</td><td class="rc-note">' + fr(Math.round(p / c * 200) / 10, 1) + "</td></tr>");
+    }
+    $("#recap-body").innerHTML = rows.join("");
+    $$(".final-detail").forEach(function (el) {
+      el.textContent = fr(pts, 1) + " point" + (pts > 1 ? "s" : "") + " sur " + n + ", dont " + plur(half, "demi-point") + " perdu" + (half > 1 ? "s" : "") +
+        " sur les unités. " + plur(n - done, "question") + " non validée" + (n - done > 1 ? "s" : "") + ", comptée" + (n - done > 1 ? "s" : "") + " à zéro.";
+    });
+  }
+
+  // ====================== CHRONOMÈTRE ======================
+  var tStart = 0, tTick = null;
+  function elapsedMs() { return tStart ? Date.now() - tStart : 0; }
+  function hms(ms) {
+    var s = Math.floor(ms / 1000), h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60);
+    return h + ":" + String(m).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+  }
+  function longTime(ms) {
+    var s = Math.floor(ms / 1000), h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60);
+    return h ? h + " h " + String(m).padStart(2, "0") + " min" : m + " min " + String(s % 60).padStart(2, "0") + " s";
+  }
+  function renderTimer() {
+    var el = $("#timer-val"); el.textContent = hms(elapsedMs());
+    el.classList.toggle("over", elapsedMs() > Q.length * 2 * 60000);
+  }
+  function resetTimer() { if (tTick) clearInterval(tTick); tTick = null; tStart = 0; renderTimer(); }
+  function startTimer() { tStart = Date.now(); tTick = setInterval(renderTimer, 1000); renderTimer(); }
+
+  // ====================== NOUVELLE SÉRIE / RÉGLAGES ======================
+  var confirmT = null;
+  function resetConfirm() {
+    clearTimeout(confirmT);
+    $("#btn-again").textContent = "Nouvelle série, mêmes réglages"; delete $("#btn-again").dataset.armed;
+    $("#btn-settings").textContent = "Changer les réglages"; delete $("#btn-settings").dataset.armed;
+  }
+  function guarded(btn, label, action) {
+    btn.addEventListener("click", function () {
+      if (dirty && !btn.dataset.armed) {
+        resetConfirm(); btn.dataset.armed = "1"; btn.textContent = label;
+        confirmT = setTimeout(resetConfirm, 4000); return;
+      }
+      resetConfirm(); action();
+    });
+  }
+  guarded($("#btn-again"), "Confirmer : effacer cette série", startSeries);
+  guarded($("#btn-settings"), "Confirmer : quitter cette série", function () {
+    resetTimer(); dirty = false;
+    document.body.classList.remove("mode-training", "corrections-open");
+    document.body.classList.add("no-mode");
+    window.scrollTo(0, 0);
+  });
+
+  // ====================== IMPRESSION ======================
+  function preparePrint() {
+    updateScore();
+    var nom = $("#nom-eleve").value.trim();
+    $$(".print-nom").forEach(function (el) { el.textContent = nom || "________________"; });
+    $$(".print-date").forEach(function (el) { el.textContent = new Date().toLocaleDateString("fr-FR"); });
+    $$(".print-mode").forEach(function (el) { el.textContent = $("#cart-sum").textContent.replace(/ Chaque question vaut 1 point\.$/, ""); });
+    $$(".print-time").forEach(function (el) { el.textContent = longTime(elapsedMs()); });
+  }
+  window.addEventListener("beforeprint", preparePrint);
+  $(".btn-print").addEventListener("click", function () { preparePrint(); window.print(); });
+  window.addEventListener("beforeunload", function (e) { if (!dirty) return; e.preventDefault(); e.returnValue = ""; });
+
+  window.__ex__ = { Q: function () { return Q; }, state: function () { return state; }, settings: function () { return settings; },
+    startSeries: startSeries, validate: validate, elapsedMs: elapsedMs,
+    active: function () { return Q.length > 0 && !document.body.classList.contains("no-mode"); } };
+})();
+</script>
+<script>(function () {
+  "use strict";
+  var b = document.body;
+  function show(v) {
+    if (v !== "map" && window.__map__ && window.__map__.isOpen()) window.__map__.closePanel();
+    b.classList.remove("view-menu", "view-map", "view-ex");
+    b.classList.add("view-" + v);
+    var ex = document.getElementById("menu-ex");
+    ex.textContent = window.__ex__ && window.__ex__.active() ? "Reprendre ma série" : "Choisir mes exercices";
+    window.scrollTo(0, 0);
+    if (v === "map" && window.__map__) window.__map__.draw();
+    var h = v === "map" ? document.querySelector("#view-map h1") : v === "ex" ? document.querySelector(window.__ex__ && window.__ex__.active() ? ".cartouche h1" : "#home-title") : document.getElementById("menu-title");
+    if (h && !first) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); }
+  }
+  function route() {
+    var h = location.hash.replace("#", "");
+    show(h === "formulaire" ? "map" : (h === "exercices" ? "ex" : "menu"));
+  }
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest ? e.target.closest("[data-go]") : null;
+    if (!t) return;
+    var g = t.getAttribute("data-go"), target = g === "menu" ? "" : "#" + g;
+    if ((location.hash || "") === target || (target === "" && location.hash === "#")) route();
+    else location.hash = target;
+  });
+  window.addEventListener("hashchange", route);
+  var first = true;
+  route();
+  first = false;
+})();</script>
+</body>
+</html>

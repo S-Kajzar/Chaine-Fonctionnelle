@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portail automatique — la chaîne fonctionnelle animée</title>
+<meta name="description" content="Animation pas à pas de l'ouverture et de la fermeture d'un portail coulissant automatique : chaîne d'information (acquérir, traiter, communiquer) et chaîne d'énergie (alimenter, distribuer, convertir, transmettre).">
+<style>
+:root{
+  --beton:#E3E5E0; --papier:#FFFFFF; --encre:#1C2530; --encre-2:#46525C;
+  --trait:#A5ADAA; --trait-fin:#D3D8D5;
+  --jaune:#F2B705; --jaune-pale:#FFF3C4;
+  --bleu:#1F5FA8; --bleu-pale:#E6EEF8;
+  --orange:#B26A00; --orange-pale:#FCEFD8; --rouge:#B42318;
+  --f-titre:"Bahnschrift","DIN Alternate","DIN Condensed","Roboto Condensed","Arial Narrow",sans-serif;
+  --f-texte:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--beton); color:var(--encre); font:16px/1.55 var(--f-texte); font-variant-numeric:tabular-nums}
+button,select,input{font:inherit; color:inherit}
+:focus-visible{outline:3px solid var(--bleu); outline-offset:2px}
+
+/* ---------- mise en page : une seule vue ---------- */
+.app{padding:10px; display:flex; flex-direction:column; gap:10px}
+.topbar{display:flex; align-items:stretch; background:var(--papier); border:2px solid var(--encre); border-left:10px solid var(--jaune); min-height:44px}
+.topbar h1{margin:0; padding:7px 14px; font:700 clamp(1.15rem,1.6vw,1.65rem)/1.15 var(--f-titre); letter-spacing:-.01em;
+  flex:1 1 auto; min-width:0; align-self:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.scenarios{display:flex; flex:0 0 auto}
+.scenarios button{border:0; border-left:2px solid var(--encre); background:#F4F5F2; padding:6px 16px; font:700 .95rem var(--f-titre); cursor:pointer; white-space:nowrap}
+.scenarios button[aria-selected="true"]{background:var(--encre); color:var(--jaune)}
+.main{display:grid; grid-template-columns:minmax(0,1fr); gap:10px}
+.visuals{display:flex; flex-direction:column; gap:10px; min-width:0}
+.side{display:flex; flex-direction:column; gap:10px; min-width:0}
+.card{background:var(--papier); border:2px solid var(--encre)}
+.scene-card{padding:6px}
+.scene-card svg{display:block; width:100%; height:auto}
+.chain-card{padding:4px 6px 6px}
+.chain-head{display:flex; align-items:baseline; gap:6px 16px; flex-wrap:wrap; padding:0 4px 4px; min-height:22px}
+.chain-head h2{margin:0; font:700 1.05rem var(--f-titre)}
+.legend{display:flex; gap:14px; flex-wrap:wrap; font-size:.8rem; color:var(--encre-2)}
+.legend span{display:inline-flex; align-items:center; gap:6px}
+.legend i{display:inline-block; width:24px; height:0; border-top:3px solid}
+.chain-wrap{overflow-x:auto}
+.chain-wrap svg{display:block; width:100%; min-width:640px; height:auto}
+
+/* panneau d'explication */
+.explain{border-left:8px solid var(--trait); padding:12px 16px 14px; display:flex; flex-direction:column; transition:border-color .3s;
+  font-size:clamp(15px,1.05vw,20px); line-height:1.5}
+.explain.k-info{border-left-color:var(--bleu)} .explain.k-ener{border-left-color:var(--orange)}
+.explain.k-sys{border-left-color:var(--jaune)} .explain.k-both{border-left-color:var(--encre)}
+.ex-head{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:4px}
+.ex-step{font:700 .85em var(--f-titre); background:var(--encre); color:#fff; padding:2px 8px}
+.chip{font:700 .78em var(--f-titre); padding:2px 8px; border:1.5px solid}
+.chip.info{color:var(--bleu); border-color:var(--bleu); background:var(--bleu-pale)}
+.chip.ener{color:var(--orange); border-color:var(--orange); background:var(--orange-pale)}
+.chip.sys{color:var(--encre); border-color:var(--encre); background:var(--jaune-pale)}
+.explain h2{margin:2px 0 6px; font:700 1.38em/1.15 var(--f-titre)}
+.ex-text p{margin:.3em 0} .ex-text ul{margin:.25em 0; padding-left:1.15em} .ex-text li{margin:.2em 0}
+.ex-text .ti{color:var(--bleu)} .ex-text .te{color:var(--orange)}
+.fiche{margin:auto 0 0; padding-top:10px; display:grid; grid-template-columns:auto 1fr; border-top:1px dashed var(--trait); font-size:.88em}
+.fiche dt{font:700 .85em/1.9 var(--f-titre); color:var(--encre-2); padding-right:12px; text-transform:uppercase; letter-spacing:.03em}
+.fiche dd{margin:0; padding:2px 0; font-weight:600}
+.reveal{animation:reveal .35s ease-out}
+@keyframes reveal{from{opacity:0; transform:translateY(-4px)}to{opacity:1; transform:none}}
+
+/* ---------- commandes ---------- */
+.controls{padding:8px 10px; display:flex; flex-direction:column; gap:8px}
+.ctl-row{display:flex; gap:6px; flex-wrap:wrap; align-items:center}
+.btn{border:1.5px solid var(--encre); background:var(--encre); color:#fff; padding:7px 12px; border-radius:2px; cursor:pointer; font-weight:600; white-space:nowrap}
+.btn:hover{background:#2E3B47}
+.btn:disabled{background:#9AA2A8; border-color:#9AA2A8; cursor:not-allowed}
+.btn.ghost{background:#fff; color:var(--encre)} .btn.ghost:hover{background:var(--jaune-pale)}
+.btn.ghost:disabled{background:#F2F3F1; color:#9AA2A8}
+.btn.play{background:var(--jaune); color:var(--encre); border-color:var(--encre); flex:1 1 8em}
+.btn.play:hover{background:#FFD447}
+.timeline{display:flex; flex-direction:column; gap:5px}
+.dots{display:flex; gap:4px; flex-wrap:wrap}
+.dots button{width:28px; height:26px; border:1.5px solid var(--encre); background:#fff; font:700 .8rem var(--f-titre); cursor:pointer; padding:0}
+.dots button.d-info{border-bottom:4px solid var(--bleu)} .dots button.d-ener{border-bottom:4px solid var(--orange)}
+.dots button.d-sys{border-bottom:4px solid var(--jaune)} .dots button.d-both{border-bottom:4px solid var(--encre)}
+.dots button.seen{background:#EEF0EC}
+.dots button[aria-current="step"]{background:var(--encre); color:var(--jaune)}
+.bar{height:5px; background:var(--trait-fin)} .bar span{display:block; height:100%; width:0; background:var(--jaune)}
+.opts{display:flex; gap:6px 14px; flex-wrap:wrap; align-items:center; font-size:.85rem; color:var(--encre-2)}
+.opts label{display:inline-flex; gap:6px; align-items:center; cursor:pointer}
+.opts select{border:1.5px solid var(--encre-2); background:#fff; padding:3px 4px; color:var(--encre)}
+.opts .hint{margin-left:auto}
+
+/* ---------- écran ou vidéoprojecteur : tout tient dans la hauteur ----------
+   Hauteur disponible pour les deux schémas = 100vh − 150 px (bandeau, marges, cadres).
+   Somme des inverses des proportions des deux schémas : 364/960 + 296/960 = 0,6875,
+   d'où une largeur maximale de colonne = (100vh − 150 px) × 1,4545 + cadre.            */
+@media (min-width:900px) and (min-height:460px) and (orientation:landscape){
+  html,body{height:100%}
+  .app{height:100vh; height:100dvh; box-sizing:border-box}
+  .main{flex:1 1 auto; min-height:0;
+    grid-template-columns:min(calc((100vh - 150px) * 1.4545 + 16px), calc(100vw - 360px)) minmax(330px,1fr);
+    grid-template-columns:min(calc((100dvh - 150px) * 1.4545 + 16px), calc(100vw - 360px)) minmax(330px,1fr)}
+  .side{min-height:0}
+  .explain{flex:1 1 auto; min-height:0; overflow-y:auto}
+  .chain-wrap{overflow:visible}
+  .chain-wrap svg{min-width:0}
+}
+/* écrans étroits (vidéoprojecteurs 4:3) : le panneau d'explication garde une largeur lisible */
+@media (min-width:900px) and (max-width:1180px) and (min-height:460px) and (orientation:landscape){
+  .main{grid-template-columns:min(calc((100vh - 150px) * 1.4545 + 16px), calc(100vw - 440px)) minmax(420px,1fr);
+    grid-template-columns:min(calc((100dvh - 150px) * 1.4545 + 16px), calc(100vw - 440px)) minmax(420px,1fr)}
+  .explain{font-size:14.5px}
+}
+
+/* SVG — chaîne */
+.blk rect{fill:#fff; stroke-width:2; transition:fill .3s, stroke-width .3s}
+.blk.info rect{stroke:var(--bleu)} .blk.ener rect{stroke:var(--orange)} .blk.act rect{stroke:var(--encre); stroke-dasharray:6 4}
+.blk text{text-anchor:middle; fill:var(--encre)}
+.blk .verb{font:700 16px var(--f-titre); letter-spacing:.04em}
+.blk.info .verb{fill:var(--bleu)} .blk.ener .verb{fill:var(--orange)}
+.blk .cmp{font:500 12.5px var(--f-texte)}
+.blk .frm{font:italic 600 11.5px var(--f-texte); fill:var(--encre-2)}
+.blk{transition:opacity .3s}
+.focus .blk:not(.on){opacity:.42}
+.blk.info.on rect{fill:var(--bleu-pale); stroke-width:4}
+.blk.ener.on rect{fill:var(--orange-pale); stroke-width:4}
+.blk.act.on rect{fill:var(--jaune-pale); stroke-width:3.5}
+.fl{fill:none; stroke-width:2; transition:stroke .3s, stroke-width .3s}
+.fl.k-info{stroke:#9DB6D6} .fl.k-ener{stroke:#DDBB8A}
+.fl.k-info.on{stroke:var(--bleu); stroke-width:3.2} .fl.k-ener.on{stroke:var(--orange); stroke-width:3.2}
+.fl.dash{stroke-dasharray:7 5}
+.clab{font:600 12.5px var(--f-texte); fill:var(--encre-2)}
+.clab.b{fill:var(--bleu)} .clab.o{fill:var(--orange)}
+.rowtitle{font:700 13px var(--f-titre); letter-spacing:.06em}
+
+/* SVG — scène */
+.lab{font:600 14px var(--f-texte); fill:var(--encre); paint-order:stroke; stroke:#fff; stroke-width:4px; stroke-linejoin:round}
+.lead-line{stroke:#6B7580; stroke-width:1.2; fill:none}
+.hide-labels .labels{display:none}
+.part{transition:filter .3s}
+.part.hl{animation:glow 1.4s ease-in-out infinite}
+@keyframes glow{0%,100%{filter:drop-shadow(0 0 2px #F2B705) drop-shadow(0 0 5px #F2B705)}50%{filter:drop-shadow(0 0 4px #F2B705) drop-shadow(0 0 11px #F2B705)}}
+.in-cell rect.cell{fill:#F7F8F6; stroke:#A5ADAA; stroke-width:1.5; transition:fill .3s, stroke .3s}
+.in-cell.hl rect.cell{fill:var(--jaune-pale); stroke:var(--jaune); stroke-width:3.5}
+.in-cell text{font:600 11px var(--f-texte); fill:var(--encre); text-anchor:middle}
+.lamp{fill:#C08A2A}
+.glow{fill:#F2B705; opacity:0}
+.blink .lamp{animation:lamp .6s steps(1) infinite}
+.blink .glow{animation:lampglow .6s steps(1) infinite}
+@keyframes lamp{0%{fill:#FFB000}50%{fill:#9A6A16}}
+@keyframes lampglow{0%{opacity:.55}50%{opacity:0}}
+.wave{fill:none; stroke:var(--bleu); stroke-width:3; stroke-linecap:round; opacity:0}
+.waves-on .wave{animation:wave 1.2s ease-out infinite}
+.waves-on .wave.w2{animation-delay:.2s} .waves-on .wave.w3{animation-delay:.4s}
+@keyframes wave{0%{opacity:0}30%{opacity:1}100%{opacity:0}}
+#beam{stroke:#E06666; stroke-width:2; stroke-dasharray:6 5; opacity:.75; transition:stroke .2s}
+#beam.cut{stroke:var(--rouge); stroke-width:3.5; stroke-dasharray:none; opacity:1}
+#s-radio{stroke:var(--bleu); stroke-width:2; stroke-dasharray:4 6; fill:none; opacity:0; transition:opacity .3s}
+#s-radio.on{opacity:.8}
+#s-power{stroke:#59636C; stroke-width:4; fill:none; transition:stroke .3s}
+#s-power.on{stroke:var(--orange)}
+#ball{transition:transform 1.3s cubic-bezier(.3,.7,.4,1)}
+.ptc-info{fill:var(--bleu); stroke:#fff; stroke-width:1.5}
+.ptc-ener{fill:#E98A00; stroke:#fff; stroke-width:1.5}
+
+@media (prefers-reduced-motion:reduce){ .part.hl,.waves-on .wave{animation:none} .part.hl{filter:drop-shadow(0 0 5px #F2B705)} }
+</style>
+</head>
+<body>
+<div class="app">
+
+<header class="topbar">
+  <h1>Portail automatique : la chaîne fonctionnelle</h1>
+  <div class="scenarios" role="tablist" aria-label="Choisir le scénario">
+    <button type="button" role="tab" data-sc="0" aria-selected="true">1. Ouverture</button>
+    <button type="button" role="tab" data-sc="1" aria-selected="false">2. Fermeture et sécurité</button>
+  </div>
+</header>
+
+<div class="main">
+  <div class="visuals">
+    <section class="card scene-card" aria-label="Animation du portail">
+    <svg id="scene" viewBox="0 56 960 364" role="img" aria-labelledby="scene-desc">
+      <desc id="scene-desc">Vue de face d'un portail coulissant entre deux piliers, avec télécommande, antenne, feu clignotant, cellules photoélectriques, boîtier moteur avec pignon engrenant sur la crémaillère, et arrivée du réseau électrique.</desc>
+      <defs>
+        <pattern id="stone" width="40" height="20" patternUnits="userSpaceOnUse">
+          <rect width="40" height="20" fill="#DAD5C8"/>
+          <path d="M0 .5H40M0 10.5H40M20 0V10M.5 10V20" stroke="#BDB6A5" stroke-width="1"/>
+        </pattern>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#DCE7EE"/><stop offset="1" stop-color="#F1F4F5"/></linearGradient>
+      </defs>
+      <rect width="960" height="330" fill="url(#sky)"/>
+      <rect y="330" width="960" height="90" fill="#D3D6CF"/>
+      <line x1="0" y1="330.5" x2="960" y2="330.5" stroke="#9AA19C"/>
+      <!-- murs de clôture -->
+      <rect x="0" y="214" width="70" height="116" fill="url(#stone)" stroke="#9A9384"/>
+      <rect x="516" y="214" width="444" height="116" fill="url(#stone)" stroke="#9A9384"/>
+      <rect x="516" y="206" width="444" height="10" fill="#BDB6A5"/>
+      <rect x="0" y="206" width="70" height="10" fill="#BDB6A5"/>
+      <!-- rail -->
+      <rect x="96" y="320" width="864" height="5" fill="#59636C"/>
+
+      <!-- portail (déplacé par le script) -->
+      <g id="gate" class="part" transform="translate(104,0)">
+        <g id="gate-bars"></g>
+        <rect x="3.5" y="112" width="463" height="196" fill="none" stroke="#1C2530" stroke-width="7"/>
+        <rect x="0" y="203" width="470" height="7" fill="#1C2530"/>
+        <g id="rack">
+          <rect x="0" y="262" width="470" height="8" fill="#8A939B" stroke="#46525C" stroke-width="1"/>
+          <path id="rack-teeth" fill="#8A939B" stroke="#46525C" stroke-width=".8"/>
+        </g>
+        <rect x="74" y="275" width="12" height="6" fill="#B42318"/>
+        <rect x="458" y="275" width="12" height="6" fill="#B42318"/>
+        <g class="wheel" transform="translate(60,313)"><g class="wr"><circle r="7.5" fill="#46525C"/><line x1="-5" y1="0" x2="5" y2="0" stroke="#fff" stroke-width="1.6"/></g></g>
+        <g class="wheel" transform="translate(410,313)"><g class="wr"><circle r="7.5" fill="#46525C"/><line x1="-5" y1="0" x2="5" y2="0" stroke="#fff" stroke-width="1.6"/></g></g>
+        <g class="labels">
+          <text class="lab" x="92" y="196" text-anchor="middle">Portail coulissant</text>
+          <text class="lab" x="250" y="292" text-anchor="middle" style="font-size:12px">crémaillère</text>
+        </g>
+      </g>
+
+      <!-- piliers -->
+      <rect x="70" y="128" width="36" height="202" fill="#CFCBC0" stroke="#1C2530" stroke-width="2"/>
+      <rect x="64" y="122" width="48" height="10" fill="#BDB6A5" stroke="#1C2530" stroke-width="1.5"/>
+      <rect x="480" y="128" width="36" height="202" fill="#CFCBC0" stroke="#1C2530" stroke-width="2"/>
+      <rect x="474" y="122" width="48" height="10" fill="#BDB6A5" stroke="#1C2530" stroke-width="1.5"/>
+
+      <!-- feu clignotant -->
+      <g id="feu" class="part">
+        <circle class="glow" cx="496" cy="104" r="22"/>
+        <rect x="485" y="112" width="22" height="10" fill="#46525C"/>
+        <path class="lamp" d="M486 112A10 13 0 0 1 506 112Z" stroke="#1C2530" stroke-width="1.2"/>
+      </g>
+      <!-- antenne -->
+      <g id="antenna" class="part">
+        <line x1="515" y1="122" x2="515" y2="78" stroke="#1C2530" stroke-width="2.5"/>
+        <circle cx="515" cy="76" r="3.5" fill="#1C2530"/>
+      </g>
+
+      <!-- cellules photoélectriques -->
+      <g id="cells" class="part">
+        <rect x="112" y="300" width="9" height="30" fill="#59636C"/>
+        <rect x="109" y="292" width="15" height="18" rx="2" fill="#1C2530"/>
+        <circle cx="121" cy="301" r="2.5" fill="#E06666"/>
+        <rect x="465" y="300" width="9" height="30" fill="#59636C"/>
+        <rect x="462" y="292" width="15" height="18" rx="2" fill="#1C2530"/>
+        <circle cx="465" cy="301" r="2.5" fill="#E06666"/>
+      </g>
+      <line id="beam" x1="124" y1="301" x2="462" y2="301"/>
+
+      <!-- obstacle -->
+      <g id="ball" style="transform:translate(-60px,312px)">
+        <circle r="18" fill="#2E86C1" stroke="#1C2530" stroke-width="1.5"/>
+        <path d="M-18 0Q0 -9 18 0M-6 -17Q4 0 -6 17" fill="none" stroke="#fff" stroke-width="2"/>
+      </g>
+
+      <!-- boîtier moteur -->
+      <g id="motorbox" class="part">
+        <rect x="522" y="284" width="84" height="46" rx="3" fill="#E7E2D3" stroke="#1C2530" stroke-width="2"/>
+        <circle cx="584" cy="310" r="10" fill="#fff" stroke="#1C2530" stroke-width="1.5"/>
+        <text x="584" y="314.5" text-anchor="middle" style="font:700 12px var(--f-titre)">M</text>
+      </g>
+      <g id="fdc" class="part"><rect x="562" y="279" width="12" height="9" fill="#46525C" stroke="#1C2530" stroke-width="1"/></g>
+      <g id="pinion" class="part" transform="translate(548,284)">
+        <g id="pinion-rot"><path id="pinion-path" fill="#59636C" stroke="#1C2530" stroke-width="1"/>
+          <circle r="3.2" fill="#fff"/><line x1="0" y1="-3" x2="0" y2="-9" stroke="#fff" stroke-width="1.6"/></g>
+      </g>
+
+      <!-- réseau électrique -->
+      <path id="s-power" data-kind="ener" d="M470 377C505 377 528 362 540 330"/>
+      <g id="power" class="part">
+        <rect x="390" y="352" width="80" height="50" fill="#fff" stroke="#1C2530" stroke-width="2"/>
+        <path d="M410 360L401 378H410L404 394L421 372H411L417 360Z" fill="var(--jaune)" stroke="#1C2530" stroke-width="1"/>
+        <text x="443" y="373" text-anchor="middle" style="font:700 12px var(--f-titre)">Réseau</text>
+        <text x="443" y="389" text-anchor="middle" style="font:700 12px var(--f-titre)">230 V</text>
+      </g>
+
+      <!-- télécommande -->
+      <path id="s-radio" data-kind="info" d="M64 350Q262 150 511 80"/>
+      <g id="remote" class="part">
+        <path class="wave w1" d="M37 336A14 14 0 0 1 57 336"/>
+        <path class="wave w2" d="M31 328A23 23 0 0 1 63 328"/>
+        <path class="wave w3" d="M25 320A32 32 0 0 1 69 320"/>
+        <rect x="30" y="345" width="34" height="62" rx="9" fill="#1C2530"/>
+        <circle cx="47" cy="364" r="7" fill="var(--jaune)"/>
+        <circle cx="47" cy="386" r="4.5" fill="#8A939B"/>
+      </g>
+
+      <!-- intérieur du boîtier -->
+      <path class="lead-line" d="M606 316H613V372H620" stroke-dasharray="4 3"/>
+      <g id="inset">
+        <rect x="620" y="338" width="332" height="78" fill="#fff" stroke="#1C2530" stroke-width="1.5"/>
+        <text x="628" y="352" style="font:700 12px var(--f-titre)">Dans le boîtier moteur</text>
+        <g id="in-transfo" class="in-cell"><rect class="cell" x="626" y="357" width="60" height="54"/>
+          <circle cx="650" cy="372" r="7" fill="none" stroke="#1C2530" stroke-width="1.6"/><circle cx="660" cy="372" r="7" fill="none" stroke="#1C2530" stroke-width="1.6"/>
+          <text x="656" y="393">Transfo</text><text x="656" y="406">230→24 V</text></g>
+        <g id="in-recep" class="in-cell"><rect class="cell" x="692" y="357" width="60" height="54"/>
+          <path d="M722 380V364M716 366L722 361L728 366M714 371Q722 362 730 371" fill="none" stroke="#1C2530" stroke-width="1.6"/>
+          <text x="722" y="393">Récepteur</text><text x="722" y="406">radio</text></g>
+        <g id="in-uc" class="in-cell"><rect class="cell" x="758" y="357" width="60" height="54"/>
+          <rect x="778" y="363" width="20" height="16" fill="#1B5E3A"/><path d="M781 361V363M786 361V363M791 361V363M796 361V363M781 379V381M786 379V381M791 379V381M796 379V381" stroke="#1C2530" stroke-width="1.4"/>
+          <text x="788" y="393">Micro-</text><text x="788" y="406">contrôleur</text></g>
+        <g id="in-relais" class="in-cell"><rect class="cell" x="824" y="357" width="60" height="54"/>
+          <rect x="836" y="364" width="12" height="16" fill="none" stroke="#1C2530" stroke-width="1.6"/><path d="M856 380L870 368M856 380H852M870 380H875" stroke="#1C2530" stroke-width="1.6" fill="none"/>
+          <text x="854" y="393">Relais</text><text x="854" y="406">(puissance)</text></g>
+        <g id="in-moteur" class="in-cell"><rect class="cell" x="890" y="357" width="56" height="54"/>
+          <circle cx="918" cy="372" r="9" fill="#fff" stroke="#1C2530" stroke-width="1.6"/><text x="918" y="376" style="font:700 10px var(--f-titre)">M</text>
+          <text x="918" y="393">Moteur +</text><text x="918" y="406">réducteur</text></g>
+      </g>
+
+      <g id="ptc-scene"></g>
+
+      <!-- noms des composants -->
+      <g class="labels">
+        <text class="lab" x="8" y="340">Télécommande</text>
+        <path class="lead-line" d="M470 92L486 106"/><text class="lab" x="468" y="90" text-anchor="end">Feu clignotant</text>
+        <text class="lab" x="524" y="72">Antenne</text>
+        <text class="lab" x="292" y="294" text-anchor="middle" style="font-size:12px">faisceau des cellules photoélectriques</text>
+        <path class="lead-line" d="M634 254L558 272"/><text class="lab" x="638" y="258">Pignon</text>
+        <path class="lead-line" d="M634 286L575 284"/><text class="lab" x="638" y="290">Fin de course</text>
+        <text class="lab" x="564" y="347" text-anchor="middle" style="font-size:12px">Boîtier moteur</text>
+      </g>
+    </svg>
+    </section>
+    <section class="card chain-card" aria-labelledby="t-chain">
+      <div class="chain-head"><h2 id="t-chain">Chaîne fonctionnelle</h2>
+        <div class="legend">
+          <span><i style="border-color:var(--bleu)"></i> information</span>
+          <span><i style="border-color:var(--orange)"></i> énergie</span>
+          <span><i style="border-top-style:dashed; border-color:var(--bleu)"></i> compte rendu des capteurs</span>
+        </div></div>
+      <div class="chain-wrap">
+      <svg id="chain" viewBox="0 0 960 296" role="img" aria-label="Schéma de la chaîne d'information au-dessus de la chaîne d'énergie, reliées par les ordres">
+      <defs>
+        <marker id="ah-info-l" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#9DB6D6"/></marker>
+        <marker id="ah-info" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#1F5FA8"/></marker>
+        <marker id="ah-ener-l" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#DDBB8A"/></marker>
+        <marker id="ah-ener" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#B26A00"/></marker>
+      </defs>
+
+      <text class="rowtitle" x="20" y="116" fill="#1F5FA8">CHAÎNE</text>
+      <text class="rowtitle" x="20" y="131" fill="#1F5FA8">D'INFORMATION</text>
+      <text class="rowtitle" x="20" y="266" fill="#B26A00">CHAÎNE</text>
+      <text class="rowtitle" x="20" y="281" fill="#B26A00">D'ÉNERGIE</text>
+
+      <!-- flux -->
+      <path class="fl k-info dash" id="f-retour" data-kind="info" d="M920 190V22H230V40"/>
+      <path class="fl k-info" id="f-in-info" data-kind="info" d="M20 85H150"/>
+      <path class="fl k-info" id="f-acq-tra" data-kind="info" d="M310 85H350"/>
+      <path class="fl k-info" id="f-tra-com" data-kind="info" d="M510 85H550"/>
+      <path class="fl k-info" id="f-com-out" data-kind="info" d="M710 70H880"/>
+      <path class="fl k-info" id="f-ordre" data-kind="info" d="M630 130V160H399V190"/>
+      <path class="fl k-ener" id="f-in-ener" data-kind="ener" d="M20 235H150"/>
+      <path class="fl k-ener" id="f-ali-dis" data-kind="ener" d="M296 235H326"/>
+      <path class="fl k-ener" id="f-dis-con" data-kind="ener" d="M472 235H502"/>
+      <path class="fl k-ener" id="f-con-tra" data-kind="ener" d="M648 235H678"/>
+      <path class="fl k-ener" id="f-tra-act" data-kind="ener" d="M824 235H854"/>
+
+      <text class="clab b" x="85" y="64" text-anchor="middle">Consigne de</text>
+      <text class="clab b" x="85" y="78" text-anchor="middle">l'utilisateur</text>
+      <text class="clab b" x="795" y="60" text-anchor="middle">Informations vers</text>
+      <text class="clab b" x="795" y="94" text-anchor="middle">l'utilisateur (feu)</text>
+      <text class="clab b" x="575" y="14" text-anchor="middle">Comptes rendus des capteurs (fins de course, cellules)</text>
+      <text class="clab b" x="515" y="154" text-anchor="middle" style="font-weight:800">ORDRES</text>
+      <text class="clab o" x="85" y="214" text-anchor="middle">Énergie</text>
+      <text class="clab o" x="85" y="228" text-anchor="middle">électrique</text>
+
+      <!-- blocs -->
+      <g class="blk info" id="b-acq" transform="translate(150,40)"><rect width="160" height="90"/>
+        <text class="verb" x="80" y="30">ACQUÉRIR</text><text class="cmp" x="80" y="54">Antenne, récepteur radio</text><text class="cmp" x="80" y="71">Fins de course, cellules</text></g>
+      <g class="blk info" id="b-tra" transform="translate(350,40)"><rect width="160" height="90"/>
+        <text class="verb" x="80" y="30">TRAITER</text><text class="cmp" x="80" y="54">Carte électronique</text><text class="cmp" x="80" y="71">(microcontrôleur)</text></g>
+      <g class="blk info" id="b-com" transform="translate(550,40)"><rect width="160" height="90"/>
+        <text class="verb" x="80" y="30">COMMUNIQUER</text><text class="cmp" x="80" y="54">Carte électronique</text><text class="cmp" x="80" y="71">Feu clignotant</text></g>
+
+      <g class="blk ener" id="b-ali" transform="translate(150,190)"><rect width="146" height="90"/>
+        <text class="verb" x="73" y="26">ALIMENTER</text><text class="cmp" x="73" y="46">Réseau 230 V</text><text class="cmp" x="73" y="61">Transformateur</text><text class="frm" x="73" y="80">sortie : électrique</text></g>
+      <g class="blk ener" id="b-dis" transform="translate(326,190)"><rect width="146" height="90"/>
+        <text class="verb" x="73" y="26">DISTRIBUER</text><text class="cmp" x="73" y="46">Relais</text><text class="cmp" x="73" y="61">(carte de puissance)</text><text class="frm" x="73" y="80">sortie : électrique</text></g>
+      <g class="blk ener" id="b-con" transform="translate(502,190)"><rect width="146" height="90"/>
+        <text class="verb" x="73" y="26">CONVERTIR</text><text class="cmp" x="73" y="46">Moteur électrique</text><text class="frm" x="73" y="80">sortie : rotation</text></g>
+      <g class="blk ener" id="b-trn" transform="translate(678,190)"><rect width="146" height="90"/>
+        <text class="verb" x="73" y="26">TRANSMETTRE</text><text class="cmp" x="73" y="46">Réducteur</text><text class="cmp" x="73" y="61">Pignon-crémaillère</text><text class="frm" x="73" y="80">sortie : translation</text></g>
+      <g class="blk act" id="b-act" transform="translate(854,190)"><rect width="96" height="90"/>
+        <text class="verb" x="48" y="26" style="font-size:14px">ACTION</text><text class="cmp" x="48" y="48">Le portail</text><text class="cmp" x="48" y="63">coulisse</text></g>
+
+      <g id="ptc-chain"></g>
+    </svg>
+      </div>
+    </section>
+  </div>
+
+  <div class="side">
+    <aside class="card explain k-sys" id="explain" aria-live="polite">
+      <div class="ex-head"><span class="ex-step" id="ex-step">Étape 1 / 13</span><span id="ex-chips"></span></div>
+      <h2 id="ex-title"></h2>
+      <div class="ex-text" id="ex-text"></div>
+      <dl class="fiche">
+        <dt>Fonction</dt><dd id="fi-f"></dd>
+        <dt>Composant</dt><dd id="fi-c"></dd>
+        <dt>Ce qui circule</dt><dd id="fi-x"></dd>
+      </dl>
+    </aside>
+    <div class="card controls" role="group" aria-label="Commandes de l'animation">
+      <div class="ctl-row">
+        <button type="button" class="btn ghost" id="btn-prev" aria-label="Étape précédente" title="Étape précédente (←)">◀</button>
+        <button type="button" class="btn play" id="btn-play">▶ Lancer l'animation</button>
+        <button type="button" class="btn ghost" id="btn-next" aria-label="Étape suivante" title="Étape suivante (→)">▶</button>
+        <button type="button" class="btn ghost" id="btn-restart" title="Recommencer depuis le début">↺ Début</button>
+      </div>
+      <div class="timeline"><div class="dots" id="dots"></div><div class="bar"><span id="bar"></span></div></div>
+      <div class="opts">
+        <label>Vitesse <select id="speed"><option value="0.6">lente</option><option value="1" selected>normale</option><option value="1.6">rapide</option></select></label>
+        <label><input type="checkbox" id="show-labels" checked> Noms des composants</label>
+        <span class="hint">← → étapes · espace : lecture</span>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ================= CONTENU DES SCÉNARIOS =================
+     chain : info | ener | sys | both
+     blocks : blocs allumés (acq, tra, com, ali, dis, con, trn, act)
+     flows  : flux animés (identifiants des chemins)
+     scene  : éléments surlignés sur l'animation
+     g : [position de départ, position d'arrivée] du portail (0 fermé, 1 ouvert)
+     gd : durée du mouvement en secondes                                  */
+  var ALL = ["acq", "tra", "com", "ali", "dis", "con", "trn", "act"];
+  var EN = ["f-ali-dis", "f-dis-con", "f-con-tra", "f-tra-act", "f-in-ener", "s-power"];
+
+  var SCENARIOS = [
+    { name: "Ouverture", steps: [
+      { t: "Situation de départ", chain: "sys", g: [0, 0], blocks: [], flows: [], scene: ["gate"],
+        html: "<p>Le portail est fermé. Le système est sous tension mais en veille : la carte électronique attend une information.</p><p>Pour expliquer son fonctionnement, on le décrit avec deux chaînes : la <b class='ti'>chaîne d'information</b>, qui décide, et la <b class='te'>chaîne d'énergie</b>, qui agit.</p>",
+        card: ["—", "Portail coulissant automatique", "Rien : système en veille"] },
+      { t: "L'utilisateur donne une consigne", chain: "info", g: [0, 0], blocks: [], flows: ["f-in-info", "s-radio"], scene: ["remote"], waves: true,
+        html: "<p>En appuyant sur le bouton de la télécommande, l'utilisateur émet un <b>signal radio codé</b>.</p><p>C'est l'information d'entrée du système : la consigne « ouvrir ». La télécommande est extérieure au portail ; elle ne fait que transmettre la volonté de l'utilisateur.</p>",
+        card: ["Consigne (hors du système)", "Télécommande", "Information : onde radio codée"] },
+      { t: "Acquérir : le récepteur capte le signal", chain: "info", g: [0, 0], blocks: ["acq"], flows: ["f-in-info", "s-radio"], scene: ["antenna", "in-recep"],
+        html: "<p>L'antenne et le récepteur radio captent l'onde et la transforment en un <b>signal électrique</b> que la carte peut exploiter.</p><p><b>Acquérir</b>, c'est prélever une information sur l'utilisateur ou sur le système lui-même. Les capteurs de fin de course et les cellules photoélectriques appartiennent aussi à ce bloc.</p>",
+        card: ["Acquérir", "Antenne et récepteur radio", "Information : signal électrique"] },
+      { t: "Traiter : la carte électronique décide", chain: "info", g: [0, 0], blocks: ["tra"], flows: ["f-acq-tra"], scene: ["in-uc", "fdc", "cells"],
+        html: "<p>Le microcontrôleur compare le code reçu à celui qu'il a mémorisé, puis vérifie l'état des capteurs :</p><ul><li>le portail est bien fermé (fin de course « fermé » actionné) ;</li><li>aucun obstacle ne coupe le faisceau des cellules.</li></ul><p>Toutes les conditions sont réunies : il <b>décide d'ouvrir</b>. <b>Traiter</b>, c'est élaborer une décision à partir des informations acquises.</p>",
+        card: ["Traiter", "Carte électronique (microcontrôleur)", "Information : décision « ouvrir »"] },
+      { t: "Communiquer : l'ordre part, le feu clignote", chain: "info", g: [0, 0], blocks: ["com"], flows: ["f-tra-com", "f-ordre", "f-com-out"], scene: ["in-uc", "feu"], lamp: true,
+        html: "<p>La carte envoie l'<b>ordre d'ouverture</b> à la chaîne d'énergie et allume le <b>feu clignotant</b> pour prévenir les personnes à proximité.</p><p><b>Communiquer</b>, c'est transmettre des ordres à la chaîne d'énergie et des informations à l'utilisateur. Ces ordres sont le lien entre les deux chaînes.</p>",
+        card: ["Communiquer", "Carte électronique, feu clignotant", "Information : ordre « ouvrir » + signal lumineux"] },
+      { t: "Alimenter : l'énergie du réseau", chain: "ener", g: [0, 0], blocks: ["ali"], flows: ["f-in-ener", "s-power"], scene: ["power", "in-transfo"], lamp: true,
+        html: "<p>L'énergie arrive du <b>réseau électrique en 230 V</b>. Dans le boîtier, un transformateur l'abaisse le plus souvent à 24 V, une tension sans danger pour le moteur et l'électronique ; certains modèles ajoutent une batterie de secours.</p><p><b>Alimenter</b>, c'est fournir au système l'énergie dont il a besoin.</p>",
+        card: ["Alimenter", "Réseau 230 V, transformateur", "Énergie électrique"] },
+      { t: "Distribuer : le relais laisse passer l'énergie", chain: "ener", g: [0, 0], blocks: ["dis"], flows: ["f-ordre", "f-ali-dis", "f-dis-con"], scene: ["in-relais"], lamp: true,
+        html: "<p>Sur ordre de la carte, le <b>relais</b> ferme son contact : il laisse passer l'énergie vers le moteur, et dans le sens qui le fait tourner pour ouvrir.</p><p><b>Distribuer</b>, c'est autoriser ou non le passage de l'énergie, et en choisir le sens. C'est le seul bloc de la chaîne d'énergie qui reçoit des ordres.</p>",
+        card: ["Distribuer", "Relais (carte de puissance)", "Énergie électrique distribuée"] },
+      { t: "Convertir : le moteur tourne", chain: "ener", g: [0, 0.12], gd: 2.2, blocks: ["con"], flows: ["f-ali-dis", "f-dis-con", "f-con-tra"], scene: ["in-moteur", "motorbox"], lamp: true,
+        html: "<p>Le <b>moteur électrique</b> transforme l'énergie électrique qu'il reçoit en <b>énergie mécanique de rotation</b> : son arbre se met à tourner et le portail commence à bouger.</p><p><b>Convertir</b>, c'est changer la forme de l'énergie.</p>",
+        card: ["Convertir", "Moteur électrique", "Électrique → mécanique de rotation"] },
+      { t: "Transmettre : de la rotation à la translation", chain: "ener", g: [0.12, 0.3], gd: 2.4, blocks: ["trn"], flows: ["f-con-tra", "f-tra-act"], scene: ["pinion", "rack", "in-moteur"], lamp: true,
+        html: "<p>Le <b>réducteur</b> diminue la vitesse de rotation et augmente le couple. Le <b>pignon</b> de sortie engrène sur la <b>crémaillère</b> fixée au portail : la rotation devient une <b>translation</b>.</p><p><b>Transmettre</b>, c'est acheminer l'énergie mécanique jusqu'à l'objet à déplacer, en adaptant le mouvement.</p>",
+        card: ["Transmettre", "Réducteur, pignon et crémaillère", "Mécanique : rotation → translation"] },
+      { t: "Action : le portail s'ouvre", chain: "ener", g: [0.3, 0.96], gd: 4.2, blocks: ["act"], flows: EN, scene: ["gate"], lamp: true,
+        html: "<p>Le portail coulisse sur son rail : c'est l'<b>action</b> attendue.</p><p>Tant que le relais reste fermé, l'énergie parcourt toute la chaîne en continu : réseau → relais → moteur → réducteur → pignon → crémaillère → portail.</p>",
+        card: ["Action réalisée", "Portail coulissant", "Énergie mécanique de translation"] },
+      { t: "Acquérir : fin de course « ouvert »", chain: "info", g: [0.96, 1], gd: 1.3, blocks: ["acq"], flows: ["f-retour"], scene: ["fdc"], lamp: true,
+        html: "<p>En fin de course, la came rouge fixée sur la crémaillère arrive devant le <b>capteur de fin de course</b> : il signale que le portail est complètement ouvert.</p><p>Cette information remonte vers la chaîne d'information : c'est un <b>compte rendu</b> de l'état du système.</p>",
+        card: ["Acquérir", "Capteur de fin de course", "Information : « portail ouvert »"] },
+      { t: "Traiter et communiquer : ordre d'arrêt", chain: "both", g: [1, 1], blocks: ["tra", "com", "dis"], flows: ["f-acq-tra", "f-tra-com", "f-ordre"], scene: ["in-uc", "in-relais"],
+        html: "<p>La carte traite ce compte rendu et ordonne l'<b>arrêt</b> : le relais ouvre son contact, le moteur n'est plus alimenté et s'immobilise, le feu s'éteint.</p><p>La chaîne d'information a lancé l'action, puis l'a arrêtée au bon moment.</p>",
+        card: ["Traiter → Communiquer → Distribuer", "Carte électronique, relais", "Ordre « arrêt » : énergie coupée"] },
+      { t: "Bilan", chain: "sys", g: [1, 1], blocks: ALL, flows: [], scene: [],
+        html: "<p>Le portail fonctionne grâce à deux chaînes reliées :</p><ul><li><b class='ti'>chaîne d'information</b> : acquérir (récepteur, fins de course, cellules), traiter (microcontrôleur), communiquer (ordres, feu clignotant). Elle <b>décide</b>.</li><li><b class='te'>chaîne d'énergie</b> : alimenter (réseau, transformateur), distribuer (relais), convertir (moteur), transmettre (réducteur, pignon-crémaillère). Elle <b>agit</b>.</li></ul><p>Le lien entre les deux : les <b>ordres</b> envoyés au bloc Distribuer ; en retour, les capteurs rendent compte de ce qui se passe.</p>",
+        card: ["Chaîne fonctionnelle complète", "Tout le système", "Informations, ordres et énergie"] }
+    ] },
+    { name: "Fermeture et sécurité", steps: [
+      { t: "Situation de départ", chain: "sys", g: [1, 1], blocks: [], flows: [], scene: ["gate"],
+        html: "<p>Le portail est ouvert et le système attend une nouvelle consigne.</p><p>Ce scénario montre la fermeture, puis le rôle de sécurité des <b>cellules photoélectriques</b> lorsqu'un obstacle se présente.</p>",
+        card: ["—", "Portail coulissant automatique", "Rien : système en veille"] },
+      { t: "La chaîne d'information décide de fermer", chain: "info", g: [1, 1], blocks: ["acq", "tra", "com"], flows: ["s-radio", "f-in-info", "f-acq-tra", "f-tra-com", "f-ordre", "f-com-out"], scene: ["remote", "antenna", "in-uc", "feu"], waves: true, lamp: true,
+        html: "<p>Nouvel appui sur la télécommande. Le récepteur <b>acquiert</b> la consigne ; la carte vérifie le code, constate que le portail est ouvert et <b>décide de fermer</b> ; elle <b>communique</b> l'ordre « fermer » et allume le feu.</p><p>Même consigne, décision différente : c'est l'état du système, connu grâce aux capteurs, qui fait la différence.</p>",
+        card: ["Acquérir → Traiter → Communiquer", "Récepteur, carte électronique, feu", "Information : ordre « fermer »"] },
+      { t: "La chaîne d'énergie, en sens inverse", chain: "ener", g: [1, 0.55], gd: 3.4, blocks: ["ali", "dis", "con", "trn", "act"], flows: EN.concat(["f-ordre"]), scene: ["in-relais", "in-moteur", "pinion"], lamp: true,
+        html: "<p>Le <b>relais inverse le sens du courant</b> : le moteur tourne dans l'autre sens, le pignon entraîne la crémaillère vers la gauche et le portail se referme.</p><p>Les blocs de la chaîne d'énergie sont les mêmes qu'à l'ouverture : seul le sens de la distribution change.</p>",
+        card: ["Alimenter → Distribuer → Convertir → Transmettre", "Réseau, relais, moteur, réducteur, pignon-crémaillère", "Énergie : électrique → mécanique"] },
+      { t: "Acquérir : un obstacle coupe le faisceau", chain: "info", g: [0.55, 0.5], gd: 0.8, blocks: ["acq"], flows: ["f-retour"], scene: ["cells"], lamp: true, ball: "in", beam: "cut",
+        html: "<p>Un ballon roule dans le passage et coupe le <b>faisceau infrarouge</b> entre l'émetteur et le récepteur des cellules photoélectriques.</p><p>Le capteur signale aussitôt la présence d'un obstacle à la carte électronique.</p>",
+        card: ["Acquérir", "Cellules photoélectriques", "Information : « obstacle présent »"] },
+      { t: "Traiter : la sécurité passe d'abord", chain: "both", g: [0.5, 0.5], blocks: ["tra", "com", "dis"], flows: ["f-acq-tra", "f-tra-com", "f-ordre"], scene: ["in-uc", "in-relais"], lamp: true, ball: "in", beam: "cut",
+        html: "<p>La carte donne la priorité à la sécurité : elle ordonne l'<b>arrêt immédiat</b> du moteur, puis la <b>réouverture</b> du portail.</p><p>Un portail automatique ne doit jamais écraser une personne ou un objet : sans capteurs, la chaîne d'énergie poursuivrait aveuglément son mouvement.</p>",
+        card: ["Traiter → Communiquer → Distribuer", "Carte électronique, relais", "Ordres « arrêt » puis « ouvrir »"] },
+      { t: "Réouverture : le passage est dégagé", chain: "ener", g: [0.5, 1], gd: 3.2, blocks: ["dis", "con", "trn", "act"], flows: EN, scene: ["in-relais", "gate"], lamp: true, ball: "in", beam: "cut",
+        html: "<p>Le relais inverse de nouveau le sens du courant : le moteur tourne dans le sens de l'ouverture et le portail se rouvre jusqu'au fin de course « ouvert ».</p>",
+        card: ["Distribuer → Convertir → Transmettre", "Relais, moteur, pignon-crémaillère", "Énergie mécanique : retour en ouverture"] },
+      { t: "Fermeture complète", chain: "both", g: [1, 0], gd: 5.5, blocks: ["acq", "dis", "con", "trn", "act"], flows: EN.concat(["f-retour"]), scene: ["gate", "fdc"], lamp: true, ball: "out",
+        html: "<p>Le ballon est récupéré, le faisceau est rétabli. À l'appui suivant, le portail se referme entièrement.</p><p>Arrivée en bout de course, la came active le capteur de fin de course « fermé » : la carte coupe l'ordre, le relais s'ouvre et le moteur s'arrête.</p>",
+        card: ["Chaîne d'énergie + compte rendu", "Relais, moteur, capteur de fin de course", "Énergie, puis information « portail fermé »"] },
+      { t: "Bilan : le rôle des capteurs", chain: "sys", g: [0, 0], blocks: ALL, flows: [], scene: ["cells", "fdc", "antenna"],
+        html: "<p>Sans capteurs, la chaîne d'énergie « ne voit rien ». Ce sont les informations acquises qui permettent à la chaîne d'information de :</p><ul><li><b>lancer</b> le mouvement (télécommande) ;</li><li><b>l'arrêter</b> au bon endroit (fins de course) ;</li><li><b>l'interrompre et l'inverser</b> en cas de danger (cellules).</li></ul><p>La chaîne d'énergie, elle, est la même dans les deux sens : seul l'ordre transmis au relais change.</p>",
+        card: ["Chaîne fonctionnelle complète", "Capteurs au service de la sécurité", "Informations, ordres et énergie"] }
+    ] }
+  ];
+
+  /* ================= OUTILS ================= */
+  function $(s) { return document.querySelector(s); }
+  function $$(s) { return Array.prototype.slice.call(document.querySelectorAll(s)); }
+  var NS = "http://www.w3.org/2000/svg";
+  var X0 = 104, D = 384, R_PIN = 11.5, R_WHEEL = 7.5;
+
+  /* --- décor du portail généré une fois --- */
+  (function buildGate() {
+    var g = $("#gate-bars"), html = "";
+    for (var x = 32; x < 460; x += 29.5)
+      html += '<line x1="' + x.toFixed(1) + '" y1="116" x2="' + x.toFixed(1) + '" y2="304" stroke="#2F3E4B" stroke-width="4"/>';
+    g.innerHTML = html;
+    var d = "";
+    for (var t = 0; t < 470; t += 7) d += "M" + t + " 270L" + (t + 3.5) + " 275.5L" + (t + 7) + " 270Z";
+    $("#rack-teeth").setAttribute("d", d);
+    var N = 12, ro = 13.5, ri = 10, p = "";
+    for (var k = 0; k < N; k++) {
+      var a = k * 2 * Math.PI / N, s = 2 * Math.PI / N;
+      var pts = [[ri, a], [ro, a + .22 * s], [ro, a + .5 * s], [ri, a + .72 * s]];
+      pts.forEach(function (q, j) {
+        p += (k === 0 && j === 0 ? "M" : "L") + (q[0] * Math.cos(q[1])).toFixed(2) + " " + (q[0] * Math.sin(q[1])).toFixed(2);
+      });
+    }
+    $("#pinion-path").setAttribute("d", p + "Z");
+  })();
+
+  /* ================= ÉTAT ================= */
+  var sc = 0, idx = 0, playing = false, speed = 1, elapsed = 0;
+  var pos = 0, anim = null;
+  var seen = {};
+  var flows = {};       // id -> {el, len, dots, kind}
+
+  function steps() { return SCENARIOS[sc].steps; }
+  function plain(h) { return h.replace(/<[^>]+>/g, ""); }
+  function stepDur(s) { return Math.max(4.5 + plain(s.html).length / 48, (s.gd || 0) + 2.5); }
+
+  /* ================= FLUX ANIMÉS ================= */
+  function setFlows(list) {
+    Object.keys(flows).forEach(function (id) {
+      if (list.indexOf(id) < 0) {
+        flows[id].dots.forEach(function (c) { c.remove(); });
+        setFlowLook(flows[id].el, false);
+        delete flows[id];
+      }
+    });
+    list.forEach(function (id) {
+      if (flows[id]) return;
+      var el = document.getElementById(id);
+      if (!el) return;
+      var kind = el.getAttribute("data-kind"), len = el.getTotalLength();
+      var host = el.ownerSVGElement.id === "scene" ? $("#ptc-scene") : $("#ptc-chain");
+      var n = Math.max(1, Math.min(7, Math.round(len / 55))), dots = [];
+      for (var k = 0; k < n; k++) {
+        var c = document.createElementNS(NS, "circle");
+        c.setAttribute("r", el.ownerSVGElement.id === "scene" ? 5 : 4.5);
+        c.setAttribute("class", "ptc-" + kind);
+        host.appendChild(c); dots.push(c);
+      }
+      flows[id] = { el: el, len: len, dots: dots, kind: kind };
+      setFlowLook(el, true);
+    });
+  }
+  function setFlowLook(el, on) {
+    el.classList.toggle("on", on);
+    if (el.classList.contains("fl")) {
+      var k = el.getAttribute("data-kind");
+      el.setAttribute("marker-end", "url(#ah-" + k + (on ? "" : "-l") + ")");
+    }
+  }
+  $$("#chain .fl").forEach(function (el) { setFlowLook(el, false); });
+
+  var clock = 0;
+  function drawFlows(dt) {
+    clock += dt * speed;
+    Object.keys(flows).forEach(function (id) {
+      var f = flows[id], v = id.charAt(0) === "s" ? 170 : 75, n = f.dots.length;
+      f.dots.forEach(function (c, k) {
+        var u = ((clock * v / f.len) + k / n) % 1;
+        var p = f.el.getPointAtLength(u * f.len);
+        c.setAttribute("cx", p.x.toFixed(1)); c.setAttribute("cy", p.y.toFixed(1));
+      });
+    });
+  }
+
+  /* ================= PORTAIL ================= */
+  function placeGate(p) {
+    pos = p;
+    var x = X0 + D * p;
+    $("#gate").setAttribute("transform", "translate(" + x.toFixed(2) + ",0)");
+    var travel = D * p;
+    $("#pinion-rot").setAttribute("transform", "rotate(" + (travel / R_PIN * 180 / Math.PI).toFixed(2) + ")");
+    $$(".wr").forEach(function (w) { w.setAttribute("transform", "rotate(" + (travel / R_WHEEL * 180 / Math.PI).toFixed(2) + ")"); });
+  }
+  function ease(u) { return u < .5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2; }
+
+  /* ================= AFFICHAGE D'UNE ÉTAPE ================= */
+  var LABEL = { info: ["info", "Chaîne d'information"], ener: ["ener", "Chaîne d'énergie"], sys: ["sys", "Vue d'ensemble"] };
+  function chips(k) {
+    var list = k === "both" ? ["info", "ener"] : [k];
+    return list.map(function (x) { return '<span class="chip ' + LABEL[x][0] + '">' + LABEL[x][1] + "</span>"; }).join(" ");
+  }
+
+  function show(i) {
+    var S = steps(), s = S[i];
+    idx = i; elapsed = 0; seen[sc + ":" + i] = true;
+
+    var ex = $("#explain");
+    ex.className = "card explain k-" + s.chain;
+    $("#ex-step").textContent = "Étape " + (i + 1) + " / " + S.length;
+    $("#ex-chips").innerHTML = chips(s.chain);
+    $("#ex-title").textContent = s.t;
+    var tx = $("#ex-text"); tx.innerHTML = s.html;
+    tx.classList.remove("reveal"); void tx.offsetWidth; tx.classList.add("reveal");
+    $("#fi-f").textContent = s.card[0]; $("#fi-c").textContent = s.card[1]; $("#fi-x").textContent = s.card[2];
+
+    // chaîne
+    var chain = $("#chain");
+    chain.classList.toggle("focus", s.blocks.length > 0 && s.blocks.length < ALL.length);
+    ALL.forEach(function (b) { $("#b-" + b).classList.toggle("on", s.blocks.indexOf(b) >= 0); });
+    setFlows(s.flows);
+
+    // scène
+    $$("#scene .part, #scene .in-cell").forEach(function (el) { el.classList.toggle("hl", s.scene.indexOf(el.id) >= 0); });
+    $("#feu").classList.toggle("blink", !!s.lamp);
+    $("#remote").classList.toggle("waves-on", !!s.waves);
+    $("#beam").classList.toggle("cut", s.beam === "cut");
+    $("#ball").style.transform = s.ball === "in" ? "translate(200px,312px)" : "translate(-60px,312px)";
+
+    // portail
+    placeGate(s.g[0]);
+    anim = s.g[0] !== s.g[1] ? { a: s.g[0], b: s.g[1], u: 0, d: s.gd || Math.abs(s.g[1] - s.g[0]) * 6 } : null;
+
+    renderControls();
+  }
+
+  /* ================= COMMANDES ================= */
+  function renderDots() {
+    var box = $("#dots"); box.innerHTML = "";
+    steps().forEach(function (s, i) {
+      var b = document.createElement("button");
+      b.type = "button"; b.textContent = i + 1; b.title = s.t;
+      b.className = "d-" + s.chain;
+      b.setAttribute("aria-label", "Étape " + (i + 1) + " : " + s.t);
+      b.addEventListener("click", function () { show(i); });
+      box.appendChild(b);
+    });
+  }
+  function renderControls() {
+    var S = steps();
+    $$("#dots button").forEach(function (b, i) {
+      if (i === idx) b.setAttribute("aria-current", "step"); else b.removeAttribute("aria-current");
+      b.classList.toggle("seen", !!seen[sc + ":" + i]);
+    });
+    $("#btn-prev").disabled = idx === 0;
+    $("#btn-next").disabled = idx === S.length - 1;
+    var pb = $("#btn-play");
+    if (playing) pb.textContent = "❚❚ Pause";
+    else if (idx === S.length - 1) pb.textContent = "↺ Revoir";
+    else pb.textContent = idx === 0 && elapsed === 0 ? "▶ Lancer l'animation" : "▶ Reprendre";
+  }
+  function setPlaying(v) { playing = v; renderControls(); }
+  function next() { if (idx < steps().length - 1) show(idx + 1); }
+  function prev() { if (idx > 0) show(idx - 1); }
+
+  $("#btn-next").addEventListener("click", function () { setPlaying(false); next(); });
+  $("#btn-prev").addEventListener("click", function () { setPlaying(false); prev(); });
+  $("#btn-restart").addEventListener("click", function () { show(0); setPlaying(true); });
+  $("#btn-play").addEventListener("click", function () {
+    if (!playing && idx === steps().length - 1) { show(0); setPlaying(true); return; }
+    setPlaying(!playing);
+  });
+  $("#speed").addEventListener("change", function () { speed = parseFloat(this.value); });
+  $("#show-labels").addEventListener("change", function () { $("#scene").classList.toggle("hide-labels", !this.checked); });
+  $$(".scenarios button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      sc = +b.getAttribute("data-sc");
+      $$(".scenarios button").forEach(function (x) { x.setAttribute("aria-selected", x === b ? "true" : "false"); });
+      setPlaying(false); renderDots(); show(0);
+    });
+  });
+  document.addEventListener("keydown", function (e) {
+    var tag = (e.target.tagName || "").toLowerCase();
+    if (tag === "select" || tag === "input") return;
+    if (e.key === "ArrowRight") { e.preventDefault(); setPlaying(false); next(); }
+    else if (e.key === "ArrowLeft") { e.preventDefault(); setPlaying(false); prev(); }
+    else if (e.key === " " && tag !== "button") { e.preventDefault(); $("#btn-play").click(); }
+  });
+
+  /* ================= BOUCLE ================= */
+  var last = performance.now();
+  function tick(now) {
+    var dt = Math.min(0.1, (now - last) / 1000); last = now;
+    var s = steps()[idx];
+    if (anim) {
+      anim.u = Math.min(1, anim.u + dt * speed / anim.d);
+      placeGate(anim.a + (anim.b - anim.a) * ease(anim.u));
+      if (anim.u >= 1) anim = null;
+    }
+    if (playing) {
+      elapsed += dt * speed;
+      var d = stepDur(s);
+      $("#bar").style.width = Math.min(100, elapsed / d * 100) + "%";
+      if (elapsed >= d) {
+        if (idx < steps().length - 1) show(idx + 1);
+        else { setPlaying(false); $("#bar").style.width = "100%"; }
+      }
+    } else if (elapsed === 0) $("#bar").style.width = "0%";
+    drawFlows(dt);
+    requestAnimationFrame(tick);
+  }
+
+  renderDots();
+  show(0);
+  requestAnimationFrame(tick);
+  window.__anim__ = { show: show, scenarios: SCENARIOS, state: function () { return { sc: sc, idx: idx, pos: pos, playing: playing }; } };
+})();
+</script>
+</body>
+</html>
