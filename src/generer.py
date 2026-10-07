@@ -24,6 +24,7 @@ import json
 import pathlib
 import re
 import struct
+import unicodedata
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 GABARIT = ROOT / "src" / "gabarit-exercice-interactif.html"
@@ -93,6 +94,9 @@ TRANSMETTRE = KW(P("transmettre|transmission"))
 AGIR = KW(P("agir|action"))
 RESEAU = KW(P("reseau"), P("energie", "electrique"), P("alimentation", "electrique"), P("electricite"),
             P("secteur"), P("courant", "electrique"), P("230"), forbid="thermique|chimique|mecanique")
+# portail, repère 7 : la source extérieure seule (« alimentation électrique » est l'étiquette du repère 8)
+RESEAU_SOURCE = KW(P("reseau"), P("energie", "electrique"), P("electricite"), P("secteur"), P("courant", "electrique"),
+                   P("230"), forbid="thermique|chimique|mecanique|alimentation")
 MESSAGES = KW(P("message|messages|signalisation|information|informations|affichage"), P("signal", "lumineux"))
 
 
@@ -115,7 +119,7 @@ def calc(s):
     return f'<span class="calc">{s}</span>'
 
 
-H_VERBE = "Un verbe à l'infinitif par case."
+H_VERBE = "Une fonction par case."
 H_COMPO = "Un composant par case, tiré de la présentation."
 
 
@@ -294,8 +298,7 @@ PARTS_EX1.append({"title": "Chauffage géothermique", "minutes": 18, "intro": [
            620)], "blocks": [
     QBAR(["DP1", "DT1"]),
     GRP("Identifiez, pour chacun des neuf composants ci-dessous, le groupe fonctionnel auquel il appartient.",
-        "Un verbe à l'infinitif par case, parmi : acquérir, traiter, communiquer, alimenter, distribuer, convertir, "
-        "transmettre, agir.", [
+        "Une fonction par case : une même fonction peut servir pour plusieurs composants.", [
         ("Réseau EDF / armoire électrique", ALIMENTER, "Alimenter"),
         ("Régulateur", TRAITER, "Traiter"),
         ("Pilote des moteurs", DISTRIBUER, "Distribuer"),
@@ -423,7 +426,7 @@ PARTS_EX1.append({"title": "Portail automatisé", "minutes": 15, "intro": [
     GRP("Complétez la chaîne d'énergie du portail (repères 7 à 12) avec les composants ou les énergies mises en "
         "jeu.", "Le repère 7 est la source d'énergie extérieure ; les repères 8 à 12 sont Alimenter, Distribuer, "
         "Convertir, Transmettre, Agir.", [
-        ("Repère 7 (source d'énergie extérieure)", RESEAU, "Le réseau électrique (230 V)"),
+        ("Repère 7 (source d'énergie extérieure)", RESEAU_SOURCE, "Le réseau électrique (230 V)"),
         ("Repère 8 — ALIMENTER", KW(P("alimentation|transformateur"), P("armoire")), "L'alimentation électrique"),
         ("Repère 9 — DISTRIBUER", KW(P("boitier|relais|variateur|platine|contacteur"), P("carte", "puissance|commande"),
                                      forbid="telecommande"), "Le boîtier de commande (partie puissance)"),
@@ -450,6 +453,41 @@ PARTS_EX1.append({"title": "Portail automatisé", "minutes": 15, "intro": [
         "<p><em>Remarque</em> : le boîtier de commande apparaît deux fois, dans les deux chaînes. C'est fréquent : il "
         "contient à la fois la partie <em>commande</em> (Traiter) et la partie <em>puissance</em> (Distribuer).</p>"),
 ]})
+
+
+# ------------------------------------------------------------ étiquettes à glisser dans les cases
+# Chaque question propose une liste d'étiquettes (réutilisables, avec des intrus) : on glisse, on ne recopie plus.
+# La correction reste celle du moteur à mots-clés : tests/correction.test.js vérifie, pour chaque case, quelles
+# étiquettes de sa liste sont acceptées.
+E_FONCTIONS = ["Acquérir", "Traiter", "Communiquer", "Alimenter", "Distribuer", "Convertir", "Transmettre", "Agir"]
+E_ASC_FLUX = ["Consigne", "Compte rendu", "Messages", "Réseau électrique", "Énergie mécanique", "Énergie thermique",
+              "Usager à l'étage d'arrivée"]
+E_ASC_COMPO = ["Le moteur", "La boîte de réduction, la poulie et les câbles", "La cabine", "Le système de commande",
+               "Les portes palières", "La gaine"]
+E_PRIUS = ["Le réservoir de combustible", "Le système d'injection", "Le moteur thermique", "La batterie",
+           "Le répartiteur de puissance", "Le moteur électrique", "La génératrice", "Le train épicycloïdal",
+           "La chaîne silencieuse", "Le réducteur", "Le différentiel", "Les roues motrices"]
+E_GEO = ["Le clavier", "La sonde de température extérieure (TE)", "La sonde de température intérieure (TI)",
+         "Le régulateur", "L'écran rétro-éclairé", "L'armoire électrique (réseau EDF)", "Le pilote des moteurs",
+         "La pompe à chaleur", "Le plancher chauffant", "Le capteur géothermique"]
+E_PORTAIL = ["La télécommande", "L'antenne réceptrice", "Le boîtier de commande", "Le feu clignotant",
+             "La cellule optique", "Les messages (signalisation lumineuse)", "Le réseau électrique (230 V)",
+             "L'alimentation électrique", "Le moteur à bras", "Le bras articulé", "Le vantail"]
+EX1_ETIQUETTES = [[E_FONCTIONS, E_FONCTIONS, E_ASC_FLUX, E_ASC_COMPO], [E_PRIUS] * 4, [E_FONCTIONS, E_GEO, E_GEO],
+                  [E_PORTAIL] * 3]
+
+
+def ordre_etiquettes(e):
+    """Ordre alphabétique, sans tenir compte de l'article ni des accents : la liste ne souffle pas la réponse."""
+    sans = re.sub(r"^(le |la |les |l')", "", e.lower())
+    return unicodedata.normalize("NFD", sans).encode("ascii", "ignore").decode()
+
+
+for _p, _banks in zip(PARTS_EX1, EX1_ETIQUETTES):
+    _grps = [b for b in _p["blocks"] if b["kind"] == "grp"]
+    assert len(_grps) == len(_banks), _p["title"]
+    for _g, _bank in zip(_grps, _banks):
+        _g["bank"] = sorted(_bank, key=ordre_etiquettes)
 
 
 # ============================================================ DOCUMENTS DE L'EXERCICE 1.1
@@ -571,19 +609,24 @@ def render_q(q, part):
 
 
 def render_grp(g, part):
-    """Question à plusieurs cases : structure « fast-q » du gabarit (un bouton, une correction commune)."""
+    """Question à plusieurs cases : structure « fast-q » du gabarit (un bouton, une correction commune).
+    Chaque case garde le champ lu par le moteur (masqué) ; on la remplit en y glissant une étiquette de la liste."""
     gid, label = g["id"], g["label"]
     rows = "".join(
-        f'<div class="grp-l"><label for="in-{fid}">{fl}</label><div class="sol"><input type="text" id="in-{fid}" '
-        f'data-q="{fid}" autocomplete="off" autocapitalize="off" spellcheck="false"><span class="mark" '
-        f'aria-live="polite"></span></div></div>'
+        f'<div class="grp-l"><span class="grp-lab" id="lb-{fid}">{fl}</span><div class="sol">'
+        f'<input type="hidden" id="in-{fid}" data-q="{fid}"><button type="button" class="dz" id="dz-{fid}" '
+        f'aria-labelledby="lb-{fid} dzv-{fid}"><span class="dz-v" id="dzv-{fid}">case vide</span></button>'
+        f'<span class="mark" aria-live="polite"></span></div></div>'
         for fid, (fl, _g, _e) in zip(g["fids"], g["fields"]))
+    tags = "".join(f'<button type="button" class="etq" draggable="true" aria-pressed="false">{esc(t)}</button>'
+                   for t in g["bank"])
     sol = "".join(f"<tr><td>{fl}</td><td>{e}</td></tr>" for fl, _g, e in g["fields"])
     n = len(g["fields"])
     return f"""
         <div class="fast-q grp" id="{gid}">
           <p class="q-stem"><span class="q-num">{label}</span> <strong>{g['stem']}</strong></p>
           <p class="q-hint">{g['hint']}</p>
+          <div class="bank" role="group" aria-label="Étiquettes de la question {label}"><span class="bank-t">Étiquettes</span>{tags}</div>
           <div class="grp-fields" role="group" aria-label="Cases de la question {label}">{rows}</div>
           <div class="fast-foot"><button type="button" class="btn btn-fast">Valider {'les ' + str(n) + ' cases' if n > 1 else 'la case'}</button>
             <span class="q-status" aria-live="polite"></span></div>
@@ -754,7 +797,7 @@ MODES_HTML = """<h2 class="home-choose">Choisis ton mode de travail</h2>
 
 CONSIGNES_MOTS = """<p class="only-training"><strong>Mode entraînement.</strong> Remplis les cases d'une question puis clique sur « Valider » : une réponse validée est définitive et sa correction s'affiche aussitôt.</p>
     <p class="only-exam"><strong>Mode examen.</strong> Compose tout le sujet sans correction ni note : tes réponses restent modifiables jusqu'au bout. Le bouton « J'ai fini, je fais corriger ma copie », en fin de sujet, dévoile d'un coup les corrections, les notes par partie et la note globale.</p>
-    <p><strong>Des mots, pas de calcul.</strong> Toutes les réponses sont des mots ou des groupes de mots. Les majuscules, les accents, les espaces en trop et une petite faute de frappe sont tolérés. Écris <strong>un seul élément par case</strong>, au singulier de préférence.</p>
+    <p><strong>Des étiquettes, pas de calcul.</strong> Chaque question propose ses étiquettes : <strong>glisse</strong> une étiquette sur une case, ou <strong>touche</strong> une étiquette puis la case (au clavier : Entrée sur l'étiquette, puis Entrée sur la case). Une étiquette peut servir plusieurs fois, certaines ne servent pas. Pour vider une case, touche-la ou ramène son étiquette dans la liste.</p>
     <p><strong>Une question, plusieurs cases.</strong> Les cases d'une même question se valident ensemble ; chaque case vaut un point. Les schémas sont numérotés en rouge pour repérer chaque case à compléter.</p>
     <p>Le dossier de présentation (DP) et le dossier technique (DT) s'ouvrent avec les onglets sur le bord droit, ou avec les boutons des en-têtes de question.</p>
     <p><strong>Barème pondéré par la durée conseillée</strong> : chaque partie est notée sur 20, puis pèse au prorata de son temps. Le récapitulatif de fin de sujet donne le détail partie par partie.</p>"""
@@ -799,26 +842,28 @@ def _exo_card(e):
             f'<a class="btn" href="?ex={e["key"]}">{OUVRIR[bool(e.get("etude"))]}</a></article>')
 
 
-def render_formulaire_band():
-    return ('<section class="hub-form" aria-labelledby="hf-t"><div class="hf-txt">'
-            '<h3 id="hf-t">Formulaire de la chaîne de puissance</h3>'
-            "<p>Toutes les formules de la séquence en carte mentale : puissance, énergie, rendement, conversions, "
-            "rotation et transmission, électrotechnique, stockage… Chaque formule avec ses grandeurs, leurs unités et "
-            "ses autres écritures, une recherche par mot ou par symbole et une version imprimable. Et des séries "
-            "d'exercices de calcul à valeurs aléatoires, corrigées et notées sur 20.</p>"
-            '<div class="hf-chain" role="img" aria-label="Alimenter : P = U × I ; convertir : rendement égal à la '
-            'puissance utile sur la puissance absorbée ; transmettre : N sortie = r × N entrée ; agir : P = F × v">'
-            '<div class="chain-box"><span>Alimenter</span><b>P = U × I</b></div><i></i>'
-            f'<div class="chain-box"><span>Convertir</span><b>η = {frac("P<sub>u</sub>", "P<sub>a</sub>")}</b></div><i></i>'
-            '<div class="chain-box"><span>Transmettre</span><b>N<sub>s</sub> = r × N<sub>e</sub></b></div><i></i>'
-            '<div class="chain-box"><span>Agir</span><b>P = F × v</b></div></div></div>'
-            '<div class="hub-btns"><a class="btn" href="formulaire.html#formulaire">Ouvrir le formulaire</a>'
-            '<a class="btn ghost" href="formulaire.html#exercices">Exercices de calcul</a></div></section>')
+FORMULAIRE_CARTES = [
+    ("Formulaire", "Formulaire de la chaîne de puissance",
+     "Toutes les formules de la séquence en carte mentale : puissance, énergie, rendement, conversions, rotation et "
+     "transmission, électrotechnique, stockage. Chaque formule avec ses grandeurs, leurs unités et ses autres "
+     "écritures, une recherche par mot ou par symbole.",
+     "Carte mentale · recherche · version imprimable", "formulaire.html#formulaire", "Ouvrir le formulaire"),
+    ("Calculs", "Exercices de calcul",
+     "Des séries de calculs courts à valeurs aléatoires : tu choisis les thèmes et le nombre de questions. Les données "
+     "sont en clair, la formule est à retrouver, parfois à isoler.",
+     "1 à 40 questions · correction détaillée · note sur 20", "formulaire.html#exercices", "Choisir mes exercices"),
+]
+
+
+def _lien_card(tag, title, desc, meta, href, bouton):
+    return (f'<article class="mode-card lien-card"><div class="mc-head"><span class="mc-tag">{tag}</span>'
+            f'<h3>{title}</h3></div><p>{desc}</p><p class="small ex-meta">{meta}</p>'
+            f'<a class="btn" href="{href}">{bouton}</a></article>')
 
 
 def render_hub():
     src, w, h = png("accueil")
-    cards = "".join(_exo_card(e) for e in EXO_DEFS if not e.get("etude"))
+    cards = "".join(_exo_card(e) for e in EXO_DEFS if not e.get("etude")) + _lien_card(*FORMULAIRE_CARTES[1])
     etudes = "".join(_exo_card(e) for e in EXO_DEFS if e.get("etude")) or (
         f'<article class="mode-card en-edition"><div class="mc-head"><span class="mc-tag">Étude 1</span>'
         f'<h3>{ETUDE_A_VENIR[0]}</h3></div><p>{ETUDE_A_VENIR[1]}</p>'
@@ -838,7 +883,7 @@ def render_hub():
             f'motorisation" width="{w}" height="{h}">'
             '<figcaption class="small">Les systèmes étudiés dans l\'exercice 1.1.</figcaption></figure></div>'
             f'<h2 class="home-choose">Les cours</h2><div class="ex-grid cours-grid">{cours}</div>'
-            f'<h2 class="home-choose">Le formulaire</h2>{render_formulaire_band()}'
+            f'<h2 class="home-choose">Le formulaire</h2><div class="ex-grid form-grid">{_lien_card(*FORMULAIRE_CARTES[0])}</div>'
             f'<h2 class="home-choose">Les exercices</h2><div class="ex-grid exo-grid">{cards}</div>'
             f'<h2 class="home-choose">Études de cas</h2><div class="ex-grid etude-grid">{etudes}</div>'
             f'<p class="home-note small">Pastilles : {pastille("Niveau 1").strip()} premier niveau, '
@@ -2817,12 +2862,25 @@ CONTENT_CSS = """<style>
 .grp{margin:14px 0 6px; padding:10px 0 12px 14px; border-left:3px solid var(--trait-fin)}
 .grp-fields{display:flex; flex-direction:column; gap:6px; margin:8px 0 4px; max-width:820px}
 .grp-l{display:grid; grid-template-columns:minmax(150px,.9fr) minmax(0,1.3fr); gap:4px 14px; align-items:center; padding:2px 0; border-bottom:1px dashed var(--trait-fin)}
-.grp-l label{font-size:.95rem}
+.grp-lab{font-size:.95rem}
 .grp .sol{display:flex; align-items:center; gap:8px}
-.grp .sol input{flex:1 1 auto; min-width:0; border:1.5px solid var(--encre-2); background:#fff; padding:7px 10px; border-radius:2px}
-.grp .sol input:disabled{background:#F2F3F1; color:var(--encre); -webkit-text-fill-color:var(--encre)}
-.grp .sol.is-ok input{border-color:var(--vert); background:var(--vert-pale)}
-.grp .sol.is-ko input{border-color:var(--rouge); background:var(--rouge-pale)}
+/* étiquettes à glisser (ou toucher puis toucher la case) ; le champ lu par le moteur est masqué */
+.bank{display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:8px 0 10px; padding:8px 10px; background:var(--bleu-pale); border:1px solid var(--trait-fin); max-width:820px}
+.bank-t{font:700 .78rem var(--f-titre); text-transform:uppercase; letter-spacing:.04em; color:var(--encre-2); margin-right:4px}
+.etq{font:600 .9rem var(--f-texte); color:var(--encre); background:#fff; border:1.5px solid var(--bleu); border-radius:3px; padding:5px 10px; cursor:grab; touch-action:manipulation; user-select:none}
+.etq:hover{background:#EAF1FA}
+.etq:focus-visible,.dz:focus-visible{outline:3px solid var(--jaune); outline-offset:1px}
+.etq[aria-pressed="true"]{background:var(--bleu); color:#fff}
+.etq.is-drag{opacity:.45}
+.etq:disabled{cursor:default; opacity:.5; background:#fff; color:var(--encre)}
+.dz{flex:1 1 auto; min-width:0; min-height:40px; text-align:left; font:600 .95rem var(--f-texte); color:var(--encre); background:#fff; border:1.5px dashed var(--encre-2); border-radius:3px; padding:7px 10px; cursor:pointer}
+.dz .dz-v{display:block}
+.dz:not(.filled) .dz-v{font-weight:400; font-style:italic; color:#7A848C}
+.dz.filled{border-style:solid; border-color:var(--bleu); cursor:grab}
+.grp.picking .dz:not(:disabled),.dz.over{background:var(--jaune-pale); border-color:var(--orange)}
+.dz:disabled{cursor:default; background:#F2F3F1}
+.grp .sol.is-ok .dz{border:2px solid var(--vert); background:var(--vert-pale)}
+.grp .sol.is-ko .dz{border:2px solid var(--rouge); background:var(--rouge-pale)}
 .grp .sol .mark{flex:0 0 4.6em; font-size:.82rem; font-weight:700}
 .grp .sol.is-ok .mark{color:var(--vert)} .grp .sol.is-ko .mark{color:var(--rouge)}
 .grp .fast-foot .q-status{font-weight:700}
@@ -2880,25 +2938,6 @@ body.hub .home-top .home-hero img{max-height:210px}
 .pastille.n2{background:var(--bleu)}
 .mc-tag .pastille{margin-left:8px; font-size:.68rem; padding:1px 6px}
 
-/* ---------- le formulaire sur l'accueil ---------- */
-.hub-form{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:14px 24px; align-items:center; background:var(--encre); color:#fff; border-left:10px solid var(--jaune); padding:16px 22px}
-.hub-form h3{margin:0 0 4px; font:700 1.4rem var(--f-titre); color:var(--jaune)}
-.hub-form p{margin:0 0 12px; color:#D7DDE2; max-width:78ch; font-size:.95rem}
-.hf-chain{display:flex; flex-wrap:wrap; align-items:center; gap:8px 0}
-.hf-chain .chain-box{background:#fff; color:var(--encre); border:2px solid var(--jaune); padding:4px 10px; min-width:112px; text-align:center}
-.hf-chain .chain-box>span{display:block; font:600 .78rem var(--f-titre); color:var(--encre-2)}
-.hf-chain .frac{display:inline-flex; font-size:.92em; vertical-align:middle}  /* le gabarit impose « .chain-box span{display:block} » */
-.hf-chain .frac>span{font-size:inherit}
-.hf-chain .chain-box b{font:700 1rem var(--f-titre); white-space:nowrap}
-.hf-chain i{display:block; width:26px; height:2px; background:var(--jaune); position:relative; margin:0 3px}
-.hf-chain i::after{content:""; position:absolute; right:-2px; top:-5px; border:6px solid transparent; border-left:9px solid var(--jaune); border-right:0}
-.hub-form .hub-btns{display:flex; flex-direction:column; gap:10px}
-.hub-form .btn{background:var(--jaune); color:var(--encre); border-color:var(--jaune); padding:11px 18px; white-space:nowrap; justify-content:center}
-.hub-form .btn:hover{background:#FFD24A}
-.hub-form .btn.ghost{background:transparent; color:#fff; border-color:#fff}
-.hub-form .btn.ghost:hover{background:#2E3B47}
-@media (max-width:760px){ .hub-form{grid-template-columns:minmax(0,1fr)} .hub-form .hub-btns{flex-direction:row; flex-wrap:wrap} .hf-chain i{width:14px} }
-
 __COURS_CSS__
 @media print{
   .c-top,.home-back{display:none!important}
@@ -2907,6 +2946,8 @@ __COURS_CSS__
   body:not(.corrections-open) .sketch .q-expl[hidden]{display:none!important}
   .eq{overflow:visible; line-height:1.7}
   .grp-l{break-inside:avoid}
+  .bank{background:none; padding:4px 0; border:0} .etq{border-width:1px; padding:1px 6px; font-size:8.5pt}
+  .dz{min-height:0; padding:3px 8px} .dz:not(.filled) .dz-v{visibility:hidden}
 }
 </style>"""
 
@@ -2924,6 +2965,9 @@ def build_formulaire():
     f = sub_once(f, r'<p class="crumb"><button type="button" class="linkbtn" data-go="menu">Retour au menu</button></p>',
                  '<p class="crumb"><button type="button" class="linkbtn" data-go="menu">Retour au menu</button>'
                  f' · {lien}</p>')
+    # pas de pastilles « Vu dans » (Cours, TD, A1…) : elles renvoient à des séances qui ne sont pas celles du site
+    f = sub_once(f, r'    if \(L\.vu && L\.vu\.length\) \{\n.*?\n.*?\n      h \+= "</ul>";\n    \}\n', "",
+                 flags=re.S)
     FORMULAIRE.write_text(f, encoding="utf-8")
     return f
 
@@ -2938,6 +2982,99 @@ DR_NAMES_JS = """  var DR_NAMES = {
   };
 """
 DATA_RE = re.compile(r"data:image/png;base64,[A-Za-z0-9+/=]+")
+
+
+ETIQUETTES_JS = r"""<script>/* Étiquettes : glisser une étiquette sur une case, ou la toucher puis toucher la case.
+   La case garde le champ (masqué) que lit le moteur du gabarit ; on y écrit l'étiquette et on signale « input ». */
+(function () {
+  "use strict";
+  var parts = document.getElementById("parts");
+  if (!parts || !parts.querySelector(".fast-q .bank")) return;
+  var sel = null, drag = null;
+  function grp(el) { return el.closest(".fast-q"); }
+  function inp(dz) { return dz.parentNode.querySelector("input"); }
+  function locked(el) { return !!el.closest(".fast-q").querySelector(".btn-fast:disabled") || document.body.classList.contains("graded"); }
+  function choisir(b) {
+    if (sel) { sel.setAttribute("aria-pressed", "false"); grp(sel).classList.remove("picking"); }
+    sel = b && b !== sel ? b : null;
+    if (sel) { sel.setAttribute("aria-pressed", "true"); grp(sel).classList.add("picking"); }
+  }
+  function poser(dz, v) {
+    var i = inp(dz);
+    if (i.disabled) return;
+    i.value = v;
+    dz.classList.toggle("filled", !!v);
+    dz.querySelector(".dz-v").textContent = v || "case vide";
+    dz.draggable = !!v;
+    i.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+  parts.addEventListener("click", function (e) {
+    var b = e.target.closest(".etq"), dz = e.target.closest(".dz");
+    if (b && !b.disabled) { choisir(b); return; }
+    if (!dz || dz.disabled) return;
+    if (sel && grp(sel) === grp(dz)) { poser(dz, sel.textContent); choisir(null); dz.focus(); }
+    else if (inp(dz).value) poser(dz, "");
+    else { choisir(null); grp(dz).querySelector(".q-msg").textContent = "Choisis d'abord une étiquette dans la liste, puis touche la case."; }
+  });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && sel) choisir(null); });
+  parts.addEventListener("dragstart", function (e) {
+    var b = e.target.closest && e.target.closest(".etq, .dz");
+    if (!b || b.disabled || locked(b)) { e.preventDefault(); return; }
+    var v = b.classList.contains("dz") ? inp(b).value : b.textContent;
+    if (!v) { e.preventDefault(); return; }
+    drag = { v: v, from: b.classList.contains("dz") ? b : null, g: grp(b), el: b };
+    choisir(null);
+    b.classList.add("is-drag");
+    e.dataTransfer.effectAllowed = "copyMove";
+    e.dataTransfer.setData("text/plain", v);
+  });
+  parts.addEventListener("dragend", function () {
+    if (drag) drag.el.classList.remove("is-drag");
+    Array.prototype.forEach.call(parts.querySelectorAll(".dz.over"), function (d) { d.classList.remove("over"); });
+    drag = null;
+  });
+  function cible(e) {
+    if (!drag) return null;
+    var t = e.target.closest && e.target.closest(".dz, .bank");
+    return t && grp(t) === drag.g && !(t.classList.contains("dz") && t.disabled) ? t : null;
+  }
+  parts.addEventListener("dragover", function (e) {
+    var t = cible(e);
+    if (!t) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = drag.from ? "move" : "copy";
+    if (t.classList.contains("dz")) t.classList.add("over");
+  });
+  parts.addEventListener("dragleave", function (e) {
+    var t = e.target.closest && e.target.closest(".dz");
+    if (t && !t.contains(e.relatedTarget)) t.classList.remove("over");
+  });
+  parts.addEventListener("drop", function (e) {
+    var t = cible(e);
+    if (!t) return;
+    e.preventDefault();
+    t.classList.remove("over");
+    if (t.classList.contains("bank")) { if (drag.from) poser(drag.from, ""); return; }
+    if (t === drag.from) return;
+    var ancien = inp(t).value;
+    poser(t, drag.v);
+    if (drag.from) poser(drag.from, ancien);  /* glisser d'une case à l'autre : les deux étiquettes s'échangent */
+  });
+  /* une case validée (entraînement) ou corrigée (examen) est verrouillée par le moteur : ses commandes aussi */
+  new MutationObserver(function (ms) {
+    ms.forEach(function (m) {
+      var i = m.target, dz = i.tagName === "INPUT" && i.parentNode.querySelector(".dz");
+      if (!dz || !i.disabled || dz.disabled) return;  /* ne réagir qu'aux champs : sinon la boucle s'entretient */
+      dz.disabled = true; dz.draggable = false;
+      var g = grp(i);
+      if (!g.querySelector(".sol input:not(:disabled)")) {
+        Array.prototype.forEach.call(g.querySelectorAll(".etq"), function (b) { b.disabled = true; b.draggable = false; });
+        if (sel && grp(sel) === g) choisir(null);
+      }
+    });
+  }).observe(parts, { subtree: true, attributes: true, attributeFilter: ["disabled"] });
+})();
+</script>"""
 
 
 def build():
@@ -3069,6 +3206,7 @@ def build():
 {router}
 {grading}
 {app}
+{ETIQUETTES_JS}
 </body>
 </html>
 """

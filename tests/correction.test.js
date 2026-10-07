@@ -155,3 +155,25 @@ test("une fonction de la chaîne n'est jamais acceptée à la place d'une autre"
 test("saisie vide refusée sans être notée", () => {
   for (const id of Object.keys(QCFG)) assert.equal(ok(id, "   "), "invalid", id);
 });
+
+// Étiquettes proposées dans chaque question (lues dans la page) : la réponse de référence en fait partie, et
+// aucune autre étiquette de la liste n'est acceptée, sauf les doubles réponses prévues par la correction.
+const ETIQUETTES = {};
+const unesc = (s) => s.replace(/&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+for (const m of html.matchAll(/<div class="fast-q grp" id="(\w+)">([\s\S]*?)<div class="fast-foot">/g)) {
+  const bank = [...m[2].matchAll(/class="etq"[^>]*>([^<]*)</g)].map((x) => unesc(x[1]));
+  for (const x of m[2].matchAll(/data-q="(\w+)"/g)) ETIQUETTES[x[1]] = bank;
+}
+const DOUBLES = { a3_1_5: ["Agir", "Transmettre"] };  // plancher chauffant : Transmettre (Agir accepté)
+
+test("étiquettes : la bonne est proposée, les autres de la liste sont refusées", () => {
+  assert.deepEqual(Object.keys(ETIQUETTES).sort(), Object.keys(QCFG).sort());
+  for (const [id, bank] of Object.entries(ETIQUETTES)) {
+    assert.ok(bank.includes(REP[id]), `${id} : « ${REP[id]} » absente de la liste`);
+    assert.equal(new Set(bank).size, bank.length, `${id} : doublon dans la liste`);
+    const cases = Object.keys(QCFG).filter((k) => k.replace(/_\d+$/, "") === id.replace(/_\d+$/, "")).length;
+    assert.ok(bank.length >= Math.min(cases + 2, 8), `${id} : pas assez d'intrus (${bank.length} étiquettes)`);
+    const acceptees = bank.filter((b) => ok(id, b) === 1).sort();
+    assert.deepEqual(acceptees, DOUBLES[id] || [REP[id]], id);
+  }
+});
