@@ -6,10 +6,10 @@ dépendance externe, utilisable hors ligne), publiée par GitHub Pages depuis `i
 
 | Adresse | Contenu |
 |---|---|
-| `index.html` | accueil : les cours (pastilles Niveau 1 / Niveau 2), le formulaire, les exercices, les études de cas |
+| `index.html` | accueil : les cours (pastilles Niveau 1 / Niveau 2), le formulaire, les exercices (dont les exercices de calcul du formulaire), les études de cas |
 | `?ex=cours-chaine-fonctionnelle` | Cours 1 — La chaîne fonctionnelle (Niveau 1) : portail automatique animé pas à pas (deux scénarios, plein écran pour vidéoprojecteur), cartes des huit fonctions, deux jeux, quiz |
 | `?ex=cours-chaine-energie` | Cours 2 — Chaîne d'énergie des produits (Niveau 2) : figures animées, 25 fiches de composants, oscilloscope, hacheur, transmissions, ordres de grandeur, énergie, effort et flux, rendements, autonomie, deux jeux, quiz |
-| `?ex=chaines-information-energie` | Exercice 1.1 — Chaînes d'information et d'énergie (Niveau 1) : 4 parties, 14 questions, 57 cases, 1 h |
+| `?ex=chaines-information-energie` | Exercice 1.1 — Chaînes d'information et d'énergie (Niveau 1) : 4 parties, 14 questions, 57 cases à remplir en y glissant des étiquettes, 1 h |
 | `formulaire.html#formulaire` | formulaire de la chaîne de puissance en carte mentale |
 | `formulaire.html#exercices` | séries d'exercices de calcul à valeurs aléatoires |
 
@@ -17,8 +17,8 @@ La rubrique « Études de cas » annonce une étude « En cours d'édition » ta
 Chaque exercice propose le mode entraînement ou le mode examen, avec sa propre note pondérée par la durée de ses
 parties. Corrections apportées aux contenus d'origine et décisions : [`NOTE-DE-LIVRAISON.md`](NOTE-DE-LIVRAISON.md).
 
-**Ajouter un exercice** : décrire ses parties dans `src/generer.py` (sur le modèle de `PARTS_EX1`), puis l'ajouter à
-`EXO_DEFS` ; **ajouter une étude de cas** : même chose avec `"etude": True`. La carte apparaît d'elle-même sur
+**Ajouter un exercice** : décrire ses parties dans `src/generer.py` (sur le modèle de `PARTS_EX1`, chaque question
+à cases recevant sa liste d'étiquettes comme dans `EX1_ETIQUETTES`), puis l'ajouter à `EXO_DEFS` ; **ajouter une étude de cas** : même chose avec `"etude": True`. La carte apparaît d'elle-même sur
 l'accueil (et remplace l'annonce « En cours d'édition »).
 
 ## Régénérer les pages
@@ -36,11 +36,11 @@ python3 src/generer.py           # écrit index.html et formulaire.html
 ## Tester
 
 ```sh
-node --test tests/correction.test.js                          # moteur de correction : 57 cases, 270 formulations d'origine
-NODE_PATH=$(npm root -g) node --test tests/navigateur.test.js # accueil, cours, entraînement, examen, impression, documents, formulaire
+node --test tests/correction.test.js                          # moteur de correction : 57 cases, 270 formulations d'origine, étiquettes
+NODE_PATH=$(npm root -g) node --test tests/navigateur.test.js # accueil, cours, entraînement, examen, étiquettes, documents, formulaire
 ```
 
-`tests/reponses.js` contient une réponse juste par case ; le parcours navigateur vérifie qu'un sujet entièrement
+`tests/reponses.js` contient la bonne étiquette de chaque case ; le parcours navigateur vérifie qu'un sujet entièrement
 juste donne 20/20, sans erreur JavaScript.
 
 ## Organisation

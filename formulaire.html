@@ -2014,11 +2014,6 @@ var HOMONYMES = [
       h += "</ul>";
     }
     if (L.note) h += '<h3>À retenir</h3><p class="pn-note">' + L.note + "</p>";
-    if (L.vu && L.vu.length) {
-      h += '<h3>Vu dans</h3><ul class="pn-vu">';
-      L.vu.forEach(function (v) { h += "<li>" + (VU[v] || v) + "</li>"; });
-      h += "</ul>";
-    }
     $("#pn-body").innerHTML = h; $("#pn-body").scrollTop = 0;
     $("#pn-tag").textContent = it.b.t;
     $("#pn-nav").hidden = false;

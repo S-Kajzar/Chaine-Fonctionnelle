@@ -31,11 +31,18 @@ async function open(url, viewport) {
 }
 const text = (page, sel) => page.locator(sel).first().innerText();
 const set = (page, sel, v) => page.locator(sel).evaluate((e, x) => { e.value = x; e.dispatchEvent(new Event("input")); }, v);
-async function remplir(page, gid, valeurs) {
-  for (const id of GROUPES[gid]) await page.fill(`#in-${id}`, valeurs[id] !== undefined ? valeurs[id] : REP[id]);
+// une case se remplit comme le fait l'élève : toucher l'étiquette, puis la case
+async function poser(page, id, etiquette) {
+  const gid = id.replace(/_\d+$/, "");
+  await page.locator(`#${gid} .bank`).getByRole("button", { name: etiquette, exact: true }).click();
+  await page.click(`#dz-${id}`);
 }
+async function remplir(page, gid, valeurs) {
+  for (const id of GROUPES[gid]) await poser(page, id, valeurs[id] !== undefined ? valeurs[id] : REP[id]);
+}
+const valeur = (page, id) => page.locator(`#in-${id}`).inputValue();
 
-test("accueil : deux cours, le formulaire, l'exercice 1.1 et la rubrique études de cas", async () => {
+test("accueil : deux cours, la carte du formulaire, les exercices et la rubrique études de cas", async () => {
   const { context, page, errors } = await open("");
   assert.ok(await page.locator("body.hub").count());
   assert.ok(await page.isVisible("#home"));
@@ -48,15 +55,16 @@ test("accueil : deux cours, le formulaire, l'exercice 1.1 et la rubrique études
   assert.deepEqual(await card(".cours-grid .mode-card"), [
     ["Cours 1 Niveau 1", "La chaîne fonctionnelle", "?ex=cours-chaine-fonctionnelle"],
     ["Cours 2 Niveau 2", "Chaîne d'énergie des produits", "?ex=cours-chaine-energie"]]);
+  // le formulaire est une carte comme les autres ; ses exercices de calcul sont rangés avec les exercices
+  assert.deepEqual(await card(".form-grid .mode-card"), [
+    ["Formulaire", "Formulaire de la chaîne de puissance", "formulaire.html#formulaire"]]);
   assert.deepEqual(await card(".exo-grid .mode-card"), [
-    ["Exercice 1.1 Niveau 1", "Chaînes d'information et d'énergie", "?ex=chaines-information-energie"]]);
+    ["Exercice 1.1 Niveau 1", "Chaînes d'information et d'énergie", "?ex=chaines-information-energie"],
+    ["Calculs", "Exercices de calcul", "formulaire.html#exercices"]]);
+  assert.deepEqual(await page.locator("#home h2").allInnerTexts(), ["Les cours", "Le formulaire", "Les exercices", "Études de cas"]);
   assert.match(await text(page, ".exo-grid .ex-meta"), /4 parties · 14 questions · 57 cases · 1\s+h\s+00/);
   assert.deepEqual(await card(".etude-grid .mode-card"), [["Étude 1", "Étude de cas", null]]);
   assert.match(await text(page, ".etude-grid .etat"), /En cours d'édition/);
-  // le formulaire de la chaîne de puissance apparaît sur l'accueil
-  assert.match(await text(page, ".hub-form h3"), /Formulaire de la chaîne de puissance/);
-  assert.deepEqual(await page.locator(".hub-form a").evaluateAll((as) => as.map((a) => a.getAttribute("href"))),
-    ["formulaire.html#formulaire", "formulaire.html#exercices"]);
   assert.equal(await page.locator("#home .btn-mode").count(), 0);
   await page.setViewportSize({ width: 390, height: 844 });
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
@@ -218,18 +226,20 @@ test("exercice 1.1 en entraînement : questions à plusieurs cases, sujet entiè
   assert.match(await text(page, "#home .home-head"), /Exercice 1\.1[\s\S]*Niveau 1[\s\S]*Chaînes d'information et d'énergie/);
   await page.click("[data-mode=training]");
   assert.match(await text(page, ".cartouche"), /14 questions, 57 cases notées, réparties en 4 parties/);
-  assert.match(await text(page, ".consignes"), /Des mots, pas de calcul/);
+  assert.match(await text(page, ".consignes"), /Des étiquettes, pas de calcul/);
   // groupe vide, puis groupe incomplet : confirmation demandée
   await page.click("#a1_1 .btn-fast");
   assert.match(await text(page, "#a1_1 .q-msg"), /Complète au moins une case/);
-  await page.fill("#in-a1_1_1", "aquérir");
-  await page.fill("#in-a1_1_2", "traitement");
+  await poser(page, "a1_1_1", "Acquérir");
+  await poser(page, "a1_1_2", "Traiter");
   await page.click("#a1_1 .btn-fast");
   assert.match(await text(page, "#a1_1 .btn-fast"), /Valider quand même \(1 case vide\)/);
   await page.click("#a1_1 .btn-fast");
   assert.match(await text(page, "#a1_1 .q-status"), /2 cases justes sur 3/);
   assert.equal(await text(page, "#a1_1 .btn-fast"), "Réponses validées");
   assert.ok(await page.locator("#in-a1_1_3").isDisabled());
+  assert.ok(await page.locator("#dz-a1_1_3").isDisabled());
+  assert.equal(await page.locator("#a1_1 .etq:not([disabled])").count(), 0, "étiquettes verrouillées");
   assert.ok(await page.isVisible("#a1_1 .q-expl"));
   assert.match(await text(page, "#a1_1 .grp-sol"), /Repère 5[\s\S]*Communiquer/);
   assert.match(await text(page, "#score-val"), /13,3/);
@@ -262,7 +272,7 @@ test("exercice 1.1 en examen : rien ne filtre avant la remise, y compris à l'im
   await page.click("[data-mode=exam]");
   assert.ok(!(await page.isVisible("#score-val")));
   assert.ok(!(await page.isVisible("#a1_1 .btn-fast")));
-  for (const gid of Object.keys(GROUPES)) if (gid !== "a1_1") await remplir(page, gid, { a4_3_6: "moteur" });
+  for (const gid of Object.keys(GROUPES)) if (gid !== "a1_1") await remplir(page, gid, { a4_3_6: "Le moteur à bras" });
   assert.match(await text(page, "#score-count"), /54 réponse\(s\) renseignée\(s\) sur 57/);
   await page.evaluate(() => window.dispatchEvent(new Event("beforeprint")));
   await page.emulateMedia({ media: "print" });
@@ -287,6 +297,57 @@ test("exercice 1.1 en examen : rien ne filtre avant la remise, y compris à l'im
   await page.emulateMedia({ media: "print" });
   assert.ok(await page.isVisible(".print-note-line"));
   assert.ok(await page.isVisible("#a2_1 .q-expl"));
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("étiquettes : toucher puis toucher, glisser-déposer, échanger, vider", async () => {
+  const { context, page, errors } = await open(EX);
+  await page.click("[data-mode=training]");
+  assert.match(await text(page, ".consignes"), /glisse[\s\S]*touche/);
+  assert.equal(await page.locator("#a1_1 .bank .etq").count(), 8);
+  // toucher une case vide sans étiquette choisie : aide
+  await page.click("#dz-a1_1_1");
+  assert.match(await text(page, "#a1_1 .q-msg"), /Choisis d'abord une étiquette/);
+  // toucher une étiquette la sélectionne ; la retoucher ou Échap la désélectionne
+  const acq = page.locator("#a1_1 .bank").getByRole("button", { name: "Acquérir", exact: true });
+  await acq.click();
+  assert.equal(await acq.getAttribute("aria-pressed"), "true");
+  assert.ok(await page.locator("#a1_1.picking").count());
+  await page.keyboard.press("Escape");
+  assert.equal(await acq.getAttribute("aria-pressed"), "false");
+  // au clavier : Entrée sur l'étiquette, puis Entrée sur la case
+  await acq.focus(); await page.keyboard.press("Enter");
+  await page.focus("#dz-a1_1_1"); await page.keyboard.press("Enter");
+  assert.equal(await valeur(page, "a1_1_1"), "Acquérir");
+  assert.match(await page.locator("#dz-a1_1_1").getAttribute("class"), /filled/);
+  // glisser-déposer une étiquette sur une case
+  await page.dragAndDrop("#a1_1 .etq >> text=Communiquer", "#dz-a1_1_2");
+  assert.equal(await valeur(page, "a1_1_2"), "Communiquer");
+  // une étiquette sert plusieurs fois
+  await page.dragAndDrop("#a1_1 .etq >> text=Communiquer", "#dz-a1_1_3");
+  assert.equal(await valeur(page, "a1_1_3"), "Communiquer");
+  // glisser d'une case à l'autre : les deux étiquettes s'échangent
+  await page.dragAndDrop("#dz-a1_1_1", "#dz-a1_1_2");
+  assert.deepEqual([await valeur(page, "a1_1_1"), await valeur(page, "a1_1_2")], ["Communiquer", "Acquérir"]);
+  // ramener une étiquette dans la liste, ou toucher une case remplie : la case se vide
+  await page.dragAndDrop("#dz-a1_1_1", "#a1_1 .bank-t");
+  assert.equal(await valeur(page, "a1_1_1"), "");
+  assert.equal(await text(page, "#dz-a1_1_1"), "case vide");
+  await page.click("#dz-a1_1_3");
+  assert.equal(await valeur(page, "a1_1_3"), "");
+  // pas de dépôt dans une autre question
+  await page.dragAndDrop("#a1_1 .etq >> text=Traiter", "#dz-a1_2_1");
+  assert.equal(await valeur(page, "a1_2_1"), "");
+  // validation : 1 case juste (Acquérir mal placée en repère 4), cases verrouillées
+  await poser(page, "a1_1_1", "Acquérir");
+  await page.click("#a1_1 .btn-fast"); await page.click("#a1_1 .btn-fast");
+  assert.match(await text(page, "#a1_1 .q-status"), /1 case juste sur 3/);
+  await page.dragAndDrop("#a1_2 .etq >> text=Agir", "#dz-a1_1_3");
+  assert.equal(await valeur(page, "a1_1_3"), "");
+  // téléphone : la liste et les cases tiennent dans l'écran
+  await page.setViewportSize({ width: 390, height: 844 });
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
   assert.deepEqual(errors, []);
   await context.close();
 });
@@ -318,13 +379,19 @@ test("formulaire : page autonome, liens vers l'accueil, vues ouvertes depuis l'a
   assert.match(await page.title(), /Chaîne de puissance : formulaire et exercices/);
   assert.equal(await page.locator("a.linkbtn[href='index.html']").count(), 3);
   await page.goto(URL);
-  await page.click(".hub-form a[href='formulaire.html#formulaire']");
+  await page.click(".form-grid a[href='formulaire.html#formulaire']");
   await page.waitForFunction(() => document.body.classList.contains("view-map"));
   assert.match(await text(page, "#view-map h1"), /Formulaire de la chaîne de puissance/);
+  // fiche d'une formule : grandeurs, unités… mais plus de pastilles « Vu dans »
+  await page.click("#mm-open");
+  await page.locator(".leaf").first().click();
+  assert.match(await text(page, "#pn-body"), /\S/);
+  assert.equal(await page.locator("#pn-body .pn-vu").count(), 0);
+  assert.doesNotMatch(await text(page, "#pn-body"), /Vu dans/);
+  await page.click("#pn-close");
   await page.click("#view-map .crumb a[href='index.html']");
   await page.waitForURL(/index\.html$/);
-  assert.ok(await page.locator(".hub-form").count());
-  await page.click(".hub-form a[href='formulaire.html#exercices']");
+  await page.click(".exo-grid a[href='formulaire.html#exercices']");
   await page.waitForFunction(() => document.body.classList.contains("view-ex"));
   assert.match(await text(page, "#home h1"), /Exercices : appliquer les formules/);
   assert.deepEqual(errors, []);

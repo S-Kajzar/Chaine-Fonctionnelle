@@ -11,8 +11,8 @@
 
 **Accueil** (`index.html`), sur le modèle de l'accueil RDM : en-tête et montage d'illustration (les quatre systèmes de
 l'exercice 1.1), puis les rubriques **Les cours** (Cours 1, pastille verte Niveau 1 ; Cours 2, pastille bleue
-Niveau 2), **Le formulaire** (bandeau menant au formulaire en carte mentale et aux exercices de calcul), **Les
-exercices** (Exercice 1.1, Niveau 1) et **Études de cas** (une carte « En cours d'édition », remplacée d'elle-même
+Niveau 2), **Le formulaire** (une carte, comme les autres, vers le formulaire en carte mentale), **Les
+exercices** (Exercice 1.1, Niveau 1, puis la carte « Exercices de calcul » du formulaire) et **Études de cas** (une carte « En cours d'édition », remplacée d'elle-même
 par les études décrites dans `EXO_DEFS` avec `"etude": True`). Les numéros suivent la logique RDM : le premier
 chiffre d'un exercice donne son niveau (1.1, puis 1.2… et 2.1… au niveau 2).
 
@@ -88,6 +88,13 @@ géothermique, portail automatisé ; 14 questions, 57 champs).
 - Chaque système devient une **partie** : 15, 12, 18 et 15 min (1 h), 15, 11, 19 et 12 points. Les 14 questions
   d'origine gardent leurs cases, **validées ensemble** (mécanisme « fast-q » du gabarit) : un bouton par question, une
   correction commune avec le tableau des réponses attendues et la démarche d'origine ; chaque case vaut un point.
+- **Des étiquettes à glisser, plus rien à recopier** : chaque question propose sa liste d'étiquettes (les huit
+  fonctions, ou les composants et énergies du système, avec des intrus : 7 à 12 étiquettes, triées par ordre
+  alphabétique pour ne pas souffler la réponse). On glisse une étiquette sur une case, ou on la touche puis on touche
+  la case (téléphone, tablette) ; au clavier, Entrée sur l'étiquette puis Entrée sur la case. Une étiquette sert
+  plusieurs fois ; glisser une case sur une autre échange leurs étiquettes ; ramener une étiquette dans la liste ou
+  toucher une case remplie la vide. La case garde, masqué, le champ que lit le moteur du gabarit : correction, modes
+  entraînement et examen, impression et notes sont inchangés.
 - La note n'est plus « bonnes réponses / 57 × 20 » : comme dans le dépôt RDM, chaque partie est notée sur 20 puis
   pondérée par sa durée ; modes entraînement et examen, chronomètre, impression, récapitulatif.
 - Documents rédigés : **DP1** (rappel de cours de la source et schéma général des deux chaînes) et **DT1** (rôle de
@@ -101,6 +108,10 @@ Corrections et décisions :
   reste dans `src/images/originaux`). La démarche de la question Q1.2 le mentionne.
 - **Prius, repère 4** : la flèche qui part de la génératrice rejoint le répartiteur (repère 2), qui recharge la
   batterie (repère 1) ; la démarche le précise (la source la faisait aller directement au repère 1).
+- **Étiquettes et correction** : pour chaque case, la bonne étiquette est la seule acceptée de sa liste (test
+  unitaire), sauf le plancher chauffant, où Transmettre et Agir restent justes comme dans la correction d'origine.
+  Portail, repère 7 : « alimentation électrique » n'est plus accepté comme source d'énergie (l'exercice d'origine ne
+  l'acceptait pas ; c'est l'étiquette du repère 8).
 - **Tolérance de saisie** : les 270 formulations acceptées par l'exercice d'origine restent toutes justes (test
   unitaire). Ajouts : « carte électronique » et « microcontrôleur » pour la fonction Traiter du portail (vocabulaire du
   cours 1). Refus explicites des confusions : « moteur à bras » pour Transmettre, « moteur actionnant des câbles » pour
@@ -110,10 +121,12 @@ Corrections et décisions :
 
 ## Formulaire de la chaîne de puissance (`formulaire.html`)
 
-La page fournie est publiée telle quelle, avec trois liens « Accueil : chaîne fonctionnelle » ajoutés (menu, carte
-mentale, réglages des exercices), par remplacements vérifiés. Sur l'accueil, le bandeau « Formulaire de la chaîne de
-puissance » rappelle la chaîne des formules (P = U × I, η = Pu / Pa, Ns = r × Ne, P = F × v) et ouvre directement la
-carte mentale (`#formulaire`) ou les exercices de calcul (`#exercices`). Le cours 2 y renvoie aussi.
+La page fournie est publiée avec deux retouches, par remplacements vérifiés (la source n'est pas modifiée) : trois
+liens « Accueil : chaîne fonctionnelle » (menu, carte mentale, réglages des exercices), et la fiche d'une formule
+n'affiche plus les pastilles « Vu dans » (Cours, TD, A1…), qui renvoyaient à des séances extérieures au site. Sur
+l'accueil, la carte « Formulaire de la chaîne de puissance » ouvre la carte mentale (`#formulaire`) et la carte
+« Exercices de calcul », rangée avec les exercices, ouvre les séries de calcul (`#exercices`). Le cours 2 y renvoie
+aussi.
 
 ## Points signalés sans modification
 
@@ -124,14 +137,17 @@ carte mentale (`#formulaire`) ou les exercices de calcul (`#exercices`). Le cour
 
 ## Vérifications effectuées
 
-- `node --test tests/correction.test.js` : 6 tests — configuration (4 parties, 57 cases, 60 min), réponse de référence
+- `node --test tests/correction.test.js` : 7 tests — configuration (4 parties, 57 cases, 60 min), réponse de référence
   juste pour chaque case, 270 formulations d'origine acceptées, confusions et fautes de frappe, aucune fonction
-  acceptée à la place d'une autre, saisie vide refusée.
-- `tests/navigateur.test.js` (Playwright, Chromium) : 8 parcours, tous réussis — accueil (cartes, bandeau du
-  formulaire, annonce de l'étude, téléphone, aucune mention de diplôme ou d'épreuve) ; adresse inconnue ; cours 1
+  acceptée à la place d'une autre, saisie vide refusée, étiquettes (la bonne est proposée, les autres de la liste
+  sont refusées).
+- `tests/navigateur.test.js` (Playwright, Chromium) : 9 parcours, tous réussis — accueil (cartes des cours, du
+  formulaire et des exercices de calcul, annonce de l'étude, téléphone, aucune mention de diplôme ou d'épreuve) ; adresse inconnue ; cours 1
   (étapes, scénarios, clavier, plein écran, cartes, jeux, quiz) ; cours 2 (figures, fiches, oscilloscope, hacheur,
   transmissions, puissances, énergie, effort et flux, rendements, autonomie, jeux, quiz, impression, téléphone) ;
   exercice en entraînement (cases vides, confirmation, verrouillage, 19,7 puis 20,0/20) ; exercice en examen (rien ne
   filtre avant la remise, y compris à l'impression ; remise en deux temps ; chronomètre arrêté ; 18,6/20) ;
-  documents et téléphone ; formulaire (liens vers l'accueil, vues ouvertes depuis l'accueil).
+  étiquettes (toucher puis toucher, clavier, glisser-déposer, réutilisation, échange, retour dans la liste, verrouillage
+  après validation, téléphone) ; documents et téléphone ; formulaire (liens vers l'accueil, fiche sans « Vu dans »,
+  vues ouvertes depuis l'accueil).
 - Aucune erreur JavaScript dans aucun parcours.
