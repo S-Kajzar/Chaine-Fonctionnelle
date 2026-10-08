@@ -8,8 +8,8 @@
 #   - src/images/ex1-rav4.jpg         : photo du RAV4 (plaque floutée dans l'original), réduite pour la page
 #   - src/images/accueil.png          : montage d'illustration de la page d'accueil
 #   - src/images/carte-*.png|jpg      : images des cartes de l'accueil, tirées des exercices (480 × 270)
-#   La figure SVG de la motorisation du RAV4 est photographiée pour le montage par outils/vignette-rav4.js
-#   (src/images/originaux/ex1-rav4-schema.png) : NODE_PATH=$(npm root -g) node outils/vignette-rav4.js
+#   outils/captures.js photographie dans les pages la motorisation du RAV4 (montage) et la carte mentale du
+#   formulaire, et rend le dessin carte-capteur.svg : NODE_PATH=$(npm root -g) node outils/captures.js
 # Usage : bash outils/preparer-images.sh   (depuis la racine du dépôt)
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -144,18 +144,24 @@ convert -size 1120x620 xc:white \
 #    remplir : l'image couvre la carte (recadrée) ; entiere : l'image entière sur fond blanc (figures très allongées).
 remplir() { convert "$1" -background white -alpha remove -alpha off -resize 480x270^ -gravity "${4:-center}" \
   -extent 480x270 -strip $3 "$OUT/$2"; }
-entiere() { convert "$1" -background white -alpha remove -alpha off -resize 456x250 -gravity center -extent 480x270 \
-  -strip -colors 256 "PNG8:$OUT/$2"; }
+entiere() { convert "$1" -background "${3:-white}" -alpha remove -alpha off -resize 456x250 -gravity center \
+  -extent 480x270 -strip -colors 256 "PNG8:$OUT/$2"; }
 tmp=$(mktemp --suffix=.png)
 convert "$SRC/ex1-portail.png" -crop 699x372+0+0 +repage "$tmp"  # sans la légende
 remplir "$tmp"                    carte-cours-1.png  "-colors 256"
 rm -f "$tmp"
-entiere "$SRC/qcm-moteur.png"     carte-cours-2.png
-remplir "$SRC/ex1-geothermie.png" carte-cours-3.png  "-colors 256" north
-entiere "$SRC/qcm-eolienne.png"   carte-formulaire.png
+tmp=$(mktemp --suffix=.png)
+convert "$SRC/qcm-moteur.png" -crop 256x176+166+46 +repage "$tmp"        # le moteur seul, sans texte ni flèches
+entiere "$tmp"                    carte-cours-2.png
+rm -f "$tmp"
+remplir "$SRC/carte-capteur.png"  carte-cours-3.jpg  "-quality 82"           # dessin carte-capteur.svg (outils/captures.js)
+tmp=$(mktemp --suffix=.png)
+convert "$SRC/carte-formulaire.png" -gravity center -crop 1376x780+0+0 +repage "$tmp"  # la carte mentale dépliée, vue de loin
+remplir "$tmp"                    carte-formulaire.png "-colors 256"
+rm -f "$tmp"
 remplir "$SRC/ex1-rav4.jpg"       carte-ex11.jpg     "-quality 80"
 remplir "$SRC/qcm-pv-mono.png"    carte-qcm.jpg      "-quality 80"
-remplir "$SRC/qcm-cascade.jpg"    carte-calculs.jpg  "-quality 80"
+remplir "$SRC/carte-calculatrice.jpg" carte-calculs.jpg "-quality 80"   # photo fournie : calculatrice et brouillon
 remplir "$SRC/ex1-ascenseur.png"  carte-etude.png    "-colors 256" north
 
 ls -l "$OUT"/*.png | awk '{s += $5} END {print NR " images, " int(s / 1024) " Kio"}'

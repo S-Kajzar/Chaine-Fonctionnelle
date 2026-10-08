@@ -872,18 +872,18 @@ COURS = [
      "alt": "Portail automatique à deux vantaux et ses composants numérotés"},
     {"key": "cours-chaine-energie", "tag": "Cours 2", "level": "Niveau 2", "title": "Chaîne d'énergie des produits",
      "mots": ["Alimenter", "Distribuer", "Convertir", "Transmettre", "Rendements"], "vign": "carte-cours-2",
-     "alt": "Moteur électrique : puissance absorbée et puissance utile"},
+     "alt": "Moteur électrique"},
     {"key": "cours-chaine-information", "tag": "Cours 3", "level": "Niveau 2", "title": "Chaîne d'information des produits",
      "mots": ["Acquérir", "Traiter", "Communiquer", "Capteurs", "Binaire"], "vign": "carte-cours-3",
-     "alt": "Installation de chauffage géothermique : clavier, écran, régulateur, sondes de température"},
+     "alt": "Capteur à ultrasons et antenne"},
 ]
 LIENS_FORMULAIRE = {
     "formulaire": {"tag": "Formulaire", "title": "Formulaire de la chaîne de puissance", "href": "formulaire.html#formulaire",
                    "bouton": "Ouvrir le formulaire", "mots": ["Formules", "Unités", "Carte mentale", "Recherche"],
-                   "vign": "carte-formulaire", "alt": "Chaîne de rendements d'une éolienne"},
+                   "vign": "carte-formulaire", "alt": "La carte mentale du formulaire, vue de loin"},
     "calculs": {"tag": "Calculs", "title": "Exercices de calcul", "href": "formulaire.html#exercices",
                 "bouton": "Choisir mes exercices", "mots": ["Valeurs aléatoires", "Formules", "Unités", "Note sur 20"],
-                "vign": "carte-calculs", "alt": "Chute d'eau"},
+                "vign": "carte-calculs", "alt": "Calculatrice scientifique et brouillon"},
 }
 # Rubrique « Études de cas » : tant qu'aucune étude n'est décrite dans EXO_DEFS, une carte l'annonce.
 ETUDE_A_VENIR = ("Étude de cas", ["Système réel", "Deux chaînes", "Choix des composants"], "carte-etude",
