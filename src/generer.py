@@ -847,8 +847,8 @@ EXO_DEFS = [
      "consignes": CONSIGNES_MOTS,
      "hero": ("ex1-portail", "Portail automatisé à deux vantaux et ses huit composants numérotés",
               "Quatre systèmes à décrire : ascenseur, voiture hybride, chauffage géothermique et portail."),
-     "mots": ["Ascenseur", "RAV4 hybride", "Géothermie", "Portail", "Étiquettes"], "vign": "vign-ex11",
-     "valt": "Les quatre systèmes de l'exercice : ascenseur, portail, chauffage géothermique, voiture hybride",
+     "mots": ["Ascenseur", "RAV4 hybride", "Géothermie", "Portail", "Étiquettes"], "vign": "carte-ex11",
+     "valt": "Toyota RAV4 hybride",
      "sub": "Quatre systèmes techniques à analyser : compléter leurs chaînes d'information et d'énergie avec les "
             "fonctions, les composants qui les réalisent, les consignes, les comptes rendus et l'énergie d'entrée."},
     {"key": "qcm-energie", "prefix": "b", "tag": "QCM 2.1", "level": "Niveau 2", "qcm": True,
@@ -856,8 +856,8 @@ EXO_DEFS = [
      "consignes": qcm.CONSIGNES,
      "hero": ("qcm-moteur", "Moteur électrique : puissance absorbée 2000 W, puissance utile 1600 W",
               "Conversions, unités, rendements, signaux, thermique, photovoltaïque, fonctions de la chaîne d'énergie."),
-     "mots": ["Conversions", "Rendements", "Signaux", "Thermique", "Photovoltaïque"], "vign": "vign-qcm",
-     "valt": "Figures du QCM : moteur électrique, oscillogramme, panneau photovoltaïque, rendements d'une éolienne",
+     "mots": ["Conversions", "Rendements", "Signaux", "Thermique", "Photovoltaïque"], "vign": "carte-qcm",
+     "valt": "Panneau photovoltaïque",
      "sub": "Un questionnaire à choix multiples sur l'énergie : formes et conversions, unités, puissance et rendement, "
             "signaux et moteur à courant continu, transferts thermiques, photovoltaïque et batteries, fonctions de la "
             "chaîne d'énergie."},
@@ -868,33 +868,34 @@ EXO_DEFS = [
 # Cartes de l'accueil : une vignette tirée du contenu (outils/vignettes.js) et 3 à 5 mots-clés, sans texte.
 COURS = [
     {"key": "cours-chaine-fonctionnelle", "tag": "Cours 1", "level": "Niveau 1", "title": "La chaîne fonctionnelle",
-     "mots": ["Portail animé", "Information", "Énergie", "Jeux", "Quiz"], "vign": "vign-cours-1",
-     "alt": "Chaînes d'information et d'énergie du portail automatique"},
+     "mots": ["Portail animé", "Information", "Énergie", "Jeux", "Quiz"], "vign": "carte-cours-1",
+     "alt": "Portail automatique à deux vantaux et ses composants numérotés"},
     {"key": "cours-chaine-energie", "tag": "Cours 2", "level": "Niveau 2", "title": "Chaîne d'énergie des produits",
-     "mots": ["Alimenter", "Distribuer", "Convertir", "Transmettre", "Rendements"], "vign": "vign-cours-2",
-     "alt": "Chaînes de puissance et d'information d'une trottinette électrique"},
+     "mots": ["Alimenter", "Distribuer", "Convertir", "Transmettre", "Rendements"], "vign": "carte-cours-2",
+     "alt": "Moteur électrique : puissance absorbée et puissance utile"},
     {"key": "cours-chaine-information", "tag": "Cours 3", "level": "Niveau 2", "title": "Chaîne d'information des produits",
-     "mots": ["Acquérir", "Traiter", "Communiquer", "Capteurs", "Binaire"], "vign": "vign-cours-3",
-     "alt": "Chaîne d'information d'une machine à café"},
+     "mots": ["Acquérir", "Traiter", "Communiquer", "Capteurs", "Binaire"], "vign": "carte-cours-3",
+     "alt": "Installation de chauffage géothermique : clavier, écran, régulateur, sondes de température"},
 ]
 LIENS_FORMULAIRE = {
     "formulaire": {"tag": "Formulaire", "title": "Formulaire de la chaîne de puissance", "href": "formulaire.html#formulaire",
                    "bouton": "Ouvrir le formulaire", "mots": ["Formules", "Unités", "Carte mentale", "Recherche"],
-                   "vign": "vign-formulaire", "alt": "Carte mentale des formules de la chaîne de puissance"},
+                   "vign": "carte-formulaire", "alt": "Chaîne de rendements d'une éolienne"},
     "calculs": {"tag": "Calculs", "title": "Exercices de calcul", "href": "formulaire.html#exercices",
                 "bouton": "Choisir mes exercices", "mots": ["Valeurs aléatoires", "Formules", "Unités", "Note sur 20"],
-                "vign": "vign-calculs", "alt": "Une question de calcul : données et case de réponse"},
+                "vign": "carte-calculs", "alt": "Chute d'eau"},
 }
 # Rubrique « Études de cas » : tant qu'aucune étude n'est décrite dans EXO_DEFS, une carte l'annonce.
-ETUDE_A_VENIR = ("Étude de cas", ["Système réel", "Deux chaînes", "Choix des composants"])
+ETUDE_A_VENIR = ("Étude de cas", ["Système réel", "Deux chaînes", "Choix des composants"], "carte-etude",
+                 "Ascenseur en coupe : machinerie et cabine")
 OUVRIR = ("Ouvrir l'exercice", "Ouvrir l'étude")
 
 
 def carte(tag, title, mots, href, bouton, vign=None, alt="", cls=""):
     """Carte de l'accueil : vignette, étiquette, titre, mots-clés, bouton."""
     img = '<div class="cv-img cv-vide" aria-hidden="true"></div>'
-    if vign:
-        src, w, h = png(vign)
+    if vign:  # images des cartes : src/images/carte-*, tirées des exercices (outils/preparer-images.sh)
+        src, w, h = (jpg if (IMAGES / f"{vign}.jpg").exists() else png)(vign)
         img = f'<img class="cv-img" src="{src}" alt="{esc(alt)}" width="{w}" height="{h}" loading="lazy">'
     mots_html = '<ul class="cv-mots">' + "".join(f"<li>{m}</li>" for m in mots) + "</ul>"
     btn = f'<a class="btn" href="{href}">{bouton}</a>' if href else '<p class="small ex-meta etat">En cours d\'édition</p>'
@@ -915,7 +916,7 @@ def render_hub():
     src, w, h = png("accueil")
     cards = "".join(_exo_card(e) for e in EXO_DEFS if not e.get("etude")) + _lien_card(LIENS_FORMULAIRE["calculs"])
     etudes = "".join(_exo_card(e) for e in EXO_DEFS if e.get("etude")) or carte(
-        "Étude 1", ETUDE_A_VENIR[0], ETUDE_A_VENIR[1], None, None, cls="en-edition")
+        "Étude 1", ETUDE_A_VENIR[0], ETUDE_A_VENIR[1], None, None, ETUDE_A_VENIR[2], ETUDE_A_VENIR[3], "en-edition")
     cours = "".join(carte(c["tag"] + pastille(c.get("level")), c["title"], c["mots"], f'?ex={c["key"]}', "Lire le cours",
                           c["vign"], c["alt"], "cours-card") for c in COURS)
     return (f'<div class="home-top"><div class="home-top-l"><header class="home-head"><h1 id="home-title">{TITRE}</h1>'
@@ -2982,14 +2983,20 @@ body.hub .home-top .home-hero img{max-height:210px}
 .ex-grid .en-edition{border-style:dashed; border-color:var(--trait)}
 .ex-grid .en-edition h3,.ex-grid .en-edition p{color:var(--encre-2)}
 .ex-grid .etat{font-weight:700; color:var(--orange)}
-/* cartes de l'accueil : vignette et mots-clés, pas de texte */
-.carte-v{gap:8px}
-.carte-v .cv-img{display:block; width:100%; height:auto; aspect-ratio:16/9; object-fit:contain; background:#fff; border:1px solid var(--trait-fin); margin:0 0 4px}
+/* cartes de l'accueil : image, titre, mots-clés ; toutes de la même taille, dans toutes les rubriques */
+body.hub .ex-grid{grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); grid-auto-rows:1fr}
+.carte-v{display:grid; grid-template-rows:auto auto 62px 46px; gap:8px; padding:0 0 16px!important; overflow:hidden; height:100%}
+body.hub .carte-v>*:not(.cv-img){margin-left:18px; margin-right:18px}
+.carte-v .cv-img{display:block; width:100%; height:auto; aspect-ratio:16/9; object-fit:cover; background:#fff; border-bottom:2px solid var(--encre); margin:0}
 .carte-v .cv-vide{background:repeating-linear-gradient(135deg,#F4F5F2 0 12px,#ECEEEA 12px 24px)}
-.carte-v .cv-mots{display:flex; flex-wrap:wrap; gap:5px; list-style:none; margin:2px 0 10px; padding:0}
-.cv-mots li{font:600 .8rem var(--f-titre); background:var(--bleu-pale); color:var(--encre); border:1px solid #C9D8EC; padding:2px 8px; border-radius:12px}
+.carte-v .mc-head{margin:6px 18px 0}
+.carte-v h3{margin:0; min-height:2.4em; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.2}
+#home .carte-v .cv-mots{display:flex; flex-wrap:wrap; align-content:flex-start; gap:5px; list-style:none; margin:0 18px; padding:0}
+#home .carte-v .cv-mots li{margin:0}
+body.hub .carte-v .btn,body.hub .carte-v .etat{align-self:end; justify-self:start; margin-top:0; margin-bottom:0}
+.cv-mots li{font:600 .8rem var(--f-titre); background:var(--bleu-pale); color:var(--encre); border:1px solid #C9D8EC; padding:2px 8px; border-radius:12px; white-space:nowrap}
+.en-edition .cv-img{filter:grayscale(1) opacity(.55)}
 .en-edition .cv-mots li{background:#F4F5F2; border-color:var(--trait-fin); color:var(--encre-2)}
-.cours-grid{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
 .pastille{display:inline-block; font:700 .72rem var(--f-titre); letter-spacing:.03em; background:var(--vert); color:#fff; padding:2px 8px; margin-left:6px; vertical-align:middle}
 .pastille.n2{background:var(--bleu)}
 .mc-tag .pastille{margin-left:8px; font-size:.68rem; padding:1px 6px}

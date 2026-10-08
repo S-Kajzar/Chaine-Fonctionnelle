@@ -31,7 +31,7 @@ celui du dépôt RDM, recopié sans modification de son style ni de ses moteurs)
 (`src/formulaire-chaine-de-puissance.html`) et du contenu décrit dans `src/generer.py`.
 
 ```sh
-NODE_PATH=$(npm root -g) node outils/vignettes.js  # seulement si une figure SVG change : vignettes de l'accueil
+NODE_PATH=$(npm root -g) node outils/vignette-rav4.js  # seulement si la figure du RAV4 change (montage d'accueil)
 bash outils/preparer-images.sh   # seulement si les images de src/images/originaux changent (ImageMagick 6)
 python3 src/generer.py           # écrit index.html et formulaire.html
 ```
@@ -60,7 +60,7 @@ juste donne 20/20, sans erreur JavaScript.
 | `src/formulaire-chaine-de-puissance.html` | formulaire d'origine (source de `formulaire.html`) |
 | `src/images/originaux/` | figures d'origine : exercice (`ex1-*`), cours Word (`ce-fig-*`, tableaux `ce-tab-*`) |
 | `src/images/` | figures quantifiées intégrées en data URI, photos (`ce-ph-*`) et symboles (`ce-sy-*`) découpés dans les tableaux du cours, montage de la page d'accueil |
-| `outils/preparer-images.sh` | quantification, découpes, correction du schéma de l'ascenseur, photo du RAV4, montage d'accueil |
-| `outils/vignettes.js` | vignettes des cartes de l'accueil et de la motorisation du RAV4, photographiées dans les pages (Playwright) |
+| `outils/preparer-images.sh` | quantification, découpes, correction du schéma de l'ascenseur, photo du RAV4, montage d'accueil, images des cartes |
+| `outils/vignette-rav4.js` | vignette de la motorisation du RAV4 pour le montage d'accueil (Playwright) |
 | `tests/` | tests Node et Playwright |
 | `.github/workflows/static.yml` | publication GitHub Pages (déclenchée sur la branche `main`) |

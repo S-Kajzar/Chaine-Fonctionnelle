@@ -70,7 +70,10 @@ test("accueil : cartes illustrées à mots-clés (trois cours, formulaire, exerc
     mots: c.querySelectorAll(".cv-mots li").length, p: c.querySelectorAll("p:not(.etat)").length })));
   assert.equal(cartes.length, 8);
   for (const c of cartes) { assert.ok(c.mots >= 3 && c.mots <= 5, JSON.stringify(c)); assert.equal(c.p, 0); }
-  assert.equal(cartes.filter((c) => c.img > 0).length, 7, "toutes les cartes illustrées, sauf l'étude à venir");
+  assert.equal(cartes.filter((c) => c.img > 0).length, 8, "toutes les cartes illustrées");
+  // toutes les cartes ont la même taille, d'une rubrique à l'autre
+  const tailles = await page.locator("#home .carte-v").evaluateAll((cs) => cs.map((c) => [Math.round(c.offsetWidth), c.offsetHeight]));
+  for (const [w, h] of tailles) { assert.equal(w, tailles[0][0]); assert.ok(Math.abs(h - tailles[0][1]) <= 1, JSON.stringify(tailles)); }
   assert.deepEqual(await card(".etude-grid .mode-card"), [["Étude 1", "Étude de cas", null]]);
   assert.match(await text(page, ".etude-grid .etat"), /En cours d'édition/);
   assert.equal(await page.locator("#home .btn-mode").count(), 0);

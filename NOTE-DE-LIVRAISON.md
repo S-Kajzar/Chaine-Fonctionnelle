@@ -16,10 +16,11 @@ exercices** (Exercice 1.1, Niveau 1 ; QCM 2.1, Niveau 2 ; la carte « Exercices 
 par les études décrites dans `EXO_DEFS` avec `"etude": True`). Les numéros suivent la logique RDM : le premier
 chiffre d'un exercice donne son niveau (1.1, puis 1.2… et 2.1… au niveau 2).
 
-**Cartes de l'accueil** : plus de texte, une vignette et 3 à 5 mots-clés par carte. Les vignettes sont tirées du
-contenu lui-même : figures des cours, carte mentale du formulaire et question de calcul photographiées par
-`outils/vignettes.js` (Playwright), montage des systèmes pour l'exercice 1.1, montage des figures pour le QCM ; l'étude
-à venir garde une vignette hachurée.
+**Cartes de l'accueil** : plus de texte ; chaque carte montre une image, son étiquette, son titre, 3 à 5 mots-clés et
+son bouton, et toutes ont la même taille, d'une rubrique à l'autre (test navigateur). Les images sont piochées dans
+les exercices et recadrées au même format 480 × 270 par `outils/preparer-images.sh` : portail (cours 1), moteur
+électrique (cours 2), chauffage géothermique (cours 3), chaîne de rendements de l'éolienne (formulaire), RAV4
+(exercice 1.1), panneau photovoltaïque (QCM), chute d'eau (exercices de calcul), ascenseur grisé (étude à venir).
 
 **Cours** : le texte occupe toute la largeur de la section (le gabarit limite les paragraphes à 72 caractères, ce qui
 convient à un sujet mais pas à un cours). Les tableaux « Compétences travaillées » des cours 2 et 3 sont retirés :
