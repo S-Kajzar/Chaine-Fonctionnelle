@@ -28,6 +28,7 @@ import types
 import unicodedata
 
 import cours_information
+import qcm
 import rav4
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -703,6 +704,8 @@ def render_part(p):
     for b in p["blocks"]:
         if b["kind"] == "q":
             blocks.append(render_q(b, p))
+        elif b["kind"] == "grp" and b.get("qcm"):
+            blocks.append(qcm.render_qcm(b, AIDES_QCM))
         elif b["kind"] == "grp":
             blocks.append(render_grp(b, p))
         elif b["kind"] == "qbar":
@@ -761,7 +764,8 @@ def prepare_exo(e):
                                  "pts": 1, "grader": g}
     np_ = len(parts)
     e["cfg"] = {"title": e["title"], "minutes": e["minutes"], "duree": hm(e["minutes"]),
-                "cartouche": f"{e['n_q']} questions, {e['n_cases']} cases notées, réparties en {np_} partie"
+                "cartouche": f"{e['n_q']} questions" + ("" if e.get("qcm") else f", {e['n_cases']} cases notées") +
+                             f", réparties en {np_} partie"
                              f"{'s' if np_ > 1 else ''} pondérée{'s' if np_ > 1 else ''} par leur durée.",
                 "parts": parts_cfg, "qcfg": qcfg, "skcfg": {}}
 
@@ -790,12 +794,14 @@ def pastille(level):
 def render_exo_home(e):
     src, w, h = png(e["hero"][0])
     docs = sorted(e["docs"], key=lambda k: (k[:2] != "DP", k))
-    docs_txt = (", ".join(docs[:-1]) + " et " + docs[-1]) if len(docs) > 1 else docs[0]
+    docs_txt = (", ".join(docs[:-1]) + " et " + docs[-1]) if len(docs) > 1 else (docs[0] if docs else "")
     facts = ('<div class="home-facts">'
              f'<div><b>{len(e["P"])} parties</b><span>{e["n_q"]} questions</span></div>'
-             f'<div><b>{hm(e["minutes"])}</b><span>durée conseillée</span></div>'
-             f'<div><b>{len(docs)} documents</b><span>{docs_txt}</span></div>'
-             f'<div><b>{e["n_cases"]} cases</b><span>un point chacune</span></div></div>')
+             f'<div><b>{hm(e["minutes"])}</b><span>durée conseillée</span></div>' +
+             (f'<div><b>{len(docs)} documents</b><span>{docs_txt}</span></div>' if docs else
+              '<div><b>Une réponse</b><span>ou plusieurs, à choisir</span></div>') +
+             (f'<div><b>{e["n_q"]} points</b><span>un par question</span></div></div>' if e.get("qcm") else
+              f'<div><b>{e["n_cases"]} cases</b><span>un point chacune</span></div></div>'))
     return (f'<div class="home-top"><div class="home-top-l"><header class="home-head"><span class="mc-tag">{e["tag"]}</span>{pastille(e.get("level"))}'
             f'<h1 id="home-title">{e["title"]}</h1><p class="home-sub">{e["sub"]}</p></header>{facts}</div>'
             f'<figure class="home-hero"><img src="{src}" alt="{esc(e["hero"][1])}" width="{w}" height="{h}">'
@@ -841,70 +847,78 @@ EXO_DEFS = [
      "consignes": CONSIGNES_MOTS,
      "hero": ("ex1-portail", "Portail automatisé à deux vantaux et ses huit composants numérotés",
               "Quatre systèmes à décrire : ascenseur, voiture hybride, chauffage géothermique et portail."),
-     "card": "Un ascenseur, une voiture hybride, un chauffage géothermique et un portail automatisé : nommer les "
-             "fonctions, placer les composants, repérer les entrées et les sorties.",
+     "mots": ["Ascenseur", "RAV4 hybride", "Géothermie", "Portail", "Étiquettes"], "vign": "carte-ex11",
+     "valt": "Toyota RAV4 hybride",
      "sub": "Quatre systèmes techniques à analyser : compléter leurs chaînes d'information et d'énergie avec les "
             "fonctions, les composants qui les réalisent, les consignes, les comptes rendus et l'énergie d'entrée."},
+    {"key": "qcm-energie", "prefix": "b", "tag": "QCM 2.1", "level": "Niveau 2", "qcm": True,
+     "title": "QCM : énergie et chaîne d'énergie", "parts": qcm.parties(), "docs": [],
+     "consignes": qcm.CONSIGNES,
+     "hero": ("qcm-moteur", "Moteur électrique : puissance absorbée 2000 W, puissance utile 1600 W",
+              "Conversions, unités, rendements, signaux, thermique, photovoltaïque, fonctions de la chaîne d'énergie."),
+     "mots": ["Conversions", "Rendements", "Signaux", "Thermique", "Photovoltaïque"], "vign": "carte-qcm",
+     "valt": "Panneau photovoltaïque",
+     "sub": "Un questionnaire à choix multiples sur l'énergie : formes et conversions, unités, puissance et rendement, "
+            "signaux et moteur à courant continu, transferts thermiques, photovoltaïque et batteries, fonctions de la "
+            "chaîne d'énergie."},
 ]
 
 
 # ============================================================ ACCUEIL
+# Cartes de l'accueil : une vignette tirée du contenu (outils/vignettes.js) et 3 à 5 mots-clés, sans texte.
 COURS = [
     {"key": "cours-chaine-fonctionnelle", "tag": "Cours 1", "level": "Niveau 1", "title": "La chaîne fonctionnelle",
-     "desc": "Un portail automatique animé pas à pas : chaîne d'information, chaîne d'énergie et ce qui les relie ; "
-             "avec un jeu et un quiz."},
+     "mots": ["Portail animé", "Information", "Énergie", "Jeux", "Quiz"], "vign": "carte-cours-1",
+     "alt": "Portail automatique à deux vantaux et ses composants numérotés"},
     {"key": "cours-chaine-energie", "tag": "Cours 2", "level": "Niveau 2", "title": "Chaîne d'énergie des produits",
-     "desc": "Alimenter, distribuer, convertir, transmettre, agir : composants, symboles, puissances et rendements ; "
-             "avec des simulateurs, un jeu et un quiz."},
+     "mots": ["Alimenter", "Distribuer", "Convertir", "Transmettre", "Rendements"], "vign": "carte-cours-2",
+     "alt": "Moteur électrique : puissance absorbée et puissance utile"},
     {"key": "cours-chaine-information", "tag": "Cours 3", "level": "Niveau 2", "title": "Chaîne d'information des produits",
-     "desc": "Acquérir, traiter, communiquer : capteurs et signaux, chaîne d'acquisition, programme, réseaux et "
-             "encodage ; avec une machine à café animée, des laboratoires, des jeux et un quiz."},
+     "mots": ["Acquérir", "Traiter", "Communiquer", "Capteurs", "Binaire"], "vign": "carte-cours-3",
+     "alt": "Installation de chauffage géothermique : clavier, écran, régulateur, sondes de température"},
 ]
+LIENS_FORMULAIRE = {
+    "formulaire": {"tag": "Formulaire", "title": "Formulaire de la chaîne de puissance", "href": "formulaire.html#formulaire",
+                   "bouton": "Ouvrir le formulaire", "mots": ["Formules", "Unités", "Carte mentale", "Recherche"],
+                   "vign": "carte-formulaire", "alt": "Chaîne de rendements d'une éolienne"},
+    "calculs": {"tag": "Calculs", "title": "Exercices de calcul", "href": "formulaire.html#exercices",
+                "bouton": "Choisir mes exercices", "mots": ["Valeurs aléatoires", "Formules", "Unités", "Note sur 20"],
+                "vign": "carte-calculs", "alt": "Chute d'eau"},
+}
 # Rubrique « Études de cas » : tant qu'aucune étude n'est décrite dans EXO_DEFS, une carte l'annonce.
-ETUDE_A_VENIR = ("Étude de cas", "Un système réel étudié de bout en bout : chaînes d'information et d'énergie, "
-                 "choix des composants, puissances et rendements.")
+ETUDE_A_VENIR = ("Étude de cas", ["Système réel", "Deux chaînes", "Choix des composants"], "carte-etude",
+                 "Ascenseur en coupe : machinerie et cabine")
 OUVRIR = ("Ouvrir l'exercice", "Ouvrir l'étude")
 
 
+def carte(tag, title, mots, href, bouton, vign=None, alt="", cls=""):
+    """Carte de l'accueil : vignette, étiquette, titre, mots-clés, bouton."""
+    img = '<div class="cv-img cv-vide" aria-hidden="true"></div>'
+    if vign:  # images des cartes : src/images/carte-*, tirées des exercices (outils/preparer-images.sh)
+        src, w, h = (jpg if (IMAGES / f"{vign}.jpg").exists() else png)(vign)
+        img = f'<img class="cv-img" src="{src}" alt="{esc(alt)}" width="{w}" height="{h}" loading="lazy">'
+    mots_html = '<ul class="cv-mots">' + "".join(f"<li>{m}</li>" for m in mots) + "</ul>"
+    btn = f'<a class="btn" href="{href}">{bouton}</a>' if href else '<p class="small ex-meta etat">En cours d\'édition</p>'
+    return (f'<article class="mode-card carte-v {cls}">{img}<div class="mc-head"><span class="mc-tag">{tag}</span>'
+            f"<h3>{title}</h3></div>{mots_html}{btn}</article>")
+
+
 def _exo_card(e):
-    return (f'<article class="mode-card"><div class="mc-head"><span class="mc-tag">{e["tag"]}{pastille(e.get("level"))}'
-            f'</span><h3>{e["title"]}</h3></div>'
-            f'<p>{e["card"]}</p><p class="small ex-meta">{len(e["P"])} partie{"s" if len(e["P"]) > 1 else ""} · '
-            f'{e["n_q"]} questions · {e["n_cases"]} cases · {hm(e["minutes"])}</p>'
-            f'<a class="btn" href="?ex={e["key"]}">{OUVRIR[bool(e.get("etude"))]}</a></article>')
+    return carte(e["tag"] + pastille(e.get("level")), e["title"], e["mots"], f'?ex={e["key"]}',
+                 OUVRIR[bool(e.get("etude"))], e["vign"], e["valt"])
 
 
-FORMULAIRE_CARTES = [
-    ("Formulaire", "Formulaire de la chaîne de puissance",
-     "Toutes les formules de la séquence en carte mentale : puissance, énergie, rendement, conversions, rotation et "
-     "transmission, électrotechnique, stockage. Chaque formule avec ses grandeurs, leurs unités et ses autres "
-     "écritures, une recherche par mot ou par symbole.",
-     "Carte mentale · recherche · version imprimable", "formulaire.html#formulaire", "Ouvrir le formulaire"),
-    ("Calculs", "Exercices de calcul",
-     "Des séries de calculs courts à valeurs aléatoires : tu choisis les thèmes et le nombre de questions. Les données "
-     "sont en clair, la formule est à retrouver, parfois à isoler.",
-     "1 à 40 questions · correction détaillée · note sur 20", "formulaire.html#exercices", "Choisir mes exercices"),
-]
-
-
-def _lien_card(tag, title, desc, meta, href, bouton):
-    return (f'<article class="mode-card lien-card"><div class="mc-head"><span class="mc-tag">{tag}</span>'
-            f'<h3>{title}</h3></div><p>{desc}</p><p class="small ex-meta">{meta}</p>'
-            f'<a class="btn" href="{href}">{bouton}</a></article>')
+def _lien_card(c):
+    return carte(c["tag"], c["title"], c["mots"], c["href"], c["bouton"], c["vign"], c["alt"])
 
 
 def render_hub():
     src, w, h = png("accueil")
-    cards = "".join(_exo_card(e) for e in EXO_DEFS if not e.get("etude")) + _lien_card(*FORMULAIRE_CARTES[1])
-    etudes = "".join(_exo_card(e) for e in EXO_DEFS if e.get("etude")) or (
-        f'<article class="mode-card en-edition"><div class="mc-head"><span class="mc-tag">Étude 1</span>'
-        f'<h3>{ETUDE_A_VENIR[0]}</h3></div><p>{ETUDE_A_VENIR[1]}</p>'
-        '<p class="small ex-meta etat">En cours d\'édition</p></article>')
-    cours = "".join(
-        f'<article class="mode-card cours-card"><div class="mc-head">'
-        f'<span class="mc-tag">{c["tag"]}{pastille(c.get("level"))}</span><h3>{c["title"]}</h3></div>'
-        f'<p>{c["desc"]}</p><p class="small ex-meta">Disponible</p>'
-        f'<a class="btn" href="?ex={c["key"]}">Lire le cours</a></article>' for c in COURS)
+    cards = "".join(_exo_card(e) for e in EXO_DEFS if not e.get("etude")) + _lien_card(LIENS_FORMULAIRE["calculs"])
+    etudes = "".join(_exo_card(e) for e in EXO_DEFS if e.get("etude")) or carte(
+        "Étude 1", ETUDE_A_VENIR[0], ETUDE_A_VENIR[1], None, None, ETUDE_A_VENIR[2], ETUDE_A_VENIR[3], "en-edition")
+    cours = "".join(carte(c["tag"] + pastille(c.get("level")), c["title"], c["mots"], f'?ex={c["key"]}', "Lire le cours",
+                          c["vign"], c["alt"], "cours-card") for c in COURS)
     return (f'<div class="home-top"><div class="home-top-l"><header class="home-head"><h1 id="home-title">{TITRE}</h1>'
             "<p class=\"home-sub\">Chaîne d'information et chaîne d'énergie : décrire un système automatisé, identifier "
             "ses fonctions et ses composants, suivre l'énergie de la source jusqu'à l'action, calculer puissances et "
@@ -915,7 +929,7 @@ def render_hub():
             f'motorisation" width="{w}" height="{h}">'
             '<figcaption class="small">Les systèmes étudiés dans l\'exercice 1.1.</figcaption></figure></div>'
             f'<h2 class="home-choose">Les cours</h2><div class="ex-grid cours-grid">{cours}</div>'
-            f'<h2 class="home-choose">Le formulaire</h2><div class="ex-grid form-grid">{_lien_card(*FORMULAIRE_CARTES[0])}</div>'
+            f'<h2 class="home-choose">Le formulaire</h2><div class="ex-grid form-grid">{_lien_card(LIENS_FORMULAIRE["formulaire"])}</div>'
             f'<h2 class="home-choose">Les exercices</h2><div class="ex-grid exo-grid">{cards}</div>'
             f'<h2 class="home-choose">Études de cas</h2><div class="ex-grid etude-grid">{etudes}</div>'
             f'<p class="home-note small">Pastilles : {pastille("Niveau 1").strip()} premier niveau, '
@@ -1295,7 +1309,8 @@ def cours_portail_js():
 PORTAIL_CSS = """
 /* ---------- cours 1 : animation du portail (style de src/portail-anime.html, préfixé par .cp) ---------- */
 body.page-cours-chaine-fonctionnelle .home-inner{max-width:1320px}
-body.page-cours-chaine-fonctionnelle .part-body>p{max-width:86ch}
+/* cours : le texte occupe toute la largeur de la section (le gabarit le limite à 72 caractères pour les sujets) */
+body.cours-page .part-body>p,body.cours-page .part-body>ul,body.cours-page .part-body>ol,body.cours-page .remarque{max-width:none}
 .cp{margin:6px 0 4px}
 .cp:focus{outline:none}
 .cp select{font:inherit; color:inherit}
@@ -1446,11 +1461,6 @@ OBJECTIFS = ["Identifier les constituants de la chaîne de puissance d'un produi
              "Distinguer les fonctions Alimenter/Stocker, Distribuer, Convertir, Transmettre et Agir.",
              "Associer à chaque fonction ses principaux composants et symboles.",
              "Calculer les puissances et le rendement le long de la chaîne d'énergie."]
-COMPETENCES = [("CO3.1", "Identifier et caractériser les fonctions et les constituants d'un produit ainsi que ses "
-                         "entrées/sorties.", 2),
-               ("CO3.2", "Identifier et caractériser l'agencement matériel et/ou logiciel d'un produit.", 2),
-               ("CO4.2", "Décrire le fonctionnement et/ou l'exploitation d'un produit en utilisant l'outil de "
-                         "description le plus pertinent.", 2)]
 PREREQUIS = ["Notion de chaîne d'énergie et de chaîne d'information.", "Lecture de diagrammes SysML (blocs, flux)."]
 
 # fiches : (clé de la photo, nom, fonction, caractéristiques principales, symbole ou None, fonctionnement ou None)
@@ -1759,11 +1769,10 @@ def fmt_puissance(p):
 
 def render_cours_energie():
     obj = "".join(f"<li>{o}</li>" for o in OBJECTIFS)
-    comp = "".join(f"<tr><td><b>{c}</b></td><td>{t}</td><td>{n}</td></tr>" for c, t, n in COMPETENCES)
     pre = "".join(f"<li>{p}</li>" for p in PREREQUIS)
-    fiche = (f'<div class="c2-fiche"><div><h3>Objectifs</h3><ul>{obj}</ul></div><div><h3>Compétences travaillées</h3>'
-             f'<table class="t"><thead><tr><th>Code</th><th>Compétence</th><th>Taxo.</th></tr></thead><tbody>{comp}'
-             f"</tbody></table></div><div><h3>Prérequis</h3><ul>{pre}</ul></div></div>")
+    # pas de tableau de compétences : le cours ne s'adresse pas à une seule filière
+    fiche = (f'<div class="c2-fiche"><div><h3>Objectifs</h3><ul>{obj}</ul></div>'
+             f"<div><h3>Prérequis</h3><ul>{pre}</ul></div></div>")
     s1 = course_section(1, "c2-meca", "Produits mécatroniques",
         "<p>Un produit mécatronique mêle des parties <b>mécaniques</b>, <b>électroniques</b> et <b>informatiques</b>. Des "
         "structures de contrôle permettent de piloter le produit, d'augmenter et d'optimiser ses fonctionnalités. Ce type "
@@ -2688,7 +2697,7 @@ COURS_2_JS = r"""
 COURS_2_CSS = """
 /* ---------- cours 2 : chaîne d'énergie ---------- */
 body.page-cours-chaine-energie .home-inner{max-width:1180px}
-.c2-fiche{display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1.4fr) minmax(0,.8fr); gap:12px; margin:0 0 14px}
+.c2-fiche{display:grid; grid-template-columns:minmax(0,2fr) minmax(0,1fr); gap:12px; margin:0 0 14px}
 .c2-fiche>div{background:var(--papier); border:1.5px solid var(--encre); padding:6px 14px 10px}
 .c2-fiche h3{margin:4px 0 6px; font:700 1rem var(--f-titre)}
 .c2-fiche ul{margin:0; padding-left:1.1rem; font-size:.9rem} .c2-fiche li{margin:.2rem 0}
@@ -2828,6 +2837,9 @@ body.page-cours-chaine-energie .home-inner{max-width:1180px}
 
 # ============================================================ COURS — assemblage
 
+
+# le QCM reçoit les fonctions d'images du générateur
+AIDES_QCM = types.SimpleNamespace(png=png, jpg=jpg, IMAGES=IMAGES)
 
 # le cours 3 vit dans son propre module ; il reçoit les éléments communs des cours
 AIDES_COURS = types.SimpleNamespace(course_head=course_head, course_section=course_section, course_nav=course_nav,
@@ -2971,7 +2983,20 @@ body.hub .home-top .home-hero img{max-height:210px}
 .ex-grid .en-edition{border-style:dashed; border-color:var(--trait)}
 .ex-grid .en-edition h3,.ex-grid .en-edition p{color:var(--encre-2)}
 .ex-grid .etat{font-weight:700; color:var(--orange)}
-.cours-grid{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+/* cartes de l'accueil : image, titre, mots-clés ; toutes de la même taille, dans toutes les rubriques */
+body.hub .ex-grid{grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); grid-auto-rows:1fr}
+.carte-v{display:grid; grid-template-rows:auto auto 62px 46px; gap:8px; padding:0 0 16px!important; overflow:hidden; height:100%}
+body.hub .carte-v>*:not(.cv-img){margin-left:18px; margin-right:18px}
+.carte-v .cv-img{display:block; width:100%; height:auto; aspect-ratio:16/9; object-fit:cover; background:#fff; border-bottom:2px solid var(--encre); margin:0}
+.carte-v .cv-vide{background:repeating-linear-gradient(135deg,#F4F5F2 0 12px,#ECEEEA 12px 24px)}
+.carte-v .mc-head{margin:6px 18px 0}
+.carte-v h3{margin:0; min-height:2.4em; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.2}
+#home .carte-v .cv-mots{display:flex; flex-wrap:wrap; align-content:flex-start; gap:5px; list-style:none; margin:0 18px; padding:0}
+#home .carte-v .cv-mots li{margin:0}
+body.hub .carte-v .btn,body.hub .carte-v .etat{align-self:end; justify-self:start; margin-top:0; margin-bottom:0}
+.cv-mots li{font:600 .8rem var(--f-titre); background:var(--bleu-pale); color:var(--encre); border:1px solid #C9D8EC; padding:2px 8px; border-radius:12px; white-space:nowrap}
+.en-edition .cv-img{filter:grayscale(1) opacity(.55)}
+.en-edition .cv-mots li{background:#F4F5F2; border-color:var(--trait-fin); color:var(--encre-2)}
 .pastille{display:inline-block; font:700 .72rem var(--f-titre); letter-spacing:.03em; background:var(--vert); color:#fff; padding:2px 8px; margin-left:6px; vertical-align:middle}
 .pastille.n2{background:var(--bleu)}
 .mc-tag .pastille{margin-left:8px; font-size:.68rem; padding:1px 6px}
@@ -3164,7 +3189,7 @@ def build():
 <title>{TITRE} — cours et exercices interactifs</title>
 <meta name="description" content="Chaîne fonctionnelle, cours et exercices interactifs de deux niveaux : chaîne d'information, chaîne d'énergie, composants et symboles, puissances et rendements ; formulaire de la chaîne de puissance.">
 {style}
-{CONTENT_CSS.replace("__COURS_CSS__", COURS_CSS + rav4.RAV4_CSS)}
+{CONTENT_CSS.replace("__COURS_CSS__", COURS_CSS + rav4.RAV4_CSS + qcm.QCM_CSS)}
 </head>
 <body class="no-mode">
 
@@ -3246,6 +3271,8 @@ def build():
 {app}
 {ETIQUETTES_JS}
 {rav4.RAV4_JS}
+{qcm.images_js(AIDES_QCM)}
+{qcm.QCM_JS}
 </body>
 </html>
 """

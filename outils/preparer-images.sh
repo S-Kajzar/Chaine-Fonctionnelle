@@ -7,8 +7,9 @@
 #   - src/images/ce-sy-*.png          : symboles des composants, découpés dans les mêmes tableaux
 #   - src/images/ex1-rav4.jpg         : photo du RAV4 (plaque floutée dans l'original), réduite pour la page
 #   - src/images/accueil.png          : montage d'illustration de la page d'accueil
-#   La figure de la motorisation du RAV4 est dessinée en SVG (src/rav4.py) ; sa vignette pour le montage,
-#   src/images/originaux/ex1-rav4-schema.png, se refait avec : NODE_PATH=$(npm root -g) node outils/vignette-rav4.js
+#   - src/images/carte-*.png|jpg      : images des cartes de l'accueil, tirées des exercices (480 × 270)
+#   La figure SVG de la motorisation du RAV4 est photographiée pour le montage par outils/vignette-rav4.js
+#   (src/images/originaux/ex1-rav4-schema.png) : NODE_PATH=$(npm root -g) node outils/vignette-rav4.js
 # Usage : bash outils/preparer-images.sh   (depuis la racine du dépôt)
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -18,8 +19,16 @@ OUT=src/images
 # 1. Figures reprises telles quelles
 for f in "$SRC"/ex1-*.png "$SRC"/ce-fig-*.png; do
   b=$(basename "$f")
-  [ "$b" = ex1-rav4-schema.png ] && continue  # vignette du montage d'accueil seulement
+  [ "$b" = ex1-rav4-schema.png ] && continue  # sert seulement au montage d'accueil
   convert "$f" -background white -alpha remove -alpha off -strip -colors 256 "PNG8:$OUT/$b"
+done
+
+# QCM « énergie et chaîne d'énergie » : images extraites de la page fournie (src/qcm-energie-source.html)
+for f in "$SRC"/qcm-*.png; do
+  convert "$f" -background white -alpha remove -alpha off -strip -colors 256 "PNG8:$OUT/$(basename "$f")"
+done
+for f in "$SRC"/qcm-*.jpg; do
+  convert "$f" -resize '640x640>' -quality 78 -strip "$OUT/$(basename "$f")"
 done
 
 # Photo du RAV4
@@ -130,5 +139,23 @@ convert -size 1120x620 xc:white \
   -annotate +32+19 'Ascenseur' -annotate +326+19 'Portail automatique' -annotate +392+347 'Chauffage géothermique' \
   -annotate +850+19 'Voiture hybride' \
   -strip -colors 256 "PNG8:$OUT/accueil.png"
+
+# 5. Images des cartes de l'accueil, tirées des exercices : toutes au même format 480 × 270.
+#    remplir : l'image couvre la carte (recadrée) ; entiere : l'image entière sur fond blanc (figures très allongées).
+remplir() { convert "$1" -background white -alpha remove -alpha off -resize 480x270^ -gravity "${4:-center}" \
+  -extent 480x270 -strip $3 "$OUT/$2"; }
+entiere() { convert "$1" -background white -alpha remove -alpha off -resize 456x250 -gravity center -extent 480x270 \
+  -strip -colors 256 "PNG8:$OUT/$2"; }
+tmp=$(mktemp --suffix=.png)
+convert "$SRC/ex1-portail.png" -crop 699x372+0+0 +repage "$tmp"  # sans la légende
+remplir "$tmp"                    carte-cours-1.png  "-colors 256"
+rm -f "$tmp"
+entiere "$SRC/qcm-moteur.png"     carte-cours-2.png
+remplir "$SRC/ex1-geothermie.png" carte-cours-3.png  "-colors 256" north
+entiere "$SRC/qcm-eolienne.png"   carte-formulaire.png
+remplir "$SRC/ex1-rav4.jpg"       carte-ex11.jpg     "-quality 80"
+remplir "$SRC/qcm-pv-mono.png"    carte-qcm.jpg      "-quality 80"
+remplir "$SRC/qcm-cascade.jpg"    carte-calculs.jpg  "-quality 80"
+remplir "$SRC/ex1-ascenseur.png"  carte-etude.png    "-colors 256" north
 
 ls -l "$OUT"/*.png | awk '{s += $5} END {print NR " images, " int(s / 1024) " Kio"}'

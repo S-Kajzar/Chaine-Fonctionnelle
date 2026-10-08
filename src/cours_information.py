@@ -18,14 +18,6 @@ OBJECTIFS = [
     "Décrire la chaîne d'acquisition d'un signal analogique : conditionnement et conversion analogique-numérique.",
     "Décrire un algorithme (algorigramme, pseudo-code) et encoder l'information (binaire, hexadécimal, ASCII).",
 ]
-COMPETENCES = [
-    ("CO3.1", "Identifier et caractériser les fonctions et les constituants d'un produit ainsi que ses "
-              "entrées/sorties.", 2),
-    ("CO3.2", "Identifier et caractériser l'agencement matériel et/ou logiciel d'un produit.", 2),
-    ("CO3.3", "Identifier et caractériser le fonctionnement temporel d'un produit ou d'un processus.", 2),
-    ("CO4.2", "Décrire le fonctionnement et/ou l'exploitation d'un produit en utilisant l'outil de description le "
-              "plus pertinent.", 2),
-]
 PREREQUIS = ["Notion de chaîne de puissance et d'effecteur.", "Lecture d'un schéma-bloc."]
 
 FONCTIONS_I = [("acq", "Acquérir"), ("tra", "Traiter"), ("com", "Communiquer")]
@@ -454,11 +446,10 @@ def table_ascii():
 # ------------------------------------------------------------ le cours
 def render(h):
     obj = "".join(f"<li>{o}</li>" for o in OBJECTIFS)
-    comp = "".join(f"<tr><td><b>{c}</b></td><td>{t}</td><td>{n}</td></tr>" for c, t, n in COMPETENCES)
     pre = "".join(f"<li>{p}</li>" for p in PREREQUIS)
-    fiche = (f'<div class="c2-fiche"><div><h3>Objectifs</h3><ul>{obj}</ul></div><div><h3>Compétences travaillées</h3>'
-             f'<table class="t"><thead><tr><th>Code</th><th>Compétence</th><th>Taxo.</th></tr></thead><tbody>{comp}'
-             f"</tbody></table></div><div><h3>Prérequis</h3><ul>{pre}</ul></div></div>")
+    # pas de tableau de compétences : le cours ne s'adresse pas à une seule filière
+    fiche = (f'<div class="c2-fiche"><div><h3>Objectifs</h3><ul>{obj}</ul></div>'
+             f"<div><h3>Prérequis</h3><ul>{pre}</ul></div></div>")
     cs = h.course_section
     s1 = cs(1, "c3-prod", "Constitution d'un produit",
         "<p>Un produit, autonome ou automatisé, est conçu et fabriqué par l'homme pour fonctionner seul, en fonction des "

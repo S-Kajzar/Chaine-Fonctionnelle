@@ -42,7 +42,7 @@ async function remplir(page, gid, valeurs) {
 }
 const valeur = (page, id) => page.locator(`#in-${id}`).inputValue();
 
-test("accueil : deux cours, la carte du formulaire, les exercices et la rubrique études de cas", async () => {
+test("accueil : cartes illustrées à mots-clés (trois cours, formulaire, exercices, études de cas)", async () => {
   const { context, page, errors } = await open("");
   assert.ok(await page.locator("body.hub").count());
   assert.ok(await page.isVisible("#home"));
@@ -61,9 +61,19 @@ test("accueil : deux cours, la carte du formulaire, les exercices et la rubrique
     ["Formulaire", "Formulaire de la chaîne de puissance", "formulaire.html#formulaire"]]);
   assert.deepEqual(await card(".exo-grid .mode-card"), [
     ["Exercice 1.1 Niveau 1", "Chaînes d'information et d'énergie", "?ex=chaines-information-energie"],
+    ["QCM 2.1 Niveau 2", "QCM : énergie et chaîne d'énergie", "?ex=qcm-energie"],
     ["Calculs", "Exercices de calcul", "formulaire.html#exercices"]]);
   assert.deepEqual(await page.locator("#home h2").allInnerTexts(), ["Les cours", "Le formulaire", "Les exercices", "Études de cas"]);
-  assert.match(await text(page, ".exo-grid .ex-meta"), /4 parties · 14 questions · 57 cases · 1\s+h\s+00/);
+  // chaque carte : une vignette chargée, 3 à 5 mots-clés, aucun paragraphe de texte
+  const cartes = await page.locator("#home .carte-v").evaluateAll((cs) => cs.map((c) => ({
+    img: !!c.querySelector("img.cv-img") ? c.querySelector("img.cv-img").naturalWidth : -1,
+    mots: c.querySelectorAll(".cv-mots li").length, p: c.querySelectorAll("p:not(.etat)").length })));
+  assert.equal(cartes.length, 8);
+  for (const c of cartes) { assert.ok(c.mots >= 3 && c.mots <= 5, JSON.stringify(c)); assert.equal(c.p, 0); }
+  assert.equal(cartes.filter((c) => c.img > 0).length, 8, "toutes les cartes illustrées");
+  // toutes les cartes ont la même taille, d'une rubrique à l'autre
+  const tailles = await page.locator("#home .carte-v").evaluateAll((cs) => cs.map((c) => [Math.round(c.offsetWidth), c.offsetHeight]));
+  for (const [w, h] of tailles) { assert.equal(w, tailles[0][0]); assert.ok(Math.abs(h - tailles[0][1]) <= 1, JSON.stringify(tailles)); }
   assert.deepEqual(await card(".etude-grid .mode-card"), [["Étude 1", "Étude de cas", null]]);
   assert.match(await text(page, ".etude-grid .etat"), /En cours d'édition/);
   assert.equal(await page.locator("#home .btn-mode").count(), 0);
@@ -132,7 +142,8 @@ test("cours 2 (niveau 2) : figures animées, fiches, oscilloscope, hacheur, tran
   const { context, page, errors } = await open("?ex=cours-chaine-energie");
   assert.match(await text(page, "#home .home-head"), /Cours 2[\s\S]*Niveau 2[\s\S]*Chaîne d'énergie des produits/);
   assert.equal(await page.locator(".cours-sec").count(), 10);
-  assert.match(await text(page, ".c2-fiche"), /CO3\.1[\s\S]*CO3\.2[\s\S]*CO4\.2/);
+  // pas de tableau de compétences : le cours ne vise pas une seule filière
+  assert.doesNotMatch(await text(page, ".c2-fiche"), /Compétences|CO\d\.\d/);
   // figure 1 : un flux s'anime ; figure 2 : un bloc explique son rôle
   await page.click(".ce-f1-b[data-f='f1-commandes']");
   assert.match(await text(page, "#ce-f1-txt"), /commande la chaîne de puissance/);
@@ -229,6 +240,7 @@ test("cours 3 : machine à café, blocs internes, capteurs, acquisition, CAN, pr
   assert.equal(await page.locator(".cours-nav a").count(), 8);
   // machine à café : six étapes ; le café coule à l'étape 5
   for (let i = 0; i < 5; i++) await page.click("#ci-cafe-next");
+  assert.doesNotMatch(await text(page, ".c2-fiche"), /Compétences|CO\d\.\d/);
   assert.match(await text(page, "#ci-cafe-step"), /Étape 5 sur 6[\s\S]*café coule/);
   assert.ok(await page.locator("#cf-pout.on").count());
   await page.uncheck("#ci-cafe-det");
@@ -506,6 +518,58 @@ test("partie 2, RAV4 : schéma animé, chaîne synchronisée, fonctions dévoil�
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
   assert.deepEqual(errors, []);
   await context.close();
+});
+
+test("QCM : propositions, correction du gabarit, 20/20 en entraînement, examen avec réponses vides", async () => {
+  // bonnes propositions de chaque question, lues dans la configuration du moteur
+  const bons = (page) => page.evaluate(() => [...document.querySelectorAll(".qcm")].map((q) => {
+    const g = window.__QCFG__[q.querySelector(".sol input").dataset.q].grader;
+    return [q.id, (g.equals || g.value.map(String))];
+  }));
+  const { context, page, errors } = await open("?ex=qcm-energie");
+  assert.match(await text(page, "#home .home-head"), /QCM 2\.1[\s\S]*Niveau 2[\s\S]*QCM : énergie et chaîne d'énergie/);
+  await page.click("[data-mode=training]");
+  assert.match(await text(page, ".cartouche"), /76 questions, réparties en 6 parties/);
+  assert.equal(await page.locator(".qcm").count(), 76);
+  // les figures partagées sont toutes chargées
+  assert.ok(await page.evaluate(() => [...document.querySelectorAll("img[data-qimg]")].every((i) => i.complete && i.naturalWidth > 0)));
+  // Valider reste inactif sans choix ; une réponse unique remplace la précédente
+  assert.ok(await page.locator("#b1_1 .btn-fast").isDisabled());
+  await page.click("#b1_1 .qcm-o[data-k='1']"); await page.click("#b1_1 .qcm-o[data-k='2']");
+  assert.equal(await page.locator("#b1_1 .qcm-o[aria-checked=true]").count(), 1);
+  // une fausse réponse : propositions marquées, explication
+  await page.click("#b1_2 .qcm-o[data-k='1']"); await page.click("#b1_2 .btn-fast");
+  assert.equal(await text(page, "#b1_2 .q-status"), "Réponse fausse");
+  assert.ok(await page.locator("#b1_2 .qcm-o.ko[data-k='1']").count());
+  assert.ok(await page.locator("#b1_2 .qcm-o.ok[data-k='4']").count());
+  assert.ok(await page.isVisible("#b1_2 .q-expl"));
+  assert.ok(await page.locator("#b1_2 .qcm-o[data-k='3']").isDisabled());
+  await context.close();
+  // tout juste : 20/20
+  const b = await open("?ex=qcm-energie");
+  await b.page.click("[data-mode=training]");
+  for (const [id, ks] of await bons(b.page)) {
+    for (const k of (await b.page.locator(`#${id}`).getAttribute("data-multi")) === "1" ? ks : [ks[0]])
+      await b.page.click(`#${id} .qcm-o[data-k='${k}' i]`);
+    await b.page.click(`#${id} .btn-fast`);
+  }
+  assert.equal((await text(b.page, "#recap .final-note")).trim(), "20,0/20");
+  assert.equal(await b.page.locator(".qcm .q-status:text-is('Bonne réponse')").count(), 76);
+  assert.deepEqual(b.errors.concat(errors), []);
+  await b.context.close();
+  // examen : partie 1 juste, le reste vide ; remise en deux temps
+  const c = await open("?ex=qcm-energie");
+  await c.page.click("[data-mode=exam]");
+  assert.ok(!(await c.page.isVisible("#b1_1 .btn-fast")));
+  for (const [id, ks] of (await bons(c.page)).filter(([id]) => id.startsWith("b1_"))) await c.page.click(`#${id} .qcm-o[data-k='${ks[0]}' i]`);
+  assert.match(await text(c.page, "#score-count"), /9 réponse\(s\) renseignée\(s\) sur 76/);
+  await c.page.click("#exam-submit"); await c.page.click("#exam-submit");
+  assert.ok(await c.page.locator("body.graded").count());
+  assert.equal(await text(c.page, "#b2_1 .q-status"), "Pas de réponse");
+  // partie 1 : 20/20, pèse 8 min sur 80 → 2,0/20
+  assert.equal((await text(c.page, "#recap .final-note")).trim(), "2,0/20");
+  assert.deepEqual(c.errors, []);
+  await c.context.close();
 });
 
 test("documents et téléphone : rail, panneau, Échap ; bouton « Documents » sur petit écran", async () => {
