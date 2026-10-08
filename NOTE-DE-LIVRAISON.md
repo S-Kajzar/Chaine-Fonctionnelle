@@ -12,9 +12,18 @@
 **Accueil** (`index.html`), sur le modèle de l'accueil RDM : en-tête et montage d'illustration (les quatre systèmes de
 l'exercice 1.1), puis les rubriques **Les cours** (Cours 1, pastille verte Niveau 1 ; Cours 2 et Cours 3, chaîne
 d'énergie et chaîne d'information côte à côte, pastille bleue Niveau 2), **Le formulaire** (une carte, comme les autres, vers le formulaire en carte mentale), **Les
-exercices** (Exercice 1.1, Niveau 1, puis la carte « Exercices de calcul » du formulaire) et **Études de cas** (une carte « En cours d'édition », remplacée d'elle-même
+exercices** (Exercice 1.1, Niveau 1 ; QCM 2.1, Niveau 2 ; la carte « Exercices de calcul » du formulaire) et **Études de cas** (une carte « En cours d'édition », remplacée d'elle-même
 par les études décrites dans `EXO_DEFS` avec `"etude": True`). Les numéros suivent la logique RDM : le premier
 chiffre d'un exercice donne son niveau (1.1, puis 1.2… et 2.1… au niveau 2).
+
+**Cartes de l'accueil** : plus de texte, une vignette et 3 à 5 mots-clés par carte. Les vignettes sont tirées du
+contenu lui-même : figures des cours, carte mentale du formulaire et question de calcul photographiées par
+`outils/vignettes.js` (Playwright), montage des systèmes pour l'exercice 1.1, montage des figures pour le QCM ; l'étude
+à venir garde une vignette hachurée.
+
+**Cours** : le texte occupe toute la largeur de la section (le gabarit limite les paragraphes à 72 caractères, ce qui
+convient à un sujet mais pas à un cours). Les tableaux « Compétences travaillées » des cours 2 et 3 sont retirés :
+les cours ne visent pas une seule filière ; restent les objectifs et les prérequis.
 
 **Moteur applicatif** : seules les entrées réservées au sujet sont remplacées, chaque remplacement étant vérifié :
 `CONSEIL_MIN` (lue dans `window.__CONSEIL_MIN__`), `DECOR` et `DR_NAMES` (vides : aucun tracé pour l'instant), le
@@ -175,6 +184,33 @@ Corrections et décisions :
   « télécommande » pour le boîtier de commande, moteur électrique et moteur thermique inversés.
 - Les noms des systèmes réels (Toyota RAV4, réseau EDF sur la figure) sont conservés comme dans l'exercice d'origine.
 
+## QCM 2.1 — Énergie et chaîne d'énergie (Niveau 2, `?ex=qcm-energie`)
+
+**Source** : la page « QCM — Chaînes d'information et d'énergie » fournie (`src/qcm-energie-source.html`, conservée
+telle quelle ; ses images sont extraites dans `src/images/originaux/qcm-*`). Mise aux normes du gabarit
+(`src/qcm.py`) :
+- chaque question devient une question du gabarit à une case, masquée, qui reçoit le repère de la ou des propositions
+  choisies ; le moteur Grading la corrige (« code » pour une réponse unique, « intset » pour plusieurs) : modes
+  entraînement et examen, chronomètre, note pondérée, récapitulatif et impression sont ceux des autres exercices ;
+- six parties pondérées par leur durée (1 h 20 en tout) : conversions et sources d'énergie, unités, puissance et
+  rendement, signaux et moteur à courant continu, énergie thermique, photovoltaïque et batteries, fonctions de la
+  chaîne d'énergie et stockage ; 76 questions d'un point ;
+- après validation : bonne réponse en vert, réponse fausse en rouge, réponse attendue et explication de la source ;
+- les figures partagées par plusieurs questions (oscillogrammes, courbes du panneau) ne sont écrites qu'une fois dans
+  la page.
+
+Corrections et décisions :
+- **Titre** : la source s'intitule « Chaînes d'information et d'énergie », mais toutes ses questions portent sur
+  l'énergie ; le QCM s'appelle « Énergie et chaîne d'énergie » (l'exercice 1.1 porte déjà l'autre titre).
+- **Q46** retirée : doublon exact de Q45. **Q15** : l'explication acceptait « la chaleur », la liste des bonnes
+  réponses l'oubliait ; elle est ajoutée.
+- **Q59** (bouton poussoir → DISTRIBUER) : dans un système automatisé, un bouton poussoir réalise la fonction
+  ACQUÉRIR (cours 3) ; la question précise désormais le cas d'une commande directe, où il coupe lui-même le courant.
+- **Q42C** : la « puissance crête » se définit à 1000 W·m⁻² ; la question demande la puissance maximale à 600 W·m⁻².
+- **Unités** : « KW », « KJ » deviennent « kW », « kJ ». Les explications ne renvoient plus à une note extérieure.
+- **Q32C** : la formule R = e / (λ × S), donnée en image, reste écrite dans l'énoncé ; l'image est retirée.
+- Pas de documents à consulter : un formulaire donnerait plusieurs réponses (formules de puissance, de rendement).
+
 ## Formulaire de la chaîne de puissance (`formulaire.html`)
 
 La page fournie est publiée avec deux retouches, par remplacements vérifiés (la source n'est pas modifiée) : trois
@@ -189,7 +225,7 @@ aussi.
 - Les figures de l'exercice sont de faible définition (282 à 900 px de large) ; elles sont intégrées telles quelles
   (PNG quantifiés). La figure 3 du cours (ibd) est coupée en bas, comme dans le Word.
 - Quelques photos des tableaux du Word portent un logo de fabricant ; elles ne sont pas retouchées.
-- Poids : `index.html` 1,9 Mio (1,3 Mio d'images), `formulaire.html` 150 Kio.
+- Poids : `index.html` 2,5 Mio (1,7 Mio d'images), `formulaire.html` 150 Kio.
 
 ## Vérifications effectuées
 
@@ -197,8 +233,11 @@ aussi.
   juste pour chaque case, 270 formulations d'origine acceptées, confusions et fautes de frappe, aucune fonction
   acceptée à la place d'une autre, saisie vide refusée, étiquettes (la bonne est proposée, les autres de la liste
   sont refusées).
-- `tests/navigateur.test.js` (Playwright, Chromium) : 11 parcours, tous réussis — accueil (cartes des cours, du
-  formulaire et des exercices de calcul, annonce de l'étude, téléphone, aucune mention de diplôme ou d'épreuve) ; adresse inconnue ; cours 1
+- `node --test tests/qcm.test.js` : 4 tests — 6 parties, 76 questions, 1 h 20 ; pour chaque question à réponse
+  unique, chaque bonne proposition acceptée et toutes les autres refusées (plus de 300 propositions) ; réponses
+  multiples exigées complètes et sans intrus ; corrections de la source.
+- `tests/navigateur.test.js` (Playwright, Chromium) : 12 parcours, tous réussis — accueil (cartes illustrées à 3 à 5
+  mots-clés et sans texte, annonce de l'étude, téléphone, aucune mention de diplôme ou d'épreuve) ; adresse inconnue ; cours 1
   (étapes, scénarios, clavier, plein écran, cartes, jeux, quiz) ; cours 2 (figures, fiches, oscilloscope, hacheur,
   transmissions, puissances, énergie, effort et flux, rendements, autonomie, jeux, quiz, impression, téléphone) ;
   cours 3 (machine à café, blocs internes, laboratoire, acquisition, amplification, CAN, programme exécuté, onglets,
@@ -206,6 +245,7 @@ aussi.
   conduite, chaîne synchronisée, version 4 roues motrices, fonctions dévoilées après correction, trajet) ; exercice en entraînement (cases vides, confirmation, verrouillage, 19,7 puis 20,0/20) ; exercice en examen (rien ne
   filtre avant la remise, y compris à l'impression ; remise en deux temps ; chronomètre arrêté ; 18,6/20) ;
   étiquettes (toucher puis toucher, clavier, glisser-déposer, réutilisation, échange, retour dans la liste, verrouillage
-  après validation, téléphone) ; documents et téléphone ; formulaire (liens vers l'accueil, fiche sans « Vu dans »,
+  après validation, téléphone) ; QCM (choix unique ou multiple, marques et explications, 20/20 en entraînement,
+  examen avec réponses vides 2,0/20, figures chargées) ; documents et téléphone ; formulaire (liens vers l'accueil, fiche sans « Vu dans »,
   vues ouvertes depuis l'accueil).
 - Aucune erreur JavaScript dans aucun parcours.

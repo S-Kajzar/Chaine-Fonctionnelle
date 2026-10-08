@@ -7,8 +7,10 @@
 #   - src/images/ce-sy-*.png          : symboles des composants, découpés dans les mêmes tableaux
 #   - src/images/ex1-rav4.jpg         : photo du RAV4 (plaque floutée dans l'original), réduite pour la page
 #   - src/images/accueil.png          : montage d'illustration de la page d'accueil
-#   La figure de la motorisation du RAV4 est dessinée en SVG (src/rav4.py) ; sa vignette pour le montage,
-#   src/images/originaux/ex1-rav4-schema.png, se refait avec : NODE_PATH=$(npm root -g) node outils/vignette-rav4.js
+#   - src/images/vign-*.png           : vignettes des cartes de l'accueil (480 × 270)
+#   Les figures dessinées en SVG (RAV4, cours, formulaire) sont photographiées par outils/vignettes.js :
+#   src/images/originaux/ex1-rav4-schema.png et vign-*.png ; les refaire avec
+#   NODE_PATH=$(npm root -g) node outils/vignettes.js
 # Usage : bash outils/preparer-images.sh   (depuis la racine du dépôt)
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -18,8 +20,16 @@ OUT=src/images
 # 1. Figures reprises telles quelles
 for f in "$SRC"/ex1-*.png "$SRC"/ce-fig-*.png; do
   b=$(basename "$f")
-  [ "$b" = ex1-rav4-schema.png ] && continue  # vignette du montage d'accueil seulement
+  [ "$b" = ex1-rav4-schema.png ] && continue  # sert seulement au montage d'accueil
   convert "$f" -background white -alpha remove -alpha off -strip -colors 256 "PNG8:$OUT/$b"
+done
+
+# QCM « énergie et chaîne d'énergie » : images extraites de la page fournie (src/qcm-energie-source.html)
+for f in "$SRC"/qcm-*.png; do
+  convert "$f" -background white -alpha remove -alpha off -strip -colors 256 "PNG8:$OUT/$(basename "$f")"
+done
+for f in "$SRC"/qcm-*.jpg; do
+  convert "$f" -resize '640x640>' -quality 78 -strip "$OUT/$(basename "$f")"
 done
 
 # Photo du RAV4
@@ -130,5 +140,17 @@ convert -size 1120x620 xc:white \
   -annotate +32+19 'Ascenseur' -annotate +326+19 'Portail automatique' -annotate +392+347 'Chauffage géothermique' \
   -annotate +850+19 'Voiture hybride' \
   -strip -colors 256 "PNG8:$OUT/accueil.png"
+
+# 5. Vignettes des cartes de l'accueil : 480 × 270, figure entière sur fond blanc
+vign() { convert "$1" -background white -alpha remove -alpha off -resize 456x250 -gravity center -extent 480x270 \
+  -strip -colors 256 "PNG8:$OUT/$2.png"; }
+for f in "$SRC"/vign-*.png; do vign "$f" "$(basename "$f" .png)"; done
+vign "$OUT/accueil.png" vign-ex11
+convert -size 480x270 xc:white \
+  \( "$SRC/qcm-moteur.png" -resize 228x128 \) -gravity northwest -geometry +6+6 -composite \
+  \( "$SRC/qcm-oscillo-1.png" -resize 228x128 \) -gravity northwest -geometry +290+6 -composite \
+  \( "$SRC/qcm-pv-mono.png" -resize 228x124 \) -gravity northwest -geometry +60+140 -composite \
+  \( "$SRC/qcm-eolienne.png" -resize 236x124 \) -gravity northwest -geometry +238+170 -composite \
+  -strip -colors 256 "PNG8:$OUT/vign-qcm.png"
 
 ls -l "$OUT"/*.png | awk '{s += $5} END {print NR " images, " int(s / 1024) " Kio"}'
