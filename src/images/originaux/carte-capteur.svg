@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <!-- Illustration du cours 3 (carte de l'accueil) : un capteur à ultrasons et une antenne, dessinés pour le site -->
+  <defs>
+    <radialGradient id="fond" cx="40%" cy="35%" r="80%"><stop offset="0" stop-color="#F4F7FB"/><stop offset="1" stop-color="#C9D6E6"/></radialGradient>
+    <linearGradient id="pcb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2B6CC4"/><stop offset="1" stop-color="#16478C"/></linearGradient>
+    <radialGradient id="metal" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".45" stop-color="#C9CED4"/><stop offset="1" stop-color="#7D868F"/></radialGradient>
+    <radialGradient id="mesh" cx="45%" cy="40%" r="65%"><stop offset="0" stop-color="#4A5058"/><stop offset="1" stop-color="#1C2026"/></radialGradient>
+    <pattern id="trous" width="7" height="7" patternUnits="userSpaceOnUse"><circle cx="3.5" cy="3.5" r="1.6" fill="#0E1114"/></pattern>
+    <linearGradient id="tige" x1="0" x2="1"><stop offset="0" stop-color="#6E7680"/><stop offset=".5" stop-color="#E9ECEF"/><stop offset="1" stop-color="#6E7680"/></linearGradient>
+    <filter id="ombre" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="#0B1F3A" flood-opacity=".35"/></filter>
+  </defs>
+  <rect width="960" height="540" fill="url(#fond)"/>
+  <!-- ondes ultrasonores -->
+  <g fill="none" stroke="#2B6CC4" stroke-width="5" stroke-linecap="round" opacity=".55">
+    <path d="M190 120 a110 110 0 0 1 150 0"/><path d="M160 85 a160 160 0 0 1 210 0" opacity=".7"/><path d="M130 50 a210 210 0 0 1 270 0" opacity=".45"/>
+    <path d="M430 120 a110 110 0 0 1 150 0"/><path d="M400 85 a160 160 0 0 1 210 0" opacity=".7"/><path d="M370 50 a210 210 0 0 1 270 0" opacity=".45"/>
+  </g>
+  <!-- module à ultrasons -->
+  <g filter="url(#ombre)" transform="translate(120 170) rotate(-4 300 130)">
+    <rect x="0" y="0" width="600" height="250" rx="16" fill="url(#pcb)"/>
+    <rect x="10" y="10" width="580" height="230" rx="12" fill="none" stroke="#5E95DE" stroke-width="2" opacity=".6"/>
+    <circle cx="22" cy="22" r="8" fill="#0E2C57"/><circle cx="578" cy="22" r="8" fill="#0E2C57"/><circle cx="22" cy="228" r="8" fill="#0E2C57"/><circle cx="578" cy="228" r="8" fill="#0E2C57"/>
+    <!-- deux transducteurs -->
+    <g transform="translate(150 118)"><circle r="104" fill="url(#metal)"/><circle r="84" fill="url(#mesh)"/><circle r="84" fill="url(#trous)" opacity=".8"/><circle r="104" fill="none" stroke="#5B636C" stroke-width="3"/></g>
+    <g transform="translate(450 118)"><circle r="104" fill="url(#metal)"/><circle r="84" fill="url(#mesh)"/><circle r="84" fill="url(#trous)" opacity=".8"/><circle r="104" fill="none" stroke="#5B636C" stroke-width="3"/></g>
+    <!-- quartz et composants -->
+    <rect x="272" y="40" width="56" height="26" rx="13" fill="url(#metal)" stroke="#5B636C" stroke-width="2"/>
+    <rect x="284" y="160" width="32" height="44" rx="3" fill="#1C2530"/><rect x="290" y="90" width="20" height="44" rx="3" fill="#1C2530"/>
+    <!-- broches -->
+    <g fill="#E3B341" stroke="#9C7A1E" stroke-width="2"><rect x="246" y="236" width="16" height="44" rx="2"/><rect x="274" y="236" width="16" height="44" rx="2"/><rect x="302" y="236" width="16" height="44" rx="2"/><rect x="330" y="236" width="16" height="44" rx="2"/></g>
+    <rect x="236" y="226" width="120" height="20" rx="3" fill="#1C2530"/>
+  </g>
+  <!-- antenne -->
+  <g filter="url(#ombre)">
+    <rect x="790" y="120" width="16" height="300" rx="8" fill="url(#tige)"/>
+    <circle cx="798" cy="114" r="14" fill="#E9ECEF" stroke="#6E7680" stroke-width="3"/>
+    <rect x="762" y="410" width="72" height="56" rx="10" fill="#1C2530"/>
+    <rect x="776" y="424" width="44" height="10" rx="5" fill="#46525C"/>
+  </g>
+  <g fill="none" stroke="#E08A1E" stroke-width="6" stroke-linecap="round">
+    <path d="M840 90 a50 50 0 0 1 0 50"/><path d="M866 66 a84 84 0 0 1 0 98" opacity=".7"/><path d="M892 42 a118 118 0 0 1 0 146" opacity=".45"/>
+    <path d="M756 90 a50 50 0 0 0 0 50"/><path d="M730 66 a84 84 0 0 0 0 98" opacity=".7"/>
+  </g>
+</svg>

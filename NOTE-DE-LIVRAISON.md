@@ -17,10 +17,13 @@ par les études décrites dans `EXO_DEFS` avec `"etude": True`). Les numéros su
 chiffre d'un exercice donne son niveau (1.1, puis 1.2… et 2.1… au niveau 2).
 
 **Cartes de l'accueil** : plus de texte ; chaque carte montre une image, son étiquette, son titre, 3 à 5 mots-clés et
-son bouton, et toutes ont la même taille, d'une rubrique à l'autre (test navigateur). Les images sont piochées dans
-les exercices et recadrées au même format 480 × 270 par `outils/preparer-images.sh` : portail (cours 1), moteur
-électrique (cours 2), chauffage géothermique (cours 3), chaîne de rendements de l'éolienne (formulaire), RAV4
-(exercice 1.1), panneau photovoltaïque (QCM), chute d'eau (exercices de calcul), ascenseur grisé (étude à venir).
+son bouton, et toutes ont la même taille, d'une rubrique à l'autre (test navigateur). Les images, recadrées au même format 480 × 270 par
+`outils/preparer-images.sh` : portail (cours 1), moteur électrique seul, sans texte ni flèches (cours 2), capteur à
+ultrasons et antenne dessinés pour le site (cours 3, `src/images/originaux/carte-capteur.svg` : le réseau de la
+session ne permettait pas de télécharger une photo libre de droits), carte mentale du formulaire dépliée, vue de
+loin, RAV4 (exercice 1.1), panneau photovoltaïque (QCM), photo fournie d'une calculatrice sur un brouillon
+(exercices de calcul), ascenseur grisé (étude à venir). **À vérifier** : la photo de la calculatrice porte un
+filigrane de banque d'images (« dreamstime ») ; sa publication suppose une licence.
 
 **Cours** : le texte occupe toute la largeur de la section (le gabarit limite les paragraphes à 72 caractères, ce qui
 convient à un sujet mais pas à un cours). Les tableaux « Compétences travaillées » des cours 2 et 3 sont retirés :
