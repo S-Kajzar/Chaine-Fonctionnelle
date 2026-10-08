@@ -54,7 +54,8 @@ test("accueil : deux cours, la carte du formulaire, les exercices et la rubrique
     c.querySelector("a") ? c.querySelector("a").getAttribute("href") : null]));
   assert.deepEqual(await card(".cours-grid .mode-card"), [
     ["Cours 1 Niveau 1", "La chaîne fonctionnelle", "?ex=cours-chaine-fonctionnelle"],
-    ["Cours 2 Niveau 2", "Chaîne d'énergie des produits", "?ex=cours-chaine-energie"]]);
+    ["Cours 2 Niveau 2", "Chaîne d'énergie des produits", "?ex=cours-chaine-energie"],
+    ["Cours 3 Niveau 2", "Chaîne d'information des produits", "?ex=cours-chaine-information"]]);
   // le formulaire est une carte comme les autres ; ses exercices de calcul sont rangés avec les exercices
   assert.deepEqual(await card(".form-grid .mode-card"), [
     ["Formulaire", "Formulaire de la chaîne de puissance", "formulaire.html#formulaire"]]);
@@ -214,6 +215,113 @@ test("cours 2 (niveau 2) : figures animées, fiches, oscilloscope, hacheur, tran
   // impression : toutes les fiches sont imprimées
   await page.emulateMedia({ media: "print" });
   assert.equal(await page.locator(".fiche-c:visible").count(), 25);
+  await page.emulateMedia({ media: "screen" });
+  await page.setViewportSize({ width: 390, height: 844 });
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test("cours 3 : machine à café, blocs internes, capteurs, acquisition, CAN, programme, communication, encodage", async () => {
+  const { context, page, errors } = await open("?ex=cours-chaine-information");
+  assert.ok(await page.locator("body.cours-page.page-cours-chaine-information").count());
+  assert.match(await text(page, "#home h1"), /Chaîne d'information des produits/);
+  assert.equal(await page.locator(".cours-nav a").count(), 8);
+  // machine à café : six étapes ; le café coule à l'étape 5
+  for (let i = 0; i < 5; i++) await page.click("#ci-cafe-next");
+  assert.match(await text(page, "#ci-cafe-step"), /Étape 5 sur 6[\s\S]*café coule/);
+  assert.ok(await page.locator("#cf-pout.on").count());
+  await page.uncheck("#ci-cafe-det");
+  await page.click("#ci-cafe-next");
+  assert.ok(await page.locator("#cb-ci.on").count(), "chaîne d'information d'un seul bloc");
+  // diagramme de blocs internes
+  await page.click("#ib-uc rect");
+  assert.match(await text(page, "#ci-ibd-info"), /Microcontrôleur[\s\S]*Traiter[\s\S]*Chaîne d'information/);
+  assert.equal(await page.locator("#ci-ibd-svg .ci-fl.on").count(), 6);
+  // laboratoire : 47,5 °C au-dessus d'un seuil de 30 °C
+  await page.click("#ci-lab-play");
+  await page.uncheck("#ci-lab-auto");
+  await set(page, "#ci-lab-t", "47.5");
+  assert.match(await text(page, "#ci-lab-o1"), /^1/);
+  assert.equal(await text(page, "#ci-lab-o2"), "475 mV");
+  assert.equal(await text(page, "#ci-lab-o3"), "0111011011");
+  assert.match(await text(page, "#ci-lab-o4"), /475 → 47,5 °C/);
+  // chaîne d'acquisition : gain trop fort, puis bon réglage
+  await set(page, "#ci-aq-g", "800");
+  assert.match(await text(page, "#ci-aq-v"), /écrêté/);
+  await set(page, "#ci-aq-g", "200"); await set(page, "#ci-aq-f", "120"); await set(page, "#ci-aq-n", "8");
+  assert.match(await text(page, "#ci-aq-v"), /Bon réglage/);
+  // amplification : exemple du cours
+  assert.equal(await text(page, "#ci-amp-s"), "2,60 V");
+  // CAN 3 bits, 8 V, 3,2 V en entrée
+  assert.match(await text(page, "#ci-can-q"), /8 \/ 8 = 1,000 V/);
+  assert.equal(await text(page, "#ci-can-d"), "3");
+  assert.equal(await text(page, "#ci-can-b"), "011");
+  await set(page, "#ci-can-v", "1");
+  assert.match(await text(page, "#ci-can-d"), /^7/);
+  await set(page, "#ci-can-n", "8"); await page.selectOption("#ci-can-r", "5");
+  assert.match(await text(page, "#ci-can-q"), /5 \/ 256 = 19,5 mV/);
+  assert.match(await text(page, "#ci-can-d"), /^255/);
+  // programme : bouton maintenu, la LED s'allume par le programme ; relâché, elle s'éteint
+  await page.locator("#ci-bp").dispatchEvent("pointerdown");
+  await page.waitForFunction(() => document.getElementById("ci-led").classList.contains("on"));
+  assert.ok(await page.locator("#ci-an-on.on, #ci-an-test.on, #ci-an-lire.on").count());
+  await page.locator("#ci-bp").dispatchEvent("pointerup");
+  await page.waitForFunction(() => !document.getElementById("ci-led").classList.contains("on"));
+  await page.click("#ci-tab-python");
+  assert.ok(await page.isVisible("#ci-code-python"));
+  assert.ok(!(await page.isVisible("#ci-code-pseudo")));
+  await page.click("#ci-pas");
+  assert.equal(await page.locator("#ci-code-python .ci-cl.on").count() > 0, true);
+  // restitution et trame envoyée
+  await page.click("#ci-voy-b");
+  assert.ok(await page.locator("#ci-voy.on").count());
+  await page.fill("#ci-lcd-in", "I2D");
+  assert.equal(await text(page, "#ci-lcd-2"), "49 32 44");
+  await page.check("input[name=ci-net][value=eth]");
+  assert.match(await page.locator("#ci-net-proto").textContent(), /Ethernet : liaison filaire/);
+  await page.fill("#ci-net-msg", "OK");
+  await page.click("#ci-net-go");
+  await page.waitForFunction(() => /OK/.test(document.getElementById("ci-net-rx").textContent));
+  assert.match(await page.locator("#ci-net-rx").textContent(), /« OK » \(16 bits\)/);
+  // octet, hexadécimal, ASCII
+  assert.equal(await text(page, "#ci-oct-hex"), "(B5)₁₆");
+  await page.click("#ci-oct [data-v='123']");
+  assert.equal(await text(page, "#ci-oct-bin"), "(01111011)₂");
+  await page.click(".ci-bit[data-w='128']");
+  assert.equal(await text(page, "#ci-oct-dec"), "(251)₁₀");
+  assert.equal(await page.locator("#ci-asc-out .ci-ac").count(), 3);
+  assert.match(await text(page, "#ci-asc-out"), /01001001[\s\S]*00110010[\s\S]*01000100/);
+  assert.equal(await page.locator("#ci-asc-grid tr.hl").count(), 3);
+  await page.fill("#ci-asc-in", "é");
+  assert.match(await text(page, "#ci-asc-out"), /hors ASCII/);
+  // défi : on lit la question, on répond juste
+  const qt = await text(page, "#ci-defi-q");
+  const m = qt.match(/\(([0-9A-F]+)\)(₂|₁₀|₁₆)/);
+  const n = parseInt(m[1], { "₂": 2, "₁₀": 10, "₁₆": 16 }[m[2]]);
+  const rep = /binaire/.test(qt) ? n.toString(2).padStart(8, "0") : /hexadécimal/.test(qt) ? n.toString(16).toUpperCase() : String(n);
+  await page.fill("#ci-defi-in", rep);
+  await page.click("#ci-defi-ok");
+  assert.match(await text(page, "#ci-defi-v"), /Juste/);
+  // jeux et quiz
+  for (const jeu of ["#jeu-liaisons", "#jeu-fct-i", "#jeu-sig"]) {
+    const lignes = page.locator(`${jeu} .jeu-l`);
+    for (let i = 0; i < await lignes.count(); i++) {
+      const l = lignes.nth(i);
+      await l.locator(`button[data-v="${await l.getAttribute("data-ok")}"]`).click();
+    }
+    const n = await lignes.count();
+    assert.equal(await text(page, `${jeu} .jeu-s`), `${n} / ${n}`, jeu);
+  }
+  const qz = await page.locator(".quiz-q").count();
+  for (let i = 0; i < qz; i++) {
+    const f = page.locator(".quiz-q").nth(i);
+    await f.locator(`input[value="${await f.getAttribute("data-ok")}"]`).check();
+  }
+  assert.equal((await text(page, "#qz-score")).trim(), "10 / 10");
+  await page.evaluate(() => window.dispatchEvent(new Event("beforeprint")));
+  await page.emulateMedia({ media: "print" });
+  assert.ok(await page.isVisible("#ci-asc-grid"), "table ASCII imprimée");
   await page.emulateMedia({ media: "screen" });
   await page.setViewportSize({ width: 390, height: 844 });
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));

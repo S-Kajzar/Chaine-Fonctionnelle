@@ -24,8 +24,10 @@ import json
 import pathlib
 import re
 import struct
+import types
 import unicodedata
 
+import cours_information
 import rav4
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -854,6 +856,9 @@ COURS = [
     {"key": "cours-chaine-energie", "tag": "Cours 2", "level": "Niveau 2", "title": "Chaîne d'énergie des produits",
      "desc": "Alimenter, distribuer, convertir, transmettre, agir : composants, symboles, puissances et rendements ; "
              "avec des simulateurs, un jeu et un quiz."},
+    {"key": "cours-chaine-information", "tag": "Cours 3", "level": "Niveau 2", "title": "Chaîne d'information des produits",
+     "desc": "Acquérir, traiter, communiquer : capteurs et signaux, chaîne d'acquisition, programme, réseaux et "
+             "encodage ; avec une machine à café animée, des laboratoires, des jeux et un quiz."},
 ]
 # Rubrique « Études de cas » : tant qu'aucune étude n'est décrite dans EXO_DEFS, une carte l'annonce.
 ETUDE_A_VENIR = ("Étude de cas", "Un système réel étudié de bout en bout : chaînes d'information et d'énergie, "
@@ -2038,6 +2043,7 @@ def render_cours_energie():
 {s1}{s2}{s3}{s4}{s5}{s6}{s7}{s8}{s9}{s10}
 <div class="cours-foot no-print"><a class="btn" href="formulaire.html#formulaire">Le formulaire</a>
 <a class="btn ghost" href="formulaire.html#exercices">Exercices de calcul</a>
+<a class="btn ghost" href="?ex=cours-chaine-information">Cours 3 : chaîne d'information</a>
 <a class="btn ghost" href="?ex=chaines-information-energie">Exercice 1.1</a>
 <button type="button" class="btn ghost cours-print">Imprimer le cours</button>
 <a class="btn ghost" href="?">{HOUSE} Retour à l'accueil</a></div>
@@ -2823,10 +2829,15 @@ body.page-cours-chaine-energie .home-inner{max-width:1180px}
 # ============================================================ COURS — assemblage
 
 
-COURS_RENDER = {"cours-chaine-fonctionnelle": render_cours_portail, "cours-chaine-energie": render_cours_energie}
-COURS_JS = (COURS_COMMUN_JS + cours_portail_js() + COURS_2_JS +
-            '\n  var INIT = { "cours-chaine-fonctionnelle": initCoursPortail, "cours-chaine-energie": initCoursEnergie };\n')
-COURS_CSS = COURS_COMMUN_CSS + PORTAIL_CSS + COURS_2_CSS
+# le cours 3 vit dans son propre module ; il reçoit les éléments communs des cours
+AIDES_COURS = types.SimpleNamespace(course_head=course_head, course_section=course_section, course_nav=course_nav,
+                                    quiz_section=quiz_section, jeu_html=jeu_html, HOUSE=HOUSE)
+COURS_RENDER = {"cours-chaine-fonctionnelle": render_cours_portail, "cours-chaine-energie": render_cours_energie,
+                "cours-chaine-information": lambda: cours_information.render(AIDES_COURS)}
+COURS_JS = (COURS_COMMUN_JS + cours_portail_js() + COURS_2_JS + cours_information.ci_js() +
+            '\n  var INIT = { "cours-chaine-fonctionnelle": initCoursPortail, "cours-chaine-energie": initCoursEnergie, '
+            '"cours-chaine-information": initCoursInformation };\n')
+COURS_CSS = COURS_COMMUN_CSS + PORTAIL_CSS + COURS_2_CSS + cours_information.CI_CSS
 
 
 # ============================================================ AIGUILLAGE

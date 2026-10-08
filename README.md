@@ -9,6 +9,7 @@ dépendance externe, utilisable hors ligne), publiée par GitHub Pages depuis `i
 | `index.html` | accueil : les cours (pastilles Niveau 1 / Niveau 2), le formulaire, les exercices (dont les exercices de calcul du formulaire), les études de cas |
 | `?ex=cours-chaine-fonctionnelle` | Cours 1 — La chaîne fonctionnelle (Niveau 1) : portail automatique animé pas à pas (deux scénarios, plein écran pour vidéoprojecteur), cartes des huit fonctions, deux jeux, quiz |
 | `?ex=cours-chaine-energie` | Cours 2 — Chaîne d'énergie des produits (Niveau 2) : figures animées, 25 fiches de composants, oscilloscope, hacheur, transmissions, ordres de grandeur, énergie, effort et flux, rendements, autonomie, deux jeux, quiz |
+| `?ex=cours-chaine-information` | Cours 3 — Chaîne d'information des produits (Niveau 2) : machine à café animée, blocs internes, laboratoire des capteurs, chaîne d'acquisition, filtre, CAN, programme exécuté pas à pas, optocoupleur, trames, octet, hexadécimal, ASCII, trois jeux, quiz |
 | `?ex=chaines-information-energie` | Exercice 1.1 — Chaînes d'information et d'énergie (Niveau 1) : 4 parties, 14 questions, 57 cases à remplir en y glissant des étiquettes, 1 h |
 | `formulaire.html#formulaire` | formulaire de la chaîne de puissance en carte mentale |
 | `formulaire.html#exercices` | séries d'exercices de calcul à valeurs aléatoires |
@@ -49,6 +50,7 @@ juste donne 20/20, sans erreur JavaScript.
 |---|---|
 | `src/gabarit-exercice-interactif.html` | gabarit de référence (charte, moteurs de correction et d'application), repris du dépôt RDM |
 | `src/generer.py` | contenu (exercice, documents, cours interactifs), accueil, aiguillage et assemblage |
+| `src/cours_information.py` | cours 3 : contenu, figures SVG, comportement et style |
 | `src/rav4.py` | exercice 1.1, partie 2 : figures animées du Toyota RAV4 hybride (motorisation, chaîne d'énergie) |
 | `src/portail-anime.html` | animation d'origine du portail automatique (source du cours 1) |
 | `src/formulaire-chaine-de-puissance.html` | formulaire d'origine (source de `formulaire.html`) |

@@ -10,8 +10,8 @@
 `src/gabarit-exercice-interactif.html` (fichier identique, vérifié octet par octet).
 
 **Accueil** (`index.html`), sur le modèle de l'accueil RDM : en-tête et montage d'illustration (les quatre systèmes de
-l'exercice 1.1), puis les rubriques **Les cours** (Cours 1, pastille verte Niveau 1 ; Cours 2, pastille bleue
-Niveau 2), **Le formulaire** (une carte, comme les autres, vers le formulaire en carte mentale), **Les
+l'exercice 1.1), puis les rubriques **Les cours** (Cours 1, pastille verte Niveau 1 ; Cours 2 et Cours 3, chaîne
+d'énergie et chaîne d'information côte à côte, pastille bleue Niveau 2), **Le formulaire** (une carte, comme les autres, vers le formulaire en carte mentale), **Les
 exercices** (Exercice 1.1, Niveau 1, puis la carte « Exercices de calcul » du formulaire) et **Études de cas** (une carte « En cours d'édition », remplacée d'elle-même
 par les études décrites dans `EXO_DEFS` avec `"etude": True`). Les numéros suivent la logique RDM : le premier
 chiffre d'un exercice donne son niveau (1.1, puis 1.2… et 2.1… au niveau 2).
@@ -79,6 +79,46 @@ Corrections, interprétations et compléments :
   3 000 tr/min sous 36 V ; éolienne : fréquence et tension proportionnelles au vent (valeurs indicatives) ; rendements
   par défaut de la chaîne de la trottinette 0,90 ; 0,95 ; 0,85 ; 0,90. Ces hypothèses sont écrites à côté de chaque
   simulateur.
+
+## Cours 3 — Chaîne d'information des produits (Niveau 2, `?ex=cours-chaine-information`)
+
+**Source** : le cours Word « Thème 3 — Chaîne d'information des produits » (leçon de référence, environ 3 h). Mis en
+parallèle du cours 2 : même niveau, même présentation (objectifs, compétences, prérequis, sommaire, sections
+numérotées, synthèse, quiz), liens croisés en pied de page.
+
+Le texte du Word est repris section par section (constitution d'un produit, Acquérir, chaîne d'acquisition, Traiter,
+Communiquer, encodage). Ses 22 figures sont des captures de manuel, souvent rognées ou peu lisibles : aucune n'est
+reprise telle quelle, toutes sont **redessinées en SVG** et rendues interactives (`src/cours_information.py`) :
+- **machine à café** (figures 1 et 2 réunies) : « Préparer un espresso » déroule six étapes, du bouton à la sonnerie ;
+  les flux d'information, d'énergie et de matière circulent, la tasse se remplit ; la chaîne d'information se montre
+  d'un seul bloc ou détaillée (acquérir, traiter, communiquer) ;
+- **diagramme de blocs internes** : chaque bloc touché affiche sa fonction, son rôle et ses échanges, et éclaire ses
+  flux ;
+- **laboratoire des capteurs** : une même température, qui varie ou se règle, mesurée par un détecteur de seuil
+  (signal logique), un capteur analogique (10 mV par degré) et un capteur numérique (trame de 10 bits décodée) ;
+- **chaîne d'acquisition en direct** : gain, fréquence de coupure et résolution réglables, allure du signal à chaque
+  étape, diagnostic (écrêtage, parasites, escalier grossier) ; calculateur d'amplification (exemple du cours) ;
+- **filtre passe-bas** : signal recomposé en direct à partir de ses composantes (fondamental, harmoniques 3, 5, 7,
+  bruit) et spectre avec le gabarit ;
+- **CAN** : caractéristique en escalier selon n et Vref, quantum, N en décimal et en binaire, balayage animé ;
+- **système programmable** animé ; **programme « bouton → LED »** qui s'exécute vraiment : on maintient le bouton,
+  l'étape active s'éclaire dans l'algorigramme et la ligne correspondante dans le pseudo-code, les blocs, Python et
+  C++/Arduino ; mode pas à pas ; table des symboles redessinée ;
+- **restitution** logique, analogique, numérique (voyant, son, afficheur LCD qui montre les codes envoyés) ;
+  **optocoupleur** animé ; **trame** envoyée en Wi-Fi, Bluetooth, Ethernet ou bus CAN ;
+- **octet** à bits cliquables (décimal, binaire, hexadécimal par quartets), **défi de conversion** à nombres
+  aléatoires, **ASCII** : un mot tapé donne ses codes, la table complète surligne ses caractères ;
+- trois jeux (filaire ou sans fil ; Acquérir, Traiter ou Communiquer ; type de signal) et un quiz de 10 questions.
+
+Corrections et décisions :
+- **Valeur N d'un CAN** : le Word la donne « entre 0 et 2ⁿ » ; elle va de 0 à 2ⁿ − 1 (de 000 à 111 pour 3 bits).
+- **Caractéristique du CAN** : la figure du Word montrait des marches décalées d'un demi-quantum, alors que le texte
+  dit de prendre la partie entière de V / q ; la caractéristique redessinée suit le texte (marches à 1 V, 2 V…).
+- **Capteur numérique** : le Word dit qu'il faut connaître le codage, sans en donner ; le laboratoire en fixe un
+  (dixièmes de degré sur 10 bits), annoncé sous le graphique, qui donne 55,8 °C pour la trame du cours.
+- Les blocs « Nom / Prénom / Groupe », « Documents ressources » (pages de manuel) et « Modalités » (consignes
+  d'enseignant) ne sont pas repris, comme pour le cours 2. Le « bac » de la machine à café devient le « tiroir à
+  marc », pour ne pas prêter à confusion.
 
 ## Exercice 1.1 — Chaînes d'information et d'énergie (Niveau 1, `?ex=chaines-information-energie`)
 
@@ -149,7 +189,7 @@ aussi.
 - Les figures de l'exercice sont de faible définition (282 à 900 px de large) ; elles sont intégrées telles quelles
   (PNG quantifiés). La figure 3 du cours (ibd) est coupée en bas, comme dans le Word.
 - Quelques photos des tableaux du Word portent un logo de fabricant ; elles ne sont pas retouchées.
-- Poids : `index.html` 1,8 Mio (1,3 Mio d'images), `formulaire.html` 150 Kio.
+- Poids : `index.html` 1,9 Mio (1,3 Mio d'images), `formulaire.html` 150 Kio.
 
 ## Vérifications effectuées
 
@@ -157,11 +197,13 @@ aussi.
   juste pour chaque case, 270 formulations d'origine acceptées, confusions et fautes de frappe, aucune fonction
   acceptée à la place d'une autre, saisie vide refusée, étiquettes (la bonne est proposée, les autres de la liste
   sont refusées).
-- `tests/navigateur.test.js` (Playwright, Chromium) : 9 parcours, tous réussis — accueil (cartes des cours, du
+- `tests/navigateur.test.js` (Playwright, Chromium) : 11 parcours, tous réussis — accueil (cartes des cours, du
   formulaire et des exercices de calcul, annonce de l'étude, téléphone, aucune mention de diplôme ou d'épreuve) ; adresse inconnue ; cours 1
   (étapes, scénarios, clavier, plein écran, cartes, jeux, quiz) ; cours 2 (figures, fiches, oscilloscope, hacheur,
   transmissions, puissances, énergie, effort et flux, rendements, autonomie, jeux, quiz, impression, téléphone) ;
-  exercice en entraînement (cases vides, confirmation, verrouillage, 19,7 puis 20,0/20) ; exercice en examen (rien ne
+  cours 3 (machine à café, blocs internes, laboratoire, acquisition, amplification, CAN, programme exécuté, onglets,
+  restitution, trame, octet, défi, ASCII, trois jeux, quiz 10/10, impression, téléphone) ; RAV4 (situations de
+  conduite, chaîne synchronisée, version 4 roues motrices, fonctions dévoilées après correction, trajet) ; exercice en entraînement (cases vides, confirmation, verrouillage, 19,7 puis 20,0/20) ; exercice en examen (rien ne
   filtre avant la remise, y compris à l'impression ; remise en deux temps ; chronomètre arrêté ; 18,6/20) ;
   étiquettes (toucher puis toucher, clavier, glisser-déposer, réutilisation, échange, retour dans la liste, verrouillage
   après validation, téléphone) ; documents et téléphone ; formulaire (liens vers l'accueil, fiche sans « Vu dans »,
