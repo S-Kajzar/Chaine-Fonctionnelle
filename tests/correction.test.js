@@ -45,10 +45,11 @@ const SOURCE = {
   a2_1_2: ["systeme d'injection", "système d'injection", "injection", "injecteurs", "injecteur", "systeme injection"],
   a2_1_3: ["moteur thermique", "le moteur thermique", "moteur a combustion", "moteur essence"],
   a2_2_1: ["batterie", "la batterie", "batteries", "accumulateur", "batterie de traction"],
-  a2_2_2: ["repartiteur de puissance", "répartiteur de puissance", "repartiteur", "répartiteur", "le repartiteur de puissance"],
+  a2_2_2: ["repartiteur de puissance", "répartiteur de puissance", "repartiteur", "répartiteur", "le repartiteur de puissance", "onduleur"],
   a2_2_3: ["moteur electrique", "moteur électrique", "le moteur electrique"],
   a2_3_1: ["generatrice", "génératrice", "la generatrice", "alternateur", "generateur", "génératrice électrique"],
-  a2_4_1: ["chaine silencieuse", "chaîne silencieuse", "la chaine silencieuse", "arbre de sortie", "chaine", "chaîne"],
+  // partie 2 : la Prius d'origine devient le RAV4 ; la chaîne silencieuse laisse la place aux pignons de renvoi
+  a2_4_1: ["arbre de sortie", "pignons de renvoi", "l'arbre de sortie et les pignons de renvoi", "engrenages", "pignon"],
   a2_4_2: ["reducteur", "réducteur", "le reducteur", "reducteur de vitesse"],
   a2_4_3: ["differentiel", "différentiel", "le differentiel"],
   a2_4_4: ["roues motrices", "roues", "les roues motrices", "roue motrice", "les roues"],
@@ -99,9 +100,9 @@ const CASES = {
   a1_4_2: [["boîte de réduction", 1], ["moteur actionnant des câbles", 0], ["cabine", 0], ["moteur", 0]],
   a1_4_3: [["la cabine", 1], ["contrepoids", 0]],
   a2_1_3: [["moteur à essence", 1], ["moteur électrique", 0], ["moteur", 0]],
-  a2_2_3: [["moteur électrique", 1], ["moteur thermique", 0], ["génératrice", 0]],
   a2_3_1: [["alternateur", 1], ["moteur électrique", 0]],
-  a2_4_1: [["arbre de sortie", 1], ["réducteur", 0]],
+  a2_4_1: [["arbre de sortie", 1], ["réducteur", 0], ["pignons du réducteur", 0], ["chaîne silencieuse", 0]],
+  a2_2_3: [["moteur électrique", 1], ["moteur thermique", 0], ["génératrice", 0], ["moteur électrique arrière", 0]],
   a3_1_3: [["distribution", 1], ["convertir", 0]],
   a3_1_5: [["transmettre", 1], ["agir", 1], ["convertir", 0]],
   a3_2_2: [["sonde extérieure", 1], ["sonde TE", 1], ["sonde de température intérieure", 0], ["clavier", 0]],
@@ -115,7 +116,7 @@ const CASES = {
 };
 
 test("configuration : 4 parties, 14 questions, 57 cases, 1 h, barème pondéré par la durée", () => {
-  assert.deepEqual(EX.parts.map((p) => p.title), ["L'ascenseur", "Toyota Prius", "Chauffage géothermique", "Portail automatisé"]);
+  assert.deepEqual(EX.parts.map((p) => p.title), ["L'ascenseur", "Toyota RAV4 hybride", "Chauffage géothermique", "Portail automatisé"]);
   assert.deepEqual(EX.parts.map((p) => p.minutes), [15, 12, 18, 15]);
   assert.deepEqual(EX.parts.map((p) => p.points), [15, 11, 19, 12]);
   assert.equal(EX.minutes, 60);

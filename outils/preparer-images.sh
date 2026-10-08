@@ -5,7 +5,10 @@
 #   - src/images/*.png                : versions quantifiées (PNG 8 bits) intégrées en data URI
 #   - src/images/ce-ph-*.png          : photos des composants, découpées dans les tableaux du cours
 #   - src/images/ce-sy-*.png          : symboles des composants, découpés dans les mêmes tableaux
+#   - src/images/ex1-rav4.jpg         : photo du RAV4 (plaque floutée dans l'original), réduite pour la page
 #   - src/images/accueil.png          : montage d'illustration de la page d'accueil
+#   La figure de la motorisation du RAV4 est dessinée en SVG (src/rav4.py) ; sa vignette pour le montage,
+#   src/images/originaux/ex1-rav4-schema.png, se refait avec : NODE_PATH=$(npm root -g) node outils/vignette-rav4.js
 # Usage : bash outils/preparer-images.sh   (depuis la racine du dépôt)
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -15,8 +18,12 @@ OUT=src/images
 # 1. Figures reprises telles quelles
 for f in "$SRC"/ex1-*.png "$SRC"/ce-fig-*.png; do
   b=$(basename "$f")
+  [ "$b" = ex1-rav4-schema.png ] && continue  # vignette du montage d'accueil seulement
   convert "$f" -background white -alpha remove -alpha off -strip -colors 256 "PNG8:$OUT/$b"
 done
+
+# Photo du RAV4
+convert "$SRC/ex1-rav4.jpg" -resize 900x -quality 78 -strip "$OUT/ex1-rav4.jpg"
 
 # 2. Exercice 1.1, ascenseur : le schéma d'origine reprenait les légendes du portail
 #    (« Vantail en position initiale / finale ») ; elles sont remplacées par la matière d'œuvre de l'ascenseur.
@@ -114,8 +121,8 @@ convert -size 1120x620 xc:white \
   \( "$SRC/ex1-ascenseur.png" -resize x540 \) -gravity northwest -geometry +24+64 -composite \
   \( "$SRC/ex1-portail.png" -crop 699x372+0+0 +repage -resize 500x \) -gravity northwest -geometry +318+64 -composite \
   \( "$SRC/ex1-geothermie.png" -resize x222 \) -gravity northwest -geometry +384+388 -composite \
-  \( "$SRC/ex1-prius.png" -resize 262x \) -gravity northwest -geometry +842+64 -composite \
-  \( "$SRC/ex1-prius-schema.png" -resize 262x \) -gravity northwest -geometry +842+248 -composite \
+  \( "$SRC/ex1-rav4.jpg" -resize 262x \) -gravity northwest -geometry +842+64 -composite \
+  \( "$SRC/ex1-rav4-schema.png" -resize 262x \) -gravity northwest -geometry +842+248 -composite \
   -fill '#1C2530' -stroke none -draw 'rectangle 298,20 300,600' -draw 'rectangle 826,20 828,600' \
   -fill '#F2B705' -draw 'rectangle 24,14 156,46' -draw 'rectangle 318,14 552,46' -draw 'rectangle 384,342 672,374' \
   -draw 'rectangle 842,14 1030,46' \

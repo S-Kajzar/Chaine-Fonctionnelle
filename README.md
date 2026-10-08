@@ -49,10 +49,12 @@ juste donne 20/20, sans erreur JavaScript.
 |---|---|
 | `src/gabarit-exercice-interactif.html` | gabarit de référence (charte, moteurs de correction et d'application), repris du dépôt RDM |
 | `src/generer.py` | contenu (exercice, documents, cours interactifs), accueil, aiguillage et assemblage |
+| `src/rav4.py` | exercice 1.1, partie 2 : figures animées du Toyota RAV4 hybride (motorisation, chaîne d'énergie) |
 | `src/portail-anime.html` | animation d'origine du portail automatique (source du cours 1) |
 | `src/formulaire-chaine-de-puissance.html` | formulaire d'origine (source de `formulaire.html`) |
 | `src/images/originaux/` | figures d'origine : exercice (`ex1-*`), cours Word (`ce-fig-*`, tableaux `ce-tab-*`) |
 | `src/images/` | figures quantifiées intégrées en data URI, photos (`ce-ph-*`) et symboles (`ce-sy-*`) découpés dans les tableaux du cours, montage de la page d'accueil |
-| `outils/preparer-images.sh` | quantification, découpes, correction du schéma de l'ascenseur, montage d'accueil |
+| `outils/preparer-images.sh` | quantification, découpes, correction du schéma de l'ascenseur, photo du RAV4, montage d'accueil |
+| `outils/vignette-rav4.js` | vignette de la motorisation du RAV4 pour le montage d'accueil (Playwright) |
 | `tests/` | tests Node et Playwright |
 | `.github/workflows/static.yml` | publication GitHub Pages (déclenchée sur la branche `main`) |

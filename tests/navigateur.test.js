@@ -352,6 +352,54 @@ test("étiquettes : toucher puis toucher, glisser-déposer, échanger, vider", a
   await context.close();
 });
 
+test("partie 2, RAV4 : schéma animé, chaîne synchronisée, fonctions dévoilées après correction", async () => {
+  const { context, page, errors } = await open(EX);
+  await page.click("[data-mode=training]");
+  assert.match(await text(page, "#t-partie-2"), /Toyota RAV4 hybride/);
+  assert.ok(await page.locator("#partie-2 img[src^='data:image/jpeg']").count());
+  const actifs = () => page.locator("#rv-flows .rv-flow.on").evaluateAll((fs) => fs.length);
+  const blocs = () => page.locator("#rv-c-blocks .rv-blk.act").evaluateAll((bs) => bs.map((b) => b.id.slice(5)));
+  // démarrage : branche électrique seule, moteur thermique arrêté
+  assert.match(await text(page, "#rv-mode-d"), /Démarrage/);
+  assert.deepEqual(await blocs(), ["1", "2", "3", "8", "9", "10", "11", "T"]);
+  assert.match(await text(page, "#rv-etat"), /Moteur thermique\s*arrêté[\s\S]*se décharge/i);
+  // croisière : branche thermique et génératrice, la batterie se recharge (flux inversé)
+  await page.click("#rv-demo [data-m=croisiere]");
+  assert.ok(await page.locator("#rv-c-eng.rv-eng-on").count());
+  assert.deepEqual((await blocs()).sort(), ["1", "10", "11", "2", "4", "5", "6", "7", "8", "9", "T"]);
+  assert.match(await text(page, "#rv-etat"), /en marche[\s\S]*se recharge/);
+  // freinage : le flux remonte des roues vers la batterie
+  await page.click("#rv-demo [data-m=frein]");
+  assert.ok(await page.locator("#rv-flows .rv-flow.on.rev").count() >= 5);
+  assert.equal(await page.locator("#rv-c-eng.rv-eng-on").count(), 0);
+  await page.click("#rv-demo [data-m=arret]");
+  assert.equal(await actifs(), 0);
+  // version 4 roues motrices
+  assert.ok(!(await page.isVisible("#rv-c-mgr")));
+  await page.check("#rv-awd");
+  await page.click("#rv-demo [data-m=accel]");
+  assert.ok(await page.isVisible("#rv-c-mgr"));
+  assert.match(await text(page, "#rv-etat"), /Roues arrière\s*motrices/i);
+  // un composant touché : son rôle, sans sa fonction avant la correction
+  await page.click("#rv-c-mg1 .rv-bx");
+  assert.match(await text(page, "#rv-info"), /Génératrice[\s\S]*électricité/);
+  assert.equal(await page.locator("#rv-info .rv-fn-tag").count(), 0);
+  assert.ok(await page.locator("#rv-fns").isDisabled());
+  for (const gid of ["a2_1", "a2_2", "a2_3", "a2_4"]) { await remplir(page, gid, {}); await page.click(`#${gid} .btn-fast`); }
+  await page.waitForFunction(() => !document.getElementById("rv-fns").disabled);
+  await page.check("#rv-fns");
+  await page.click("#rv-c-mg1 .rv-bx");
+  assert.match(await text(page, "#rv-info .rv-fn-tag"), /CONVERTIR/);
+  // trajet automatique
+  await page.click("#rv-play");
+  assert.match(await text(page, "#rv-play"), /Arrêter/);
+  await page.click("#rv-play");
+  await page.setViewportSize({ width: 390, height: 844 });
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
 test("documents et téléphone : rail, panneau, Échap ; bouton « Documents » sur petit écran", async () => {
   const { context, page, errors } = await open(EX);
   await page.click("[data-mode=training]");

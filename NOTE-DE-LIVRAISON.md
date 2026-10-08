@@ -82,7 +82,7 @@ Corrections, interprétations et compléments :
 
 ## Exercice 1.1 — Chaînes d'information et d'énergie (Niveau 1, `?ex=chaines-information-energie`)
 
-**Source** : l'exercice du dépôt « schema_chaine-energie-information » (ascenseur, Toyota Prius, chauffage
+**Source** : l'exercice du dépôt « schema_chaine-energie-information » (ascenseur, Toyota Prius devenue Toyota RAV4 hybride, chauffage
 géothermique, portail automatisé ; 14 questions, 57 champs).
 
 - Chaque système devient une **partie** : 15, 12, 18 et 15 min (1 h), 15, 11, 19 et 12 points. Les 14 questions
@@ -106,8 +106,24 @@ Corrections et décisions :
 - **Schéma de l'ascenseur** : il reprenait les légendes du portail (« Vantail en position initiale / finale ») ; elles
   deviennent « Usager à l'étage de départ / d'arrivée » (image corrigée par `outils/preparer-images.sh`, l'original
   reste dans `src/images/originaux`). La démarche de la question Q1.2 le mentionne.
-- **Prius, repère 4** : la flèche qui part de la génératrice rejoint le répartiteur (repère 2), qui recharge la
-  batterie (repère 1) ; la démarche le précise (la source la faisait aller directement au repère 1).
+- **Partie 2 : la Toyota Prius devient le Toyota RAV4 hybride** (maquette validée), photo fournie, recadrée, plaque
+  d'immatriculation floutée. Les figures 3 et 4 sont redessinées en SVG et « vivantes » (`src/rav4.py`) :
+  - figure 3, la motorisation : cinq situations de conduite (arrêt, démarrage, accélération, croisière, freinage) et
+    un trajet qui les enchaîne ; l'énergie circule (chimique en pointillés orange, électrique en tirets bleus,
+    mécanique en vert), les pistons s'allument, engrenages et roues tournent, la jauge de batterie se vide ou se
+    remplit ; option 4 roues motrices (AWD-i, moteur électrique arrière) ; un composant touché affiche son rôle ;
+  - figure 4, la chaîne à compléter (mêmes repères 1 à 11) : ses blocs s'éclairent au rythme de la figure 3, et au
+    freinage le flux remonte des roues vers la batterie ;
+  - les fonctions des composants (Alimenter, Convertir…) ne s'affichent qu'une fois la partie corrigée (questions
+    validées, ou copie remise en examen) : la figure ne souffle pas les réponses.
+- **Repère 8** : sur le RAV4, la chaîne silencieuse de la Prius laisse la place à l'arbre de sortie et aux pignons de
+  renvoi (étiquette et correcteur changés ; « chaîne silencieuse » est désormais refusée).
+- **Repère 4, la génératrice** : la source en faisait l'organe de récupération au freinage. C'est en réalité le moteur
+  électrique, entraîné par les roues, qui fonctionne alors en génératrice ; la génératrice transforme une partie de
+  la puissance du moteur thermique en électricité. L'indice et la démarche de Q2.3 sont corrigés, la figure 3 le
+  montre. La flèche du repère 4 rejoint le répartiteur (repère 2), qui recharge la batterie (repère 1).
+- **Version 4 roues motrices** : présentée dans la figure et en « pour aller plus loin », sans case notée (la partie
+  garde ses 11 points).
 - **Étiquettes et correction** : pour chaque case, la bonne étiquette est la seule acceptée de sa liste (test
   unitaire), sauf le plancher chauffant, où Transmettre et Agir restent justes comme dans la correction d'origine.
   Portail, repère 7 : « alimentation électrique » n'est plus accepté comme source d'énergie (l'exercice d'origine ne
@@ -117,7 +133,7 @@ Corrections et décisions :
   cours 1). Refus explicites des confusions : « moteur à bras » pour Transmettre, « moteur actionnant des câbles » pour
   Transmettre, sondes intérieure et extérieure inversées, « capteur de température » pour le capteur géothermique,
   « télécommande » pour le boîtier de commande, moteur électrique et moteur thermique inversés.
-- Les noms des systèmes réels (Toyota Prius, réseau EDF sur la figure) sont conservés comme dans l'exercice d'origine.
+- Les noms des systèmes réels (Toyota RAV4, réseau EDF sur la figure) sont conservés comme dans l'exercice d'origine.
 
 ## Formulaire de la chaîne de puissance (`formulaire.html`)
 
@@ -133,7 +149,7 @@ aussi.
 - Les figures de l'exercice sont de faible définition (282 à 900 px de large) ; elles sont intégrées telles quelles
   (PNG quantifiés). La figure 3 du cours (ibd) est coupée en bas, comme dans le Word.
 - Quelques photos des tableaux du Word portent un logo de fabricant ; elles ne sont pas retouchées.
-- Poids : `index.html` 1,7 Mio (1,3 Mio d'images), `formulaire.html` 150 Kio.
+- Poids : `index.html` 1,8 Mio (1,3 Mio d'images), `formulaire.html` 150 Kio.
 
 ## Vérifications effectuées
 
