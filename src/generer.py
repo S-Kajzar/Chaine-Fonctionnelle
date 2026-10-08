@@ -24,7 +24,11 @@ import json
 import pathlib
 import re
 import struct
+import types
 import unicodedata
+
+import cours_information
+import rav4
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 GABARIT = ROOT / "src" / "gabarit-exercice-interactif.html"
@@ -57,6 +61,25 @@ def fr(x, d=1):
 
 def figure(name, alt, caption, maxw, cls="fig"):
     src, w, h = png(name)
+    return (f'<figure class="{cls}" style="max-width:{maxw}px"><img src="{src}" alt="{esc(alt)}" '
+            f'width="{w}" height="{h}">' + (f"<figcaption>{caption}</figcaption>" if caption else "") + "</figure>")
+
+
+def jpg(name):
+    """Photo JPEG intégrée en data URI ; dimensions lues dans le segment SOF."""
+    data = (IMAGES / f"{name}.jpg").read_bytes()
+    i = 2
+    while i < len(data):
+        marker, size = data[i + 1], struct.unpack(">H", data[i + 2:i + 4])[0]
+        if marker in (0xC0, 0xC1, 0xC2):
+            h, w = struct.unpack(">HH", data[i + 5:i + 9])
+            return "data:image/jpeg;base64," + base64.b64encode(data).decode(), w, h
+        i += 2 + size
+    raise ValueError(f"{name}.jpg : dimensions introuvables")
+
+
+def photo(name, alt, caption, maxw, cls="fig"):
+    src, w, h = jpg(name)
     return (f'<figure class="{cls}" style="max-width:{maxw}px"><img src="{src}" alt="{esc(alt)}" '
             f'width="{w}" height="{h}">' + (f"<figcaption>{caption}</figcaption>" if caption else "") + "</figure>")
 
@@ -215,73 +238,76 @@ PARTS_EX1.append({"title": "L'ascenseur", "minutes": 15, "intro": [
         "machinerie, et la fonction <em>Traiter</em> au système de commande (partie 6).</p>"),
 ]})
 
-# ------------------------------------------------------------ Partie 2 : la Toyota Prius
-PARTS_EX1.append({"title": "Toyota Prius", "minutes": 12, "intro": [
+# ------------------------------------------------------------ Partie 2 : le Toyota RAV4 hybride
+# Figures 3 et 4 animées (src/rav4.py) ; la Prius de l'exercice d'origine est remplacée par le RAV4.
+PARTS_EX1.append({"title": "Toyota RAV4 hybride", "minutes": 12, "intro": [
     '<div class="cours-split">' +
-    figure("ex1-prius", "Photographie d'une Toyota Prius", "", 260) +
-    "<div><p>La Toyota Prius est une voiture <strong>hybride</strong> avec une motorisation dont la fonction "
-    "principale est d'entraîner et de freiner les roues, mais aussi de <strong>récupérer de l'énergie lors de la "
-    "phase de freinage</strong>.</p><p>À l'aide du schéma simplifié du système technique ci-dessous, complétez la "
-    "représentation schématique de la chaîne d'énergie (dite aussi de puissance).</p></div></div>",
-    figure("ex1-prius-schema", "Schéma simplifié de la motorisation hybride de la Prius", "Figure 3 — Schéma simplifié "
-           "du système technique : réservoir, moteur thermique, batterie, moteur électrique, génératrice, train "
-           "épicycloïdal et transmission aux roues.", 620),
-    figure("ex1-prius-chaine", "Chaîne d'énergie de la Prius, cases numérotées de 1 à 11", "Figure 4 — Chaîne "
-           "d'énergie à compléter : les 11 cases à remplir sont repérées en rouge. La case <em>Transmettre — train "
-           "épicycloïdal</em> est déjà donnée.", 600)], "blocks": [
+    photo("ex1-rav4", "Toyota RAV4 hybride gris dans un champ labouré", "", 420) +
+    "<div><p>Le Toyota RAV4 est un SUV <strong>hybride</strong> : un moteur thermique et deux machines électriques se "
+    "partagent l'entraînement des roues. Sa motorisation a pour fonction principale d'entraîner et de freiner les "
+    "roues, mais aussi de <strong>récupérer de l'énergie lors de la phase de freinage</strong> : le moteur électrique "
+    "fonctionne alors en génératrice et recharge la batterie.</p><p>À l'aide du schéma simplifié du système technique "
+    "ci-dessous, complétez la représentation schématique de la chaîne d'énergie (dite aussi de puissance).</p>"
+    "</div></div>",
+    rav4.figure_tech(),
+    rav4.figure_chaine()], "blocks": [
     QBAR(["DP1", "DT1"]),
     GRP("Complétez la branche thermique de la chaîne d'énergie (repères 5, 6 et 7) avec les composants du schéma.",
         "C'est la branche du bas à gauche : ALIMENTER → DISTRIBUER → CONVERTIR.", [
-        ("Repère 5 — ALIMENTER", KW(P("reservoir|carburant|combustible")), "Le réservoir de combustible"),
+        ("Repère 5 — ALIMENTER", KW(P("reservoir|carburant|combustible")), "Le réservoir de carburant"),
         ("Repère 6 — DISTRIBUER", KW(P("injection|injecteur|injecteurs")), "Le système d'injection"),
         ("Repère 7 — CONVERTIR", KW(P("moteur", "thermique|combustion|essence|explosion"), forbid="electrique"),
          "Le moteur thermique")],
         "<p>On suit l'énergie <em>chimique</em> du carburant sur le schéma technique, de gauche à droite : "
         + calc("réservoir → système d'injection → moteur thermique") + "</p><ul>"
-        "<li>Le <strong>réservoir de combustible</strong> stocke l'énergie : il <em>alimente</em>.</li>"
+        "<li>Le <strong>réservoir de carburant</strong> stocke l'énergie : il <em>alimente</em>.</li>"
         "<li>Le <strong>système d'injection</strong> dose la quantité de carburant envoyée dans les cylindres : il "
         "<em>distribue</em> l'énergie.</li>"
         "<li>Le <strong>moteur thermique</strong> transforme l'énergie chimique en énergie mécanique de rotation : il "
-        "<em>convertit</em>.</li></ul>"),
+        "<em>convertit</em>.</li></ul><p>Sur la figure 3, choisissez « Croisière » : c'est cette branche qui travaille.</p>"),
     GRP("Complétez la branche électrique de la chaîne d'énergie (repères 1, 2 et 3) avec les composants du schéma.",
         "C'est la branche du haut : ALIMENTER → DISTRIBUER → CONVERTIR.", [
         ("Repère 1 — ALIMENTER", KW(P("batterie|batteries|accumulateur|accumulateurs")), "La batterie"),
-        ("Repère 2 — DISTRIBUER", KW(P("repartiteur")), "Le répartiteur de puissance"),
-        ("Repère 3 — CONVERTIR", KW(P("moteur", "electrique"), forbid="thermique"), "Le moteur électrique")],
+        ("Repère 2 — DISTRIBUER", KW(P("repartiteur|onduleur")), "Le répartiteur de puissance"),
+        ("Repère 3 — CONVERTIR", KW(P("moteur", "electrique"), forbid="thermique|arriere"), "Le moteur électrique")],
         "<p>Même raisonnement pour l'énergie <em>électrique</em> : "
         + calc("batterie → répartiteur de puissance → moteur électrique") + "</p><ul>"
         "<li>La <strong>batterie</strong> stocke l'énergie électrique : elle <em>alimente</em>.</li>"
-        "<li>Le <strong>répartiteur de puissance</strong> oriente le courant vers le moteur électrique ou vers la "
-        "batterie selon la phase de roulage : il <em>distribue</em>.</li>"
+        "<li>Le <strong>répartiteur de puissance</strong> (un onduleur) oriente le courant vers le moteur électrique ou "
+        "vers la batterie selon la phase de roulage : il <em>distribue</em>.</li>"
         "<li>Le <strong>moteur électrique</strong> transforme l'énergie électrique en énergie mécanique : il "
-        "<em>convertit</em>.</li></ul><p>C'est bien la même structure que la branche thermique : c'est ce qui fait de "
-        "la Prius une voiture <em>hybride</em>, avec deux chaînes d'alimentation qui se rejoignent sur le train "
-        "épicycloïdal.</p>"),
-    GRP("Le repère 4 est un second CONVERTIR, alimenté par le train épicycloïdal. Quel composant du schéma occupe "
-        "cette case ?", "C'est le composant qui permet de récupérer l'énergie pendant le freinage.", [
+        "<em>convertit</em>.</li></ul><p>C'est bien la même structure que la branche thermique : c'est ce qui fait du "
+        "RAV4 un véhicule <em>hybride</em>, avec deux chaînes d'alimentation qui se rejoignent pour entraîner les "
+        "roues. Situation « Démarrage » de la figure 3 : seule cette branche travaille.</p>"),
+    GRP("Le repère 4 est un second CONVERTIR, entraîné par le train épicycloïdal. Quel composant du schéma occupe "
+        "cette case ?", "C'est le composant qui transforme une partie de la puissance du moteur thermique en "
+        "électricité.", [
         ("Repère 4 — CONVERTIR", KW(P("generatrice|generateur|alternateur")), "La génératrice")],
-        "<p>L'énoncé indique que le système doit « récupérer de l'énergie lors de la phase de freinage ». La "
-        "<strong>génératrice</strong> fait l'opération inverse du moteur électrique : elle reçoit de l'énergie "
-        "<em>mécanique</em> depuis le train épicycloïdal et la convertit en énergie <em>électrique</em>.</p><p>C'est "
-        "pour cela que la flèche qui sort du repère 4 remonte vers le repère 2, puis vers le repère 1 : l'énergie "
-        "récupérée <strong>recharge la batterie</strong>. On appelle cela le freinage régénératif.</p>"),
+        "<p>Le train épicycloïdal partage la puissance du moteur thermique : une partie va aux roues, l'autre entraîne "
+        "la <strong>génératrice</strong>. Elle fait l'opération inverse d'un moteur : elle reçoit de l'énergie "
+        "<em>mécanique</em> et la convertit en énergie <em>électrique</em>.</p><p>C'est pour cela que la flèche qui sort "
+        "du repère 4 remonte vers le repère 2 : le répartiteur envoie ce courant <strong>recharger la batterie</strong> "
+        "(repère 1) ou alimenter le moteur électrique (repère 3). Situation « Croisière » de la figure 3.</p>"
+        "<p><em>Attention</em> : au freinage, ce n'est pas la génératrice qui récupère l'énergie, mais le <strong>moteur "
+        "électrique</strong>, entraîné par les roues, qui fonctionne alors en génératrice (situation « Freinage »).</p>"),
     GRP("Complétez la fin de la chaîne d'énergie (repères 8, 9, 10 et 11) : les trois TRANSMETTRE puis AGIR.",
         "Suivez le schéma technique depuis le train épicycloïdal jusqu'aux roues.", [
-        ("Repère 8 — TRANSMETTRE", KW(P("chaine|chaines"), P("arbre", "sortie")), "La chaîne silencieuse "
-         "(ou l'arbre de sortie)"),
+        ("Repère 8 — TRANSMETTRE", KW(P("pignon|pignons|engrenage|engrenages"), P("arbre", "sortie"), P("renvoi"),
+                                      forbid="reducteur"), "L'arbre de sortie et les pignons de renvoi"),
         ("Repère 9 — TRANSMETTRE", KW(P("reducteur")), "Le réducteur"),
         ("Repère 10 — TRANSMETTRE", KW(P("differentiel")), "Le différentiel"),
-        ("Repère 11 — AGIR", KW(P("roue|roues")), "Les roues motrices")],
+        ("Repère 11 — AGIR", KW(P("roue|roues"), forbid="arriere"), "Les roues motrices")],
         "<p>On lit le schéma technique de haut en bas, en partant du train épicycloïdal : "
-        + calc("arbre de sortie / chaîne silencieuse → réducteur → différentiel → roues motrices") + "</p><ul>"
-        "<li>La <strong>chaîne silencieuse</strong> (reliée à l'arbre de sortie) reporte le mouvement vers le bas.</li>"
+        + calc("arbre de sortie et pignons de renvoi → réducteur → différentiel → roues motrices") + "</p><ul>"
+        "<li>L'<strong>arbre de sortie</strong> reçoit la rotation du train épicycloïdal et du moteur électrique ; les "
+        "<strong>pignons de renvoi</strong> la reportent vers le bas.</li>"
         "<li>Le <strong>réducteur</strong> diminue la vitesse de rotation et augmente le couple.</li>"
         "<li>Le <strong>différentiel</strong> répartit le couple entre les deux roues et leur permet de tourner à des "
         "vitesses différentes en virage.</li>"
         "<li>Les <strong>roues motrices</strong> réalisent la fonction <em>Agir</em> : elles font passer la matière "
-        "d'œuvre de « roues fixes » à « roues entraînées ».</li></ul><p><em>Remarque</em> : le schéma ne prévoit que "
-        "trois cases <em>Transmettre</em> pour quatre éléments mécaniques (arbre de sortie, chaîne silencieuse, "
-        "réducteur, différentiel). « Arbre de sortie » est donc aussi accepté pour le repère 8.</p>"),
+        "d'œuvre de « roues immobiles » à « roues entraînées ».</li></ul><p><em>Pour aller plus loin</em> : la "
+        "version 4 roues motrices (AWD-i, à cocher sur la figure 3) ajoute un moteur électrique sur l'essieu arrière, "
+        "sans arbre de transmission ; il forme une seconde branche Convertir → Transmettre → Agir.</p>"),
 ]})
 
 # ------------------------------------------------------------ Partie 3 : le chauffage géothermique
@@ -464,16 +490,16 @@ E_ASC_FLUX = ["Consigne", "Compte rendu", "Messages", "Réseau électrique", "É
               "Usager à l'étage d'arrivée"]
 E_ASC_COMPO = ["Le moteur", "La boîte de réduction, la poulie et les câbles", "La cabine", "Le système de commande",
                "Les portes palières", "La gaine"]
-E_PRIUS = ["Le réservoir de combustible", "Le système d'injection", "Le moteur thermique", "La batterie",
+E_RAV4 = ["Le réservoir de carburant", "Le système d'injection", "Le moteur thermique", "La batterie",
            "Le répartiteur de puissance", "Le moteur électrique", "La génératrice", "Le train épicycloïdal",
-           "La chaîne silencieuse", "Le réducteur", "Le différentiel", "Les roues motrices"]
+           "L'arbre de sortie et les pignons de renvoi", "Le réducteur", "Le différentiel", "Les roues motrices"]
 E_GEO = ["Le clavier", "La sonde de température extérieure (TE)", "La sonde de température intérieure (TI)",
          "Le régulateur", "L'écran rétro-éclairé", "L'armoire électrique (réseau EDF)", "Le pilote des moteurs",
          "La pompe à chaleur", "Le plancher chauffant", "Le capteur géothermique"]
 E_PORTAIL = ["La télécommande", "L'antenne réceptrice", "Le boîtier de commande", "Le feu clignotant",
              "La cellule optique", "Les messages (signalisation lumineuse)", "Le réseau électrique (230 V)",
              "L'alimentation électrique", "Le moteur à bras", "Le bras articulé", "Le vantail"]
-EX1_ETIQUETTES = [[E_FONCTIONS, E_FONCTIONS, E_ASC_FLUX, E_ASC_COMPO], [E_PRIUS] * 4, [E_FONCTIONS, E_GEO, E_GEO],
+EX1_ETIQUETTES = [[E_FONCTIONS, E_FONCTIONS, E_ASC_FLUX, E_ASC_COMPO], [E_RAV4] * 4, [E_FONCTIONS, E_GEO, E_GEO],
                   [E_PORTAIL] * 3]
 
 
@@ -709,6 +735,9 @@ def prepare_exo(e):
                 QLABEL[b["id"]] = b["label"]
                 if b["kind"] == "grp":
                     b["fids"] = [f"{b['id']}_{j + 1}" for j in range(len(b["fields"]))]
+        # figures qui suivent la correction d'une partie (RAV4) : identifiants de ses questions
+        grp_ids = " ".join(b["id"] for b in p["blocks"] if b["kind"] in ("q", "grp"))
+        p["intro"] = [x.replace("__GRP__", grp_ids) for x in p["intro"]]
         # la barre de documents prend le numéro de la question qui la suit
         for j, b in enumerate(p["blocks"]):
             if b["kind"] == "qbar":
@@ -827,6 +856,9 @@ COURS = [
     {"key": "cours-chaine-energie", "tag": "Cours 2", "level": "Niveau 2", "title": "Chaîne d'énergie des produits",
      "desc": "Alimenter, distribuer, convertir, transmettre, agir : composants, symboles, puissances et rendements ; "
              "avec des simulateurs, un jeu et un quiz."},
+    {"key": "cours-chaine-information", "tag": "Cours 3", "level": "Niveau 2", "title": "Chaîne d'information des produits",
+     "desc": "Acquérir, traiter, communiquer : capteurs et signaux, chaîne d'acquisition, programme, réseaux et "
+             "encodage ; avec une machine à café animée, des laboratoires, des jeux et un quiz."},
 ]
 # Rubrique « Études de cas » : tant qu'aucune étude n'est décrite dans EXO_DEFS, une carte l'annonce.
 ETUDE_A_VENIR = ("Étude de cas", "Un système réel étudié de bout en bout : chaînes d'information et d'énergie, "
@@ -2011,6 +2043,7 @@ def render_cours_energie():
 {s1}{s2}{s3}{s4}{s5}{s6}{s7}{s8}{s9}{s10}
 <div class="cours-foot no-print"><a class="btn" href="formulaire.html#formulaire">Le formulaire</a>
 <a class="btn ghost" href="formulaire.html#exercices">Exercices de calcul</a>
+<a class="btn ghost" href="?ex=cours-chaine-information">Cours 3 : chaîne d'information</a>
 <a class="btn ghost" href="?ex=chaines-information-energie">Exercice 1.1</a>
 <button type="button" class="btn ghost cours-print">Imprimer le cours</button>
 <a class="btn ghost" href="?">{HOUSE} Retour à l'accueil</a></div>
@@ -2796,10 +2829,15 @@ body.page-cours-chaine-energie .home-inner{max-width:1180px}
 # ============================================================ COURS — assemblage
 
 
-COURS_RENDER = {"cours-chaine-fonctionnelle": render_cours_portail, "cours-chaine-energie": render_cours_energie}
-COURS_JS = (COURS_COMMUN_JS + cours_portail_js() + COURS_2_JS +
-            '\n  var INIT = { "cours-chaine-fonctionnelle": initCoursPortail, "cours-chaine-energie": initCoursEnergie };\n')
-COURS_CSS = COURS_COMMUN_CSS + PORTAIL_CSS + COURS_2_CSS
+# le cours 3 vit dans son propre module ; il reçoit les éléments communs des cours
+AIDES_COURS = types.SimpleNamespace(course_head=course_head, course_section=course_section, course_nav=course_nav,
+                                    quiz_section=quiz_section, jeu_html=jeu_html, HOUSE=HOUSE)
+COURS_RENDER = {"cours-chaine-fonctionnelle": render_cours_portail, "cours-chaine-energie": render_cours_energie,
+                "cours-chaine-information": lambda: cours_information.render(AIDES_COURS)}
+COURS_JS = (COURS_COMMUN_JS + cours_portail_js() + COURS_2_JS + cours_information.ci_js() +
+            '\n  var INIT = { "cours-chaine-fonctionnelle": initCoursPortail, "cours-chaine-energie": initCoursEnergie, '
+            '"cours-chaine-information": initCoursInformation };\n')
+COURS_CSS = COURS_COMMUN_CSS + PORTAIL_CSS + COURS_2_CSS + cours_information.CI_CSS
 
 
 # ============================================================ AIGUILLAGE
@@ -2981,7 +3019,7 @@ DR_NAMES_JS = """  var DR_NAMES = {
     // aucun tracé dans les exercices actuels
   };
 """
-DATA_RE = re.compile(r"data:image/png;base64,[A-Za-z0-9+/=]+")
+DATA_RE = re.compile(r"data:image/(?:png|jpeg);base64,[A-Za-z0-9+/=]+")
 
 
 ETIQUETTES_JS = r"""<script>/* Étiquettes : glisser une étiquette sur une case, ou la toucher puis toucher la case.
@@ -3126,7 +3164,7 @@ def build():
 <title>{TITRE} — cours et exercices interactifs</title>
 <meta name="description" content="Chaîne fonctionnelle, cours et exercices interactifs de deux niveaux : chaîne d'information, chaîne d'énergie, composants et symboles, puissances et rendements ; formulaire de la chaîne de puissance.">
 {style}
-{CONTENT_CSS.replace("__COURS_CSS__", COURS_CSS)}
+{CONTENT_CSS.replace("__COURS_CSS__", COURS_CSS + rav4.RAV4_CSS)}
 </head>
 <body class="no-mode">
 
@@ -3207,6 +3245,7 @@ def build():
 {grading}
 {app}
 {ETIQUETTES_JS}
+{rav4.RAV4_JS}
 </body>
 </html>
 """

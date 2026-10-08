@@ -10,8 +10,8 @@
 `src/gabarit-exercice-interactif.html` (fichier identique, vérifié octet par octet).
 
 **Accueil** (`index.html`), sur le modèle de l'accueil RDM : en-tête et montage d'illustration (les quatre systèmes de
-l'exercice 1.1), puis les rubriques **Les cours** (Cours 1, pastille verte Niveau 1 ; Cours 2, pastille bleue
-Niveau 2), **Le formulaire** (une carte, comme les autres, vers le formulaire en carte mentale), **Les
+l'exercice 1.1), puis les rubriques **Les cours** (Cours 1, pastille verte Niveau 1 ; Cours 2 et Cours 3, chaîne
+d'énergie et chaîne d'information côte à côte, pastille bleue Niveau 2), **Le formulaire** (une carte, comme les autres, vers le formulaire en carte mentale), **Les
 exercices** (Exercice 1.1, Niveau 1, puis la carte « Exercices de calcul » du formulaire) et **Études de cas** (une carte « En cours d'édition », remplacée d'elle-même
 par les études décrites dans `EXO_DEFS` avec `"etude": True`). Les numéros suivent la logique RDM : le premier
 chiffre d'un exercice donne son niveau (1.1, puis 1.2… et 2.1… au niveau 2).
@@ -80,9 +80,49 @@ Corrections, interprétations et compléments :
   par défaut de la chaîne de la trottinette 0,90 ; 0,95 ; 0,85 ; 0,90. Ces hypothèses sont écrites à côté de chaque
   simulateur.
 
+## Cours 3 — Chaîne d'information des produits (Niveau 2, `?ex=cours-chaine-information`)
+
+**Source** : le cours Word « Thème 3 — Chaîne d'information des produits » (leçon de référence, environ 3 h). Mis en
+parallèle du cours 2 : même niveau, même présentation (objectifs, compétences, prérequis, sommaire, sections
+numérotées, synthèse, quiz), liens croisés en pied de page.
+
+Le texte du Word est repris section par section (constitution d'un produit, Acquérir, chaîne d'acquisition, Traiter,
+Communiquer, encodage). Ses 22 figures sont des captures de manuel, souvent rognées ou peu lisibles : aucune n'est
+reprise telle quelle, toutes sont **redessinées en SVG** et rendues interactives (`src/cours_information.py`) :
+- **machine à café** (figures 1 et 2 réunies) : « Préparer un espresso » déroule six étapes, du bouton à la sonnerie ;
+  les flux d'information, d'énergie et de matière circulent, la tasse se remplit ; la chaîne d'information se montre
+  d'un seul bloc ou détaillée (acquérir, traiter, communiquer) ;
+- **diagramme de blocs internes** : chaque bloc touché affiche sa fonction, son rôle et ses échanges, et éclaire ses
+  flux ;
+- **laboratoire des capteurs** : une même température, qui varie ou se règle, mesurée par un détecteur de seuil
+  (signal logique), un capteur analogique (10 mV par degré) et un capteur numérique (trame de 10 bits décodée) ;
+- **chaîne d'acquisition en direct** : gain, fréquence de coupure et résolution réglables, allure du signal à chaque
+  étape, diagnostic (écrêtage, parasites, escalier grossier) ; calculateur d'amplification (exemple du cours) ;
+- **filtre passe-bas** : signal recomposé en direct à partir de ses composantes (fondamental, harmoniques 3, 5, 7,
+  bruit) et spectre avec le gabarit ;
+- **CAN** : caractéristique en escalier selon n et Vref, quantum, N en décimal et en binaire, balayage animé ;
+- **système programmable** animé ; **programme « bouton → LED »** qui s'exécute vraiment : on maintient le bouton,
+  l'étape active s'éclaire dans l'algorigramme et la ligne correspondante dans le pseudo-code, les blocs, Python et
+  C++/Arduino ; mode pas à pas ; table des symboles redessinée ;
+- **restitution** logique, analogique, numérique (voyant, son, afficheur LCD qui montre les codes envoyés) ;
+  **optocoupleur** animé ; **trame** envoyée en Wi-Fi, Bluetooth, Ethernet ou bus CAN ;
+- **octet** à bits cliquables (décimal, binaire, hexadécimal par quartets), **défi de conversion** à nombres
+  aléatoires, **ASCII** : un mot tapé donne ses codes, la table complète surligne ses caractères ;
+- trois jeux (filaire ou sans fil ; Acquérir, Traiter ou Communiquer ; type de signal) et un quiz de 10 questions.
+
+Corrections et décisions :
+- **Valeur N d'un CAN** : le Word la donne « entre 0 et 2ⁿ » ; elle va de 0 à 2ⁿ − 1 (de 000 à 111 pour 3 bits).
+- **Caractéristique du CAN** : la figure du Word montrait des marches décalées d'un demi-quantum, alors que le texte
+  dit de prendre la partie entière de V / q ; la caractéristique redessinée suit le texte (marches à 1 V, 2 V…).
+- **Capteur numérique** : le Word dit qu'il faut connaître le codage, sans en donner ; le laboratoire en fixe un
+  (dixièmes de degré sur 10 bits), annoncé sous le graphique, qui donne 55,8 °C pour la trame du cours.
+- Les blocs « Nom / Prénom / Groupe », « Documents ressources » (pages de manuel) et « Modalités » (consignes
+  d'enseignant) ne sont pas repris, comme pour le cours 2. Le « bac » de la machine à café devient le « tiroir à
+  marc », pour ne pas prêter à confusion.
+
 ## Exercice 1.1 — Chaînes d'information et d'énergie (Niveau 1, `?ex=chaines-information-energie`)
 
-**Source** : l'exercice du dépôt « schema_chaine-energie-information » (ascenseur, Toyota Prius, chauffage
+**Source** : l'exercice du dépôt « schema_chaine-energie-information » (ascenseur, Toyota Prius devenue Toyota RAV4 hybride, chauffage
 géothermique, portail automatisé ; 14 questions, 57 champs).
 
 - Chaque système devient une **partie** : 15, 12, 18 et 15 min (1 h), 15, 11, 19 et 12 points. Les 14 questions
@@ -106,8 +146,24 @@ Corrections et décisions :
 - **Schéma de l'ascenseur** : il reprenait les légendes du portail (« Vantail en position initiale / finale ») ; elles
   deviennent « Usager à l'étage de départ / d'arrivée » (image corrigée par `outils/preparer-images.sh`, l'original
   reste dans `src/images/originaux`). La démarche de la question Q1.2 le mentionne.
-- **Prius, repère 4** : la flèche qui part de la génératrice rejoint le répartiteur (repère 2), qui recharge la
-  batterie (repère 1) ; la démarche le précise (la source la faisait aller directement au repère 1).
+- **Partie 2 : la Toyota Prius devient le Toyota RAV4 hybride** (maquette validée), photo fournie, recadrée, plaque
+  d'immatriculation floutée. Les figures 3 et 4 sont redessinées en SVG et « vivantes » (`src/rav4.py`) :
+  - figure 3, la motorisation : cinq situations de conduite (arrêt, démarrage, accélération, croisière, freinage) et
+    un trajet qui les enchaîne ; l'énergie circule (chimique en pointillés orange, électrique en tirets bleus,
+    mécanique en vert), les pistons s'allument, engrenages et roues tournent, la jauge de batterie se vide ou se
+    remplit ; option 4 roues motrices (AWD-i, moteur électrique arrière) ; un composant touché affiche son rôle ;
+  - figure 4, la chaîne à compléter (mêmes repères 1 à 11) : ses blocs s'éclairent au rythme de la figure 3, et au
+    freinage le flux remonte des roues vers la batterie ;
+  - les fonctions des composants (Alimenter, Convertir…) ne s'affichent qu'une fois la partie corrigée (questions
+    validées, ou copie remise en examen) : la figure ne souffle pas les réponses.
+- **Repère 8** : sur le RAV4, la chaîne silencieuse de la Prius laisse la place à l'arbre de sortie et aux pignons de
+  renvoi (étiquette et correcteur changés ; « chaîne silencieuse » est désormais refusée).
+- **Repère 4, la génératrice** : la source en faisait l'organe de récupération au freinage. C'est en réalité le moteur
+  électrique, entraîné par les roues, qui fonctionne alors en génératrice ; la génératrice transforme une partie de
+  la puissance du moteur thermique en électricité. L'indice et la démarche de Q2.3 sont corrigés, la figure 3 le
+  montre. La flèche du repère 4 rejoint le répartiteur (repère 2), qui recharge la batterie (repère 1).
+- **Version 4 roues motrices** : présentée dans la figure et en « pour aller plus loin », sans case notée (la partie
+  garde ses 11 points).
 - **Étiquettes et correction** : pour chaque case, la bonne étiquette est la seule acceptée de sa liste (test
   unitaire), sauf le plancher chauffant, où Transmettre et Agir restent justes comme dans la correction d'origine.
   Portail, repère 7 : « alimentation électrique » n'est plus accepté comme source d'énergie (l'exercice d'origine ne
@@ -117,7 +173,7 @@ Corrections et décisions :
   cours 1). Refus explicites des confusions : « moteur à bras » pour Transmettre, « moteur actionnant des câbles » pour
   Transmettre, sondes intérieure et extérieure inversées, « capteur de température » pour le capteur géothermique,
   « télécommande » pour le boîtier de commande, moteur électrique et moteur thermique inversés.
-- Les noms des systèmes réels (Toyota Prius, réseau EDF sur la figure) sont conservés comme dans l'exercice d'origine.
+- Les noms des systèmes réels (Toyota RAV4, réseau EDF sur la figure) sont conservés comme dans l'exercice d'origine.
 
 ## Formulaire de la chaîne de puissance (`formulaire.html`)
 
@@ -133,7 +189,7 @@ aussi.
 - Les figures de l'exercice sont de faible définition (282 à 900 px de large) ; elles sont intégrées telles quelles
   (PNG quantifiés). La figure 3 du cours (ibd) est coupée en bas, comme dans le Word.
 - Quelques photos des tableaux du Word portent un logo de fabricant ; elles ne sont pas retouchées.
-- Poids : `index.html` 1,7 Mio (1,3 Mio d'images), `formulaire.html` 150 Kio.
+- Poids : `index.html` 1,9 Mio (1,3 Mio d'images), `formulaire.html` 150 Kio.
 
 ## Vérifications effectuées
 
@@ -141,11 +197,13 @@ aussi.
   juste pour chaque case, 270 formulations d'origine acceptées, confusions et fautes de frappe, aucune fonction
   acceptée à la place d'une autre, saisie vide refusée, étiquettes (la bonne est proposée, les autres de la liste
   sont refusées).
-- `tests/navigateur.test.js` (Playwright, Chromium) : 9 parcours, tous réussis — accueil (cartes des cours, du
+- `tests/navigateur.test.js` (Playwright, Chromium) : 11 parcours, tous réussis — accueil (cartes des cours, du
   formulaire et des exercices de calcul, annonce de l'étude, téléphone, aucune mention de diplôme ou d'épreuve) ; adresse inconnue ; cours 1
   (étapes, scénarios, clavier, plein écran, cartes, jeux, quiz) ; cours 2 (figures, fiches, oscilloscope, hacheur,
   transmissions, puissances, énergie, effort et flux, rendements, autonomie, jeux, quiz, impression, téléphone) ;
-  exercice en entraînement (cases vides, confirmation, verrouillage, 19,7 puis 20,0/20) ; exercice en examen (rien ne
+  cours 3 (machine à café, blocs internes, laboratoire, acquisition, amplification, CAN, programme exécuté, onglets,
+  restitution, trame, octet, défi, ASCII, trois jeux, quiz 10/10, impression, téléphone) ; RAV4 (situations de
+  conduite, chaîne synchronisée, version 4 roues motrices, fonctions dévoilées après correction, trajet) ; exercice en entraînement (cases vides, confirmation, verrouillage, 19,7 puis 20,0/20) ; exercice en examen (rien ne
   filtre avant la remise, y compris à l'impression ; remise en deux temps ; chronomètre arrêté ; 18,6/20) ;
   étiquettes (toucher puis toucher, clavier, glisser-déposer, réutilisation, échange, retour dans la liste, verrouillage
   après validation, téléphone) ; documents et téléphone ; formulaire (liens vers l'accueil, fiche sans « Vu dans »,

@@ -7,11 +7,11 @@ module.exports = {
   a1_2_1: "Alimenter", a1_2_2: "Distribuer", a1_2_3: "Convertir", a1_2_4: "Transmettre", a1_2_5: "Agir",
   a1_3_1: "Consigne", a1_3_2: "Compte rendu", a1_3_3: "Messages", a1_3_4: "Réseau électrique",
   a1_4_1: "Le moteur", a1_4_2: "La boîte de réduction, la poulie et les câbles", a1_4_3: "La cabine",
-  // Partie 2 — Toyota Prius
-  a2_1_1: "Le réservoir de combustible", a2_1_2: "Le système d'injection", a2_1_3: "Le moteur thermique",
+  // Partie 2 — Toyota RAV4 hybride
+  a2_1_1: "Le réservoir de carburant", a2_1_2: "Le système d'injection", a2_1_3: "Le moteur thermique",
   a2_2_1: "La batterie", a2_2_2: "Le répartiteur de puissance", a2_2_3: "Le moteur électrique",
   a2_3_1: "La génératrice",
-  a2_4_1: "La chaîne silencieuse", a2_4_2: "Le réducteur", a2_4_3: "Le différentiel", a2_4_4: "Les roues motrices",
+  a2_4_1: "L'arbre de sortie et les pignons de renvoi", a2_4_2: "Le réducteur", a2_4_3: "Le différentiel", a2_4_4: "Les roues motrices",
   // Partie 3 — chauffage géothermique
   a3_1_1: "Alimenter", a3_1_2: "Traiter", a3_1_3: "Distribuer", a3_1_4: "Alimenter", a3_1_5: "Transmettre",
   a3_1_6: "Convertir", a3_1_7: "Acquérir", a3_1_8: "Acquérir", a3_1_9: "Communiquer",
