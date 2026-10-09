@@ -31,14 +31,19 @@ async function open(url, viewport) {
 }
 const text = (page, sel) => page.locator(sel).first().innerText();
 const set = (page, sel, v) => page.locator(sel).evaluate((e, x) => { e.value = x; e.dispatchEvent(new Event("input")); }, v);
-// une case se remplit comme le fait l'élève : toucher l'étiquette, puis la case
+// une case se remplit comme le fait l'élève : toucher l'étiquette (dans la liste que la case accepte), puis la case
 async function poser(page, id, etiquette) {
-  const gid = id.replace(/_\d+$/, "");
-  await page.locator(`#${gid} .bank`).getByRole("button", { name: etiquette, exact: true }).click();
+  const liste = await page.locator(`#dz-${id}`).getAttribute("data-bank");
+  await page.locator(`#${liste}`).getByRole("button", { name: etiquette, exact: true }).click();
   await page.click(`#dz-${id}`);
 }
 async function remplir(page, gid, valeurs) {
   for (const id of GROUPES[gid]) await poser(page, id, valeurs[id] !== undefined ? valeurs[id] : REP[id]);
+}
+// question posée sur un schéma : son bouton « Valider » est dans le bandeau sous la figure
+async function valider(page, gid) {
+  const relais = page.locator(`.btn-plan[data-g=${gid}]`);
+  await ((await relais.count()) ? relais.click() : page.click(`#${gid} .btn-fast`));
 }
 const valeur = (page, id) => page.locator(`#in-${id}`).inputValue();
 
@@ -347,19 +352,32 @@ test("exercice 1.1 en entraînement : questions à plusieurs cases, sujet entiè
   await page.click("[data-mode=training]");
   assert.match(await text(page, ".cartouche"), /14 questions, 57 cases notées, réparties en 4 parties/);
   assert.match(await text(page, ".consignes"), /Des étiquettes, pas de calcul/);
-  // groupe vide, puis groupe incomplet : confirmation demandée
-  await page.click("#a1_1 .btn-fast");
-  assert.match(await text(page, "#a1_1 .q-msg"), /Complète au moins une case/);
+  // les questions posées sur un schéma n'affichent sous la figure que leur correction, une fois validées
+  assert.ok(!(await page.isVisible("#a1_1")));
+  assert.ok(await page.isVisible("#plan-1 .plan-qs"));
+  assert.match(await text(page, "#plan-1 .plan-qs"), /Q1\.1[\s\S]*Q1\.2[\s\S]*Q1\.3[\s\S]*Q1\.4/);
+  // groupe vide, puis groupe incomplet : confirmation demandée (bouton relayé dans le bandeau du schéma)
+  await valider(page, "a1_1");
+  assert.match(await text(page, "#plan-1 .plan-msg"), /Q1\.1 : Complète au moins une case/);
   await poser(page, "a1_1_1", "Acquérir");
   await poser(page, "a1_1_2", "Traiter");
-  await page.click("#a1_1 .btn-fast");
-  assert.match(await text(page, "#a1_1 .btn-fast"), /Valider quand même \(1 case vide\)/);
-  await page.click("#a1_1 .btn-fast");
+  assert.equal(await text(page, "#plan-1 .plan-msg"), "", "le message s'efface quand on pose une étiquette");
+  await valider(page, "a1_1");
+  assert.match(await text(page, ".btn-plan[data-g=a1_1]"), /valider quand même/);
+  assert.match(await text(page, "#plan-1 .plan-msg"), /Des cases sont vides/);
+  await valider(page, "a1_1");
   assert.match(await text(page, "#a1_1 .q-status"), /2 cases justes sur 3/);
-  assert.equal(await text(page, "#a1_1 .btn-fast"), "Réponses validées");
+  assert.match(await text(page, ".btn-plan[data-g=a1_1]"), /Q1\.1\s*· 2\/3/);
+  assert.ok(await page.locator(".btn-plan[data-g=a1_1].moy").isDisabled());
+  assert.match(await text(page, "#plan-1 .plan-msg"), /Q1\.1 : 2 cases justes sur 3/);
   assert.ok(await page.locator("#in-a1_1_3").isDisabled());
+  // le schéma corrigé : cases verrouillées, justes en vert, fausses en rouge avec l'étiquette attendue
   assert.ok(await page.locator("#dz-a1_1_3").isDisabled());
-  assert.equal(await page.locator("#a1_1 .etq:not([disabled])").count(), 0, "étiquettes verrouillées");
+  assert.ok(await page.locator("#dz-a1_1_1.is-ok").count());
+  assert.ok(await page.locator("#dz-a1_1_3.is-ko").count());
+  assert.equal(await page.locator("#dz-a1_1_3 .dz-a").textContent(), "Communiquer");
+  // la liste « Fonctions » sert aussi à Q1.2 : elle reste ouverte tant que Q1.2 n'est pas validée
+  assert.equal(await page.locator("#bk-1-1 .etq:not([disabled])").count(), 8);
   assert.ok(await page.isVisible("#a1_1 .q-expl"));
   assert.match(await text(page, "#a1_1 .grp-sol"), /Repère 5[\s\S]*Communiquer/);
   assert.match(await text(page, "#score-val"), /13,3/);
@@ -367,10 +385,14 @@ test("exercice 1.1 en entraînement : questions à plusieurs cases, sujet entiè
   for (const gid of Object.keys(GROUPES)) {
     if (gid === "a1_1") continue;
     await remplir(page, gid, {});
-    await page.click(`#${gid} .btn-fast`);
+    await valider(page, gid);
     const n = GROUPES[gid].length;
     assert.match(await text(page, `#${gid} .q-status`), new RegExp(`${n} cases? justes? sur ${n}`), gid);
   }
+  assert.equal(await page.locator("#bk-1-1 .etq:not([disabled])").count(), 0, "étiquettes verrouillées");
+  assert.deepEqual(await page.locator(".dz-f:not(.is-ok)").evaluateAll((ds) => ds.map((d) => d.id)), ["dz-a1_1_3"],
+    "seule la case laissée vide est fausse");
+  assert.equal(await page.locator(".dz-f.coupe").count(), 0, "les étiquettes justes tiennent dans leur case");
   // partie 1 : 14/15 → 18,67/20 (15 min) ; parties 2 à 4 : 20/20 → 19,7
   assert.equal((await text(page, "#recap .final-note")).trim(), "19,7/20");
   assert.match(await text(page, "#recap-body"), /Partie 1 — L'ascenseur[\s\S]*14,0 \/ 15[\s\S]*18,7/);
@@ -380,7 +402,7 @@ test("exercice 1.1 en entraînement : questions à plusieurs cases, sujet entiè
   // second passage : tout juste dès le départ
   const b = await open(EX);
   await b.page.click("[data-mode=training]");
-  for (const gid of Object.keys(GROUPES)) { await remplir(b.page, gid, {}); await b.page.click(`#${gid} .btn-fast`); }
+  for (const gid of Object.keys(GROUPES)) { await remplir(b.page, gid, {}); await valider(b.page, gid); }
   assert.equal((await text(b.page, "#recap .final-note")).trim(), "20,0/20");
   assert.equal((await text(b.page, "#score-val")).replace(/\s/g, ""), "20,0/20");
   assert.deepEqual(b.errors, []);
@@ -392,6 +414,8 @@ test("exercice 1.1 en examen : rien ne filtre avant la remise, y compris à l'im
   await page.click("[data-mode=exam]");
   assert.ok(!(await page.isVisible("#score-val")));
   assert.ok(!(await page.isVisible("#a1_1 .btn-fast")));
+  assert.ok(!(await page.isVisible("#plan-1 .plan-val")), "pas de bouton « Valider » en examen");
+  assert.ok(await page.isVisible("#plan-1 .plan-tray"));
   for (const gid of Object.keys(GROUPES)) if (gid !== "a1_1") await remplir(page, gid, { a4_3_6: "Le moteur à bras" });
   assert.match(await text(page, "#score-count"), /54 réponse\(s\) renseignée\(s\) sur 57/);
   await page.evaluate(() => window.dispatchEvent(new Event("beforeprint")));
@@ -400,6 +424,9 @@ test("exercice 1.1 en examen : rien ne filtre avant la remise, y compris à l'im
   assert.ok(!(await page.isVisible(".print-note-line")));
   assert.ok(!(await page.isVisible("#a2_1 .q-expl")));
   assert.ok(!(await page.isVisible("#recap-graded")));
+  assert.ok(!(await page.isVisible("#plan-1 .plan-tray")));
+  assert.ok(await page.isVisible("#dz-a2_1_1"));
+  assert.equal(await page.locator(".dz-f.is-ok, .dz-f.is-ko").count(), 0);
   await page.emulateMedia({ media: "screen" });
   await page.click("#exam-submit");
   assert.match(await text(page, "#exam-warn"), /3 réponse\(s\) encore vide\(s\)/);
@@ -408,6 +435,11 @@ test("exercice 1.1 en examen : rien ne filtre avant la remise, y compris à l'im
   assert.match(await text(page, "#a1_1 .q-status"), /0 case juste sur 3/);
   assert.match(await text(page, "#a4_3 .q-status"), /5 cases justes sur 6/);
   assert.ok(await page.locator("#in-a4_3_6").evaluate((i) => i.closest(".sol").classList.contains("is-ko")));
+  // la copie corrigée se lit aussi sur les schémas
+  assert.ok(await page.locator("#dz-a4_3_6.is-ko").isDisabled());
+  assert.equal(await page.locator("#dz-a4_3_6 .dz-a").textContent(), "Le vantail");
+  assert.equal(await page.locator("#plan-4 .dz-f.is-ok").count(), 11);
+  assert.ok(await page.isVisible("#a1_1 .q-expl"));
   const t1 = await text(page, "#timer-val");
   await page.waitForTimeout(1300);
   assert.equal(await text(page, "#timer-val"), t1, "chronomètre arrêté");
@@ -424,50 +456,81 @@ test("exercice 1.1 en examen : rien ne filtre avant la remise, y compris à l'im
 test("étiquettes : toucher puis toucher, glisser-déposer, échanger, vider", async () => {
   const { context, page, errors } = await open(EX);
   await page.click("[data-mode=training]");
-  assert.match(await text(page, ".consignes"), /glisse[\s\S]*touche/);
-  assert.equal(await page.locator("#a1_1 .bank .etq").count(), 8);
+  assert.match(await text(page, ".consignes"), /glisse[\s\S]*touche/i);
+  // partie 1 : une liste par sorte d'étiquettes, partagée par les questions qui l'utilisent
+  assert.deepEqual(await page.locator("#plan-1 .plan-tray .bank-t").allTextContents(),
+    ["Fonctions", "Entrées et sortie", "Composants", "Valider"]);
+  assert.equal(await page.locator("#bk-1-1 .etq").count(), 8);
+  assert.equal(await page.locator("#plan-1 .dz-f").count(), 15);
   // toucher une case vide sans étiquette choisie : aide
   await page.click("#dz-a1_1_1");
-  assert.match(await text(page, "#a1_1 .q-msg"), /Choisis d'abord une étiquette/);
-  // toucher une étiquette la sélectionne ; la retoucher ou Échap la désélectionne
-  const acq = page.locator("#a1_1 .bank").getByRole("button", { name: "Acquérir", exact: true });
+  assert.match(await text(page, "#plan-1 .plan-msg"), /Choisis d'abord une étiquette/);
+  // toucher une étiquette la sélectionne et éclaire les cases qui l'acceptent ; la retoucher ou Échap la désélectionne
+  const acq = page.locator("#bk-1-1").getByRole("button", { name: "Acquérir", exact: true });
   await acq.click();
   assert.equal(await acq.getAttribute("aria-pressed"), "true");
-  assert.ok(await page.locator("#a1_1.picking").count());
+  assert.equal(await page.locator("#plan-1 .dz.cible").count(), 8, "les cases des questions 1.1 et 1.2");
+  assert.ok(await page.locator("#dz-a1_2_5.cible").count());
+  assert.equal(await page.locator("#dz-a1_3_1.cible").count(), 0);
+  // une case qui attend une autre liste refuse l'étiquette
+  await page.click("#dz-a1_3_1");
+  assert.equal(await valeur(page, "a1_3_1"), "");
+  assert.match(await text(page, "#plan-1 .plan-msg"), /attend une étiquette de la liste « Entrées et sortie »/);
   await page.keyboard.press("Escape");
   assert.equal(await acq.getAttribute("aria-pressed"), "false");
-  // au clavier : Entrée sur l'étiquette, puis Entrée sur la case
+  assert.equal(await page.locator("#plan-1 .dz.cible").count(), 0);
+  // au clavier : Entrée sur l'étiquette mène à la première case libre qui l'accepte, Entrée l'y pose
   await acq.focus(); await page.keyboard.press("Enter");
-  await page.focus("#dz-a1_1_1"); await page.keyboard.press("Enter");
+  assert.equal(await page.evaluate(() => document.activeElement.id), "dz-a1_1_1");
+  await page.keyboard.press("Enter");
   assert.equal(await valeur(page, "a1_1_1"), "Acquérir");
   assert.match(await page.locator("#dz-a1_1_1").getAttribute("class"), /filled/);
-  // glisser-déposer une étiquette sur une case
-  await page.dragAndDrop("#a1_1 .etq >> text=Communiquer", "#dz-a1_1_2");
+  assert.equal(await page.locator("#dz-a1_1_1 .dz-v").textContent(), "Acquérir");
+  // glisser-déposer une étiquette sur une case du schéma
+  await page.dragAndDrop("#bk-1-1 .etq >> text=Communiquer", "#dz-a1_1_2");
   assert.equal(await valeur(page, "a1_1_2"), "Communiquer");
-  // une étiquette sert plusieurs fois
-  await page.dragAndDrop("#a1_1 .etq >> text=Communiquer", "#dz-a1_1_3");
-  assert.equal(await valeur(page, "a1_1_3"), "Communiquer");
+  // une étiquette sert plusieurs fois, y compris pour une autre question de la même liste
+  await page.dragAndDrop("#bk-1-1 .etq >> text=Communiquer", "#dz-a1_1_3");
+  await page.dragAndDrop("#bk-1-1 .etq >> text=Communiquer", "#dz-a1_2_1");
+  assert.deepEqual([await valeur(page, "a1_1_3"), await valeur(page, "a1_2_1")], ["Communiquer", "Communiquer"]);
   // glisser d'une case à l'autre : les deux étiquettes s'échangent
   await page.dragAndDrop("#dz-a1_1_1", "#dz-a1_1_2");
   assert.deepEqual([await valeur(page, "a1_1_1"), await valeur(page, "a1_1_2")], ["Communiquer", "Acquérir"]);
-  // ramener une étiquette dans la liste, ou toucher une case remplie : la case se vide
-  await page.dragAndDrop("#dz-a1_1_1", "#a1_1 .bank-t");
+  // ramener une étiquette dans sa liste, ou toucher une case remplie : la case se vide
+  await page.dragAndDrop("#dz-a1_1_1", "#bk-1-1 .bank-t");
   assert.equal(await valeur(page, "a1_1_1"), "");
-  assert.equal(await text(page, "#dz-a1_1_1"), "case vide");
+  assert.equal(await page.locator("#dz-a1_1_1 .dz-v").textContent(), "case vide");
   await page.click("#dz-a1_1_3");
-  assert.equal(await valeur(page, "a1_1_3"), "");
-  // pas de dépôt dans une autre question
-  await page.dragAndDrop("#a1_1 .etq >> text=Traiter", "#dz-a1_2_1");
-  assert.equal(await valeur(page, "a1_2_1"), "");
+  await page.click("#dz-a1_2_1");
+  assert.deepEqual([await valeur(page, "a1_1_3"), await valeur(page, "a1_2_1")], ["", ""]);
+  // pas de dépôt d'une autre liste
+  await page.dragAndDrop("#bk-1-2 .etq >> text=Consigne", "#dz-a1_1_1");
+  assert.equal(await valeur(page, "a1_1_1"), "");
+  // une étiquette longue tient dans sa case : la police se réduit
+  await poser(page, "a1_4_2", "La boîte de réduction, la poulie et les câbles");
+  assert.ok(await page.locator("#dz-a1_4_2").evaluate((d) => d.querySelector(".dz-in").offsetHeight <= d.clientHeight));
   // validation : 1 case juste (Acquérir mal placée en repère 4), cases verrouillées
   await poser(page, "a1_1_1", "Acquérir");
-  await page.click("#a1_1 .btn-fast"); await page.click("#a1_1 .btn-fast");
+  await valider(page, "a1_1"); await valider(page, "a1_1");
   assert.match(await text(page, "#a1_1 .q-status"), /1 case juste sur 3/);
-  await page.dragAndDrop("#a1_2 .etq >> text=Agir", "#dz-a1_1_3");
+  await page.dragAndDrop("#bk-1-1 .etq >> text=Agir", "#dz-a1_1_3");
   assert.equal(await valeur(page, "a1_1_3"), "");
-  // téléphone : la liste et les cases tiennent dans l'écran
+  // le bandeau reste collé sous le schéma : figure, étiquettes et boutons ensemble à l'écran
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.locator("#plan-2 .plan-fig").evaluate((f) => f.scrollIntoView({ block: "start" }));
+  const vue = await page.evaluate(() => {
+    const r = (s) => document.querySelector(s).getBoundingClientRect();
+    return { tray: r("#plan-2 .plan-tray"), fig: r("#plan-2 .plan-fig"), banner: r(".banner"), h: innerHeight };
+  });
+  assert.ok(vue.tray.bottom <= vue.banner.top + 1 && vue.tray.top > 0, "bandeau visible au-dessus du bandeau de note");
+  assert.ok(vue.fig.top >= 0 && vue.fig.top < vue.tray.top, "le schéma est au-dessus du bandeau");
+  // téléphone : la page ne déborde pas (le schéma défile dans son cadre) ; le bandeau n'est plus collant
   await page.setViewportSize({ width: 390, height: 844 });
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
+  assert.equal(await page.locator("#plan-1 .plan-tray").evaluate((x) => getComputedStyle(x).position), "static");
+  await page.locator("#bk-1-1").getByRole("button", { name: "Traiter", exact: true }).click();
+  await page.click("#dz-a1_2_2");
+  assert.equal(await valeur(page, "a1_2_2"), "Traiter");
   assert.deepEqual(errors, []);
   await context.close();
 });
@@ -505,7 +568,10 @@ test("partie 2, RAV4 : schéma animé, chaîne synchronisée, fonctions dévoil�
   assert.match(await text(page, "#rv-info"), /Génératrice[\s\S]*électricité/);
   assert.equal(await page.locator("#rv-info .rv-fn-tag").count(), 0);
   assert.ok(await page.locator("#rv-fns").isDisabled());
-  for (const gid of ["a2_1", "a2_2", "a2_3", "a2_4"]) { await remplir(page, gid, {}); await page.click(`#${gid} .btn-fast`); }
+  // figure 4 : les cases à remplir sont posées sur les blocs repérés (le bloc T est donné)
+  assert.equal(await page.locator("#plan-2 .dz-f").count(), 11);
+  assert.equal(await page.locator("#plan-2 .bank").count(), 1);
+  for (const gid of ["a2_1", "a2_2", "a2_3", "a2_4"]) { await remplir(page, gid, {}); await valider(page, gid); }
   await page.waitForFunction(() => !document.getElementById("rv-fns").disabled);
   await page.check("#rv-fns");
   await page.click("#rv-c-mg1 .rv-bx");

@@ -28,6 +28,7 @@ import types
 import unicodedata
 
 import cours_information
+import plans
 import qcm
 import rav4
 
@@ -172,11 +173,8 @@ PARTS_EX1.append({"title": "L'ascenseur", "minutes": 15, "intro": [
     "<li>Un <strong>système de commande</strong> des systèmes d'ouverture et de fermeture des portes palières "
     "ainsi que des déplacements et des arrêts de la cabine, avec un dispositif d'arrêt d'urgence.</li></ol></div></div>",
     "<p>À l'aide de la présentation et de vos connaissances, complétez les chaînes d'information et d'énergie "
-    "(puissance) du système.</p>",
-    figure("ex1-ascenseur-chaines", "Schéma des chaînes d'information et d'énergie de l'ascenseur, cases numérotées "
-           "de 1 à 12", "Figure 2 — Chaînes d'information et d'énergie de l'ascenseur : les 12 cases à compléter "
-           "sont repérées en rouge.", 760)], "blocks": [
-    QBAR(["DP1"]),
+    "(puissance) du système.</p>"], "blocks": [
+    QBAR(["DP1"], "sur la figure 2"),
     GRP("Nommez les trois fonctions de la chaîne d'information, dans l'ordre (repères 3, 4 et 5).", H_VERBE, [
         ("Repère 3 (1<sup>re</sup> fonction)", ACQUERIR, "Acquérir"),
         ("Repère 4 (2<sup>e</sup> fonction)", TRAITER, "Traiter"),
@@ -219,8 +217,8 @@ PARTS_EX1.append({"title": "L'ascenseur", "minutes": 15, "intro": [
         "informations restituées (numéro d'étage affiché, voyant d'appel allumé, bip de fermeture).</li>"
         "<li><strong>Repère 7 — l'énergie d'entrée</strong> : la case verte placée <em>avant</em> la fonction "
         "<em>Alimenter</em> représente la source extérieure, ici le réseau électrique (énergie électrique).</li></ul>"),
-    GRP("À l'aide de la présentation de l'ascenseur, citez le composant qui réalise chacune des fonctions suivantes.",
-        H_COMPO, [
+    GRP("À l'aide de la présentation de l'ascenseur, citez le composant qui réalise chacune des fonctions des "
+        "repères 10, 11 et 12 (cases « composant » du schéma).", H_COMPO, [
         ("CONVERTIR (repère 10)", KW(P("moteur|moteurs|machinerie")), "Le moteur (de la machinerie)"),
         ("TRANSMETTRE (repère 11)",
          KW(P("poulie|poulies"), P("cable|cables"), P("reduction"), P("reducteur"), P("systeme", "transmission"),
@@ -250,9 +248,8 @@ PARTS_EX1.append({"title": "Toyota RAV4 hybride", "minutes": 12, "intro": [
     "fonctionne alors en génératrice et recharge la batterie.</p><p>À l'aide du schéma simplifié du système technique "
     "ci-dessous, complétez la représentation schématique de la chaîne d'énergie (dite aussi de puissance).</p>"
     "</div></div>",
-    rav4.figure_tech(),
-    rav4.figure_chaine()], "blocks": [
-    QBAR(["DP1", "DT1"]),
+    rav4.figure_tech()], "blocks": [
+    QBAR(["DP1", "DT1"], "sur la figure 4"),
     GRP("Complétez la branche thermique de la chaîne d'énergie (repères 5, 6 et 7) avec les composants du schéma.",
         "C'est la branche du bas à gauche : ALIMENTER → DISTRIBUER → CONVERTIR.", [
         ("Repère 5 — ALIMENTER", KW(P("reservoir|carburant|combustible")), "Le réservoir de carburant"),
@@ -318,11 +315,8 @@ PARTS_EX1.append({"title": "Chauffage géothermique", "minutes": 18, "intro": [
     "de son intérêt économique et écologique.</p>",
     figure("ex1-geothermie", "Schéma d'installation d'un chauffage géothermique dans une maison", "Figure 5 — "
            "Installation : capteur géothermique, pompe à chaleur, plancher chauffant, régulateur, clavier, écran "
-           "rétro-éclairé, sondes de température intérieure (TI) et extérieure (TE), armoire électrique.", 560),
-    figure("ex1-geothermie-chaines", "Chaînes d'information et d'énergie du chauffage géothermique, cases numérotées "
-           "de 1 à 10", "Figure 6 — Représentation schématique à compléter : les 10 cases à remplir sont repérées "
-           "en rouge. Les cases « Conversion numérique analogique » et « Chauffer la maison » sont déjà données.",
-           620)], "blocks": [
+           "rétro-éclairé, sondes de température intérieure (TI) et extérieure (TE), armoire électrique.", 560)],
+    "blocks": [
     QBAR(["DP1", "DT1"]),
     GRP("Identifiez, pour chacun des neuf composants ci-dessous, le groupe fonctionnel auquel il appartient.",
         "Une fonction par case : une même fonction peut servir pour plusieurs composants.", [
@@ -414,11 +408,8 @@ PARTS_EX1.append({"title": "Portail automatisé", "minutes": 15, "intro": [
     "(puissance) du système.</p>",
     figure("ex1-portail", "Schéma d'un portail automatisé avec ses huit composants numérotés", "Figure 7 — "
            "Composants du portail : 1 feu clignotant, 2 antenne réceptrice, 3 boîtier de commande, 4 vantail, "
-           "5 moteur à bras, 6 alimentation électrique, 7 cellule optique, 8 télécommande.", 620),
-    figure("ex1-portail-chaines", "Chaînes d'information et d'énergie du portail, cases numérotées de 1 à 12",
-           "Figure 8 — Chaînes à compléter : les 12 cases sont repérées en rouge. Attention : cette numérotation "
-           "rouge est indépendante de celle du schéma du portail ci-dessus.", 700)], "blocks": [
-    QBAR(["DP1", "DT1"]),
+           "5 moteur à bras, 6 alimentation électrique, 7 cellule optique, 8 télécommande.", 620)], "blocks": [
+    QBAR(["DP1", "DT1"], "sur la figure 8"),
     GRP("Complétez les trois cases de la chaîne d'information (repères 3, 4 et 5) avec les composants du portail.",
         "Les fonctions sont, dans l'ordre : Acquérir, Traiter, Communiquer.", [
         ("Repère 3 — ACQUÉRIR", KW(P("antenne|antennes|recepteur|reception")), "L'antenne réceptrice"),
@@ -502,6 +493,34 @@ E_PORTAIL = ["La télécommande", "L'antenne réceptrice", "Le boîtier de comma
              "L'alimentation électrique", "Le moteur à bras", "Le bras articulé", "Le vantail"]
 EX1_ETIQUETTES = [[E_FONCTIONS, E_FONCTIONS, E_ASC_FLUX, E_ASC_COMPO], [E_RAV4] * 4, [E_FONCTIONS, E_GEO, E_GEO],
                   [E_PORTAIL] * 3]
+NOMS_LISTES = {tuple(E_FONCTIONS): "Fonctions", tuple(E_ASC_FLUX): "Entrées et sortie",
+               tuple(E_ASC_COMPO): "Composants", tuple(E_RAV4): "Composants", tuple(E_GEO): "Composants",
+               tuple(E_PORTAIL): "Composants et énergie"}
+
+# ------------------------------------------------------------ schémas à compléter : les cases sont sur la figure
+# Les figures 2, 4, 6 et 8 reçoivent directement les étiquettes. Pour chaque partie : le schéma (plans.py, rav4.py)
+# et, pour chaque question, les repères de ses cases (None : la question garde ses cases sous l'énoncé).
+# Les étiquettes de la partie et les boutons « Valider » forment un bandeau collé sous le schéma : on remplit
+# toutes les questions de la partie sans faire défiler la page de l'une à l'autre.
+EX1_PLANS = [
+    (dict(plans.ascenseur(), caption="Figure 2 — Chaînes d'information et d'énergie de l'ascenseur : les 12 cases "
+          "repérées en rouge reçoivent les étiquettes ; sous les fonctions 10, 11 et 12, une case reçoit le "
+          "composant qui réalise la fonction."),
+     [["3", "4", "5"], ["8", "9", "10", "11", "12"], ["1", "2", "6", "7"], ["10c", "11c", "12c"]]),
+    ({"svg": rav4.SVG_CHAINE, "w": rav4.CHAINE_W, "h": rav4.CHAINE_H, "cases": rav4.cases(), "maxw": rav4.CHAINE_W,
+      "cls": "rv-fig rv-fig-ch", "caption": "Figure 4 — Chaîne d'énergie à compléter : les 11 cases repérées en "
+      "rouge reçoivent les étiquettes. La case <em>Transmettre — train épicycloïdal</em> est donnée. Les blocs en jeu "
+      "dans la situation choisie sur la figure 3 s'éclairent."},
+     [["5", "6", "7"], ["1", "2", "3"], ["4"], ["8", "9", "10", "11"]]),
+    (dict(plans.geothermie(), caption="Figure 6 — Représentation schématique à compléter : les 10 cases repérées en "
+          "rouge reçoivent les étiquettes. Les cases « Conversion numérique analogique », « Énergie thermique du "
+          "sol » et « Chauffer la maison » sont données."),
+     [None, ["1", "2", "3", "4", "5"], ["6", "7", "8", "9", "10"]]),
+    (dict(plans.portail(), caption="Figure 8 — Chaînes à compléter : les 12 cases repérées en rouge reçoivent les "
+          "étiquettes. Attention : cette numérotation rouge est indépendante de celle du schéma du portail "
+          "ci-dessus."),
+     [["3", "4", "5"], ["1", "2", "6"], ["7", "8", "9", "10", "11", "12"]]),
+]
 
 
 def ordre_etiquettes(e):
@@ -510,11 +529,27 @@ def ordre_etiquettes(e):
     return unicodedata.normalize("NFD", sans).encode("ascii", "ignore").decode()
 
 
-for _p, _banks in zip(PARTS_EX1, EX1_ETIQUETTES):
+def etiquette_attendue(bank, attendu):
+    """Étiquette de la liste qui donne la réponse attendue, écrite dans la case du schéma corrigé : celle par laquelle
+    commence la réponse affichée dans la correction, sinon celle qui en partage le plus de mots
+    (tests/correction.test.js vérifie qu'elle est juste)."""
+    a = re.sub(r"<[^>]+>", "", attendu).lower()
+
+    def mots(s):
+        return set(re.findall(r"\w+", s.lower()))
+    return max(bank, key=lambda e: (a.startswith(e.lower()), len(mots(e) & mots(a)), -len(e)))
+
+
+for _p, _banks, (_plan, _reperes) in zip(PARTS_EX1, EX1_ETIQUETTES, EX1_PLANS):
     _grps = [b for b in _p["blocks"] if b["kind"] == "grp"]
-    assert len(_grps) == len(_banks), _p["title"]
-    for _g, _bank in zip(_grps, _banks):
+    assert len(_grps) == len(_banks) == len(_reperes), _p["title"]
+    _p["plan"] = _plan
+    for _g, _bank, _zones in zip(_grps, _banks, _reperes):
         _g["bank"] = sorted(_bank, key=ordre_etiquettes)
+        _g["bank_t"] = NOMS_LISTES[tuple(_bank)]
+        if _zones:
+            assert len(_zones) == len(_g["fields"]) and all(z in _plan["cases"] for z in _zones), _g["stem"]
+            _g["zones"] = _zones
 
 
 # ============================================================ DOCUMENTS DE L'EXERCICE 1.1
@@ -635,25 +670,37 @@ def render_q(q, part):
         </div>"""
 
 
+def etiquettes(bank):
+    return "".join(f'<button type="button" class="etq" draggable="true" aria-pressed="false">{esc(t)}</button>'
+                   for t in bank)
+
+
 def render_grp(g, part):
     """Question à plusieurs cases : structure « fast-q » du gabarit (un bouton, une correction commune).
-    Chaque case garde le champ lu par le moteur (masqué) ; on la remplit en y glissant une étiquette de la liste."""
+    Chaque case garde le champ lu par le moteur (masqué) ; on la remplit en y glissant une étiquette de la liste.
+    Question posée sur un schéma (« zones ») : ses cases sont sur la figure (render_plan) ; le bloc garde les champs,
+    le bouton relayé par le bandeau et la correction, et ne s'affiche qu'une fois la question corrigée."""
     gid, label = g["id"], g["label"]
+    plan = bool(g.get("zones"))
+
+    def case(fid):
+        if plan:
+            return ""
+        return (f'<button type="button" class="dz" id="dz-{fid}" data-bank="bk-{gid}" aria-labelledby="lb-{fid} '
+                f'dzv-{fid}"><span class="dz-v" id="dzv-{fid}">case vide</span></button>')
     rows = "".join(
         f'<div class="grp-l"><span class="grp-lab" id="lb-{fid}">{fl}</span><div class="sol">'
-        f'<input type="hidden" id="in-{fid}" data-q="{fid}"><button type="button" class="dz" id="dz-{fid}" '
-        f'aria-labelledby="lb-{fid} dzv-{fid}"><span class="dz-v" id="dzv-{fid}">case vide</span></button>'
+        f'<input type="hidden" id="in-{fid}" data-q="{fid}">{case(fid)}'
         f'<span class="mark" aria-live="polite"></span></div></div>'
         for fid, (fl, _g, _e) in zip(g["fids"], g["fields"]))
-    tags = "".join(f'<button type="button" class="etq" draggable="true" aria-pressed="false">{esc(t)}</button>'
-                   for t in g["bank"])
+    bank = ("" if plan else f'<div class="bank" id="bk-{gid}" role="group" aria-label="Étiquettes de la question '
+            f'{label}"><span class="bank-t">Étiquettes</span>{etiquettes(g["bank"])}</div>')
     sol = "".join(f"<tr><td>{fl}</td><td>{e}</td></tr>" for fl, _g, e in g["fields"])
     n = len(g["fields"])
     return f"""
-        <div class="fast-q grp" id="{gid}">
+        <div class="fast-q grp{' sur-plan' if plan else ''}" id="{gid}">
           <p class="q-stem"><span class="q-num">{label}</span> <strong>{g['stem']}</strong></p>
-          <p class="q-hint">{g['hint']}</p>
-          <div class="bank" role="group" aria-label="Étiquettes de la question {label}"><span class="bank-t">Étiquettes</span>{tags}</div>
+          <p class="q-hint">{g['hint']}</p>{bank}
           <div class="grp-fields" role="group" aria-label="Cases de la question {label}">{rows}</div>
           <div class="fast-foot"><button type="button" class="btn btn-fast">Valider {'les ' + str(n) + ' cases' if n > 1 else 'la case'}</button>
             <span class="q-status" aria-live="polite"></span></div>
@@ -663,6 +710,62 @@ def render_grp(g, part):
             <div class="q-why"><p class="why-t">Démarche</p>{g['why']}</div>
           </div>
         </div>"""
+
+
+def render_plan(p):
+    """Plan de travail d'une partie : les énoncés des questions posées sur le schéma, le schéma et ses cases (boutons
+    placés en pourcentage du viewBox), puis le bandeau des étiquettes et des boutons « Valider », collé au bas de
+    l'écran tant que le schéma est visible. Les questions qui ont la même liste d'étiquettes la partagent."""
+    pl, n = p["plan"], p["num"]
+    grps = [b for b in p["blocks"] if b["kind"] == "grp" and b.get("zones")]
+    listes = []
+    for g in grps:
+        for li in listes:
+            if li["etq"] == g["bank"]:
+                li["grps"].append(g)
+                break
+        else:
+            listes.append({"etq": g["bank"], "titre": g["bank_t"], "grps": [g]})
+    for i, li in enumerate(listes):
+        li["id"] = f"bk-{n}-{i + 1}"
+        for g in li["grps"]:
+            g["bank_id"] = li["id"]
+    W, H = pl["w"], pl["h"]
+
+    def pc(v, total):
+        return f"{v / total * 100:.3f}%"
+    cases = []
+    for g in grps:
+        for fid, cle, (_fl, _g, att) in zip(g["fids"], g["zones"], g["fields"]):
+            x, y, w, h, ind = pl["cases"][cle]
+            cases.append(
+                f'<button type="button" class="dz dz-f" id="dz-{fid}" data-bank="{g["bank_id"]}" '
+                f'data-attendu="{esc(etiquette_attendue(g["bank"], att))}" style="left:{pc(x, W)};top:{pc(y, H)};'
+                f'width:{pc(w, W)};height:{pc(h, H)}" aria-labelledby="lb-{fid} dzv-{fid}">'
+                + (f'<span class="dz-n" aria-hidden="true">{cle}</span>' if cle.isdigit() else "") +
+                f'<span class="dz-in"><span class="dz-v" id="dzv-{fid}">case vide</span>'
+                + (f'<span class="dz-p" aria-hidden="true">{ind}</span>' if ind else "") +
+                '<span class="dz-a" aria-hidden="true"></span></span></button>')
+    enonces = "".join(f'<li><span class="q-num">{g["label"]}</span> <strong>{g["stem"]}</strong> '
+                      f'<span class="plan-hint">{g["hint"]}</span></li>' for g in grps)
+    banques = "".join(
+        f'<div class="bank" id="{li["id"]}" role="group" aria-label="Étiquettes « {li["titre"]} » '
+        f'({", ".join(g["label"] for g in li["grps"])})"><span class="bank-t">{li["titre"]}</span>'
+        f'{etiquettes(li["etq"])}</div>' for li in listes)
+    boutons = "".join(
+        f'<button type="button" class="btn-plan" data-g="{g["id"]}" data-label="{g["label"]}" '
+        f'aria-label="Valider la question {g["label"]}">{g["label"]} <small>· {len(g["fields"])} '
+        f'case{"s" if len(g["fields"]) > 1 else ""}</small></button>' for g in grps)
+    style = f"--u:{100 / W:.5f}cqw" + (f";max-width:{pl['maxw']}px" if pl.get("maxw") else "")
+    return f"""
+      <div class="plan" id="plan-{n}">
+        <ol class="plan-qs">{enonces}</ol>
+        <figure class="plan-fig {pl.get('cls', '')}"><div class="plan-scroll"><div class="plan-canvas" style="{style}">{pl['svg']}{''.join(cases)}</div></div>
+          <figcaption>{pl['caption']}</figcaption></figure>
+        <div class="plan-tray" role="group" aria-label="Étiquettes de la partie {n}">{banques}
+          <div class="plan-val only-training"><span class="bank-t">Valider</span>{boutons}</div>
+          <p class="plan-msg" role="status" aria-live="polite"></p></div>
+      </div>"""
 
 
 def render_qbar(b):
@@ -701,7 +804,10 @@ def render_part(p):
     pts = part_points(p)
     body = "\n      ".join(p["intro"])
     blocks = []
+    premiere = next((b["id"] for b in p["blocks"] if b.get("zones")), None)
     for b in p["blocks"]:
+        if b.get("id") and b["id"] == premiere:  # le schéma à compléter précède la première question posée sur lui
+            blocks.append(render_plan(p))
         if b["kind"] == "q":
             blocks.append(render_q(b, p))
         elif b["kind"] == "grp" and b.get("qcm"):
@@ -832,8 +938,8 @@ MODES_HTML = """<h2 class="home-choose">Choisis ton mode de travail</h2>
 
 CONSIGNES_MOTS = """<p class="only-training"><strong>Mode entraînement.</strong> Remplis les cases d'une question puis clique sur « Valider » : une réponse validée est définitive et sa correction s'affiche aussitôt.</p>
     <p class="only-exam"><strong>Mode examen.</strong> Compose tout le sujet sans correction ni note : tes réponses restent modifiables jusqu'au bout. Le bouton « J'ai fini, je fais corriger ma copie », en fin de sujet, dévoile d'un coup les corrections, les notes par partie et la note globale.</p>
-    <p><strong>Des étiquettes, pas de calcul.</strong> Chaque question propose ses étiquettes : <strong>glisse</strong> une étiquette sur une case, ou <strong>touche</strong> une étiquette puis la case (au clavier : Entrée sur l'étiquette, puis Entrée sur la case). Une étiquette peut servir plusieurs fois, certaines ne servent pas. Pour vider une case, touche-la ou ramène son étiquette dans la liste.</p>
-    <p><strong>Une question, plusieurs cases.</strong> Les cases d'une même question se valident ensemble ; chaque case vaut un point. Les schémas sont numérotés en rouge pour repérer chaque case à compléter.</p>
+    <p><strong>Des étiquettes, pas de calcul.</strong> Les cases à remplir sont sur les schémas, numérotées en rouge ; les étiquettes de la partie sont dans le bandeau sous le schéma, qui reste à l'écran pendant que tu fais défiler la figure. <strong>Glisse</strong> une étiquette sur une case, ou <strong>touche</strong> une étiquette (les cases qui l'acceptent s'éclairent) puis la case ; au clavier : Entrée sur l'étiquette, puis Entrée sur la case. Une étiquette peut servir plusieurs fois, certaines ne servent pas. Pour vider une case, touche-la ou ramène son étiquette dans la liste.</p>
+    <p><strong>Une question, plusieurs cases.</strong> Les cases d'une même question se valident ensemble, avec son bouton dans le bandeau ; chaque case vaut un point. Le schéma montre aussitôt les cases justes et fausses, la correction détaillée s'affiche sous le schéma.</p>
     <p>Le dossier de présentation (DP) et le dossier technique (DT) s'ouvrent avec les onglets sur le bord droit, ou avec les boutons des en-têtes de question.</p>
     <p><strong>Barème pondéré par la durée conseillée</strong> : chaque partie est notée sur 20, puis pèse au prorata de son temps. Le récapitulatif de fin de sujet donne le détail partie par partie.</p>"""
 
@@ -2927,7 +3033,7 @@ CONTENT_CSS = """<style>
 .dz .dz-v{display:block}
 .dz:not(.filled) .dz-v{font-weight:400; font-style:italic; color:#7A848C}
 .dz.filled{border-style:solid; border-color:var(--bleu); cursor:grab}
-.grp.picking .dz:not(:disabled),.dz.over{background:var(--jaune-pale); border-color:var(--orange)}
+.dz.cible:not(:disabled),.dz.over{background:var(--jaune-pale); border-color:var(--orange)}
 .dz:disabled{cursor:default; background:#F2F3F1}
 .grp .sol.is-ok .dz{border:2px solid var(--vert); background:var(--vert-pale)}
 .grp .sol.is-ko .dz{border:2px solid var(--rouge); background:var(--rouge-pale)}
@@ -2939,6 +3045,59 @@ CONTENT_CSS = """<style>
 .q-why .why-t{font:700 .95rem var(--f-titre); margin:.6rem 0 .2rem}
 .q-why .compo{max-width:640px}
 @media (max-width:620px){ .grp-l{grid-template-columns:minmax(0,1fr)} }
+
+/* ---------- exercice 1.1 : schémas à compléter (cases posées sur la figure, bandeau d'étiquettes collant) ---------- */
+.plan{margin:12px 0 16px}
+.plan-qs{list-style:none; margin:0 0 10px; padding:8px 12px; display:grid; gap:5px; border-left:3px solid var(--bleu); background:#FAFAF8}
+.plan-qs li{font-size:.95rem; line-height:1.4}
+.plan-qs .plan-hint{font-size:.86rem; color:var(--encre-2)}
+.plan-fig{margin:0; padding:10px 10px 6px; background:#fff; border:1px solid var(--trait-fin)}
+.plan-fig figcaption{font-size:.86rem; color:var(--encre-2); margin-top:6px}
+.plan-scroll{overflow-x:auto}
+.plan-canvas{position:relative; min-width:640px; margin:0 auto; container-type:inline-size}
+.plan-svg{display:block; width:100%; height:auto; font-family:var(--f-texte)}
+.plan .rv-chaine{border:0}
+/* une case du schéma : bouton posé sur son bloc, en pourcentage du dessin ; police à l'échelle du dessin */
+.plan-canvas .dz{position:absolute; display:flex; align-items:center; justify-content:center; min-height:0; padding:2px 5px;
+  text-align:center; font-size:clamp(9px, calc(14.5 * var(--u)), 15px); line-height:1.16; background:rgba(255,255,255,.72);
+  border:1.5px dashed #5A6670; border-radius:4px}
+.plan-canvas .dz-in{display:block; width:100%}
+.plan-canvas .dz.coupe .dz-in{overflow-wrap:anywhere}
+.plan-canvas .dz:not(.filled) .dz-v{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+.plan-canvas .dz-p{color:#69737B; font-style:italic; font-weight:400}
+.plan-canvas .dz.filled .dz-p,.plan-canvas .dz:disabled .dz-p{display:none}
+.plan-canvas .dz.filled{background:#fff; border:2px solid var(--bleu)}
+.plan-canvas .dz.cible:not(:disabled),.plan-canvas .dz.over{background:var(--jaune-pale); border:2px solid var(--orange)}
+.plan-canvas .dz:disabled{background:#F2F3F1; cursor:default}
+.plan-canvas .dz.is-ok{background:var(--vert-pale); border:2px solid var(--vert)}
+.plan-canvas .dz.is-ko{background:var(--rouge-pale); border:2px solid var(--rouge)}
+.plan-canvas .dz.is-ko .dz-v{color:var(--rouge); text-decoration:line-through}
+.plan-canvas .dz-a{display:none}
+.plan-canvas .dz.is-ko .dz-a{display:block; color:var(--vert); font-weight:700}
+.plan-canvas .dz.is-ko.filled .dz-a::before{content:"→\\00a0"}
+.plan-canvas .dz-n{--nb:clamp(9px, calc(13 * var(--u)), 13px); position:absolute; left:-.55em; top:-.6em; width:1.75em; height:1.75em;
+  display:flex; align-items:center; justify-content:center; border-radius:50%; background:var(--rouge); color:#fff;
+  font:700 var(--nb)/1 var(--f-texte); box-shadow:0 0 0 1.5px #fff}
+/* le repère déborde dans le coin de la case : la première ligne du texte s'en écarte */
+.plan-canvas .dz-n+.dz-in::before{content:""; float:left; width:calc(1.15 * clamp(9px, calc(13 * var(--u)), 13px)); height:calc(1.1 * clamp(9px, calc(13 * var(--u)), 13px))}
+/* bandeau : les étiquettes de la partie et ses boutons « Valider », collés au bas de l'écran tant que le schéma est visible */
+.plan-tray{position:sticky; bottom:var(--banner); z-index:6; display:grid; gap:3px; padding:6px 10px 7px; background:var(--bleu-pale);
+  border:1px solid var(--trait-fin); border-top:2px solid var(--bleu); box-shadow:0 -5px 12px rgba(28,37,48,.13)}
+.plan-tray .bank{margin:0; padding:2px 0; gap:5px; background:none; border:0; max-width:none}
+.plan-tray .bank+.bank{border-top:1px dashed #C3D3E8; padding-top:4px}
+.plan-tray .etq{font-size:.84rem; padding:3px 9px}
+.plan-val{display:flex; flex-wrap:wrap; align-items:center; gap:5px; padding-top:5px; border-top:1px solid #C3D3E8}
+.btn-plan{font:700 .86rem var(--f-titre); color:#fff; background:var(--encre); border:0; border-radius:2px; padding:5px 11px; cursor:pointer}
+.btn-plan small{font:600 .78rem var(--f-texte); opacity:.85}
+.btn-plan:hover:not(:disabled){background:#2E3B47}
+.btn-plan:disabled{cursor:default}
+.btn-plan.ok{background:var(--vert)} .btn-plan.moy{background:var(--orange)} .btn-plan.ko{background:var(--rouge)}
+.plan-msg{margin:2px 0 0; font-size:.86rem; color:var(--encre)}
+.plan-msg:empty{display:none}
+/* une question posée sur le schéma ne garde sous la figure que sa correction, une fois validée */
+.grp.sur-plan:not(.fait){display:none}
+.grp.sur-plan .q-hint,.grp.sur-plan .grp-fields,.grp.sur-plan .btn-fast{display:none}
+@media (max-width:700px),(max-height:560px){ .plan-tray{position:static; box-shadow:none} }
 
 /* ---------- accueil, cours et retour (d'après le dépôt RDM) ---------- */
 a.btn{display:inline-flex; align-items:center; gap:8px; text-decoration:none}
@@ -3011,6 +3170,8 @@ __COURS_CSS__
   .grp-l{break-inside:avoid}
   .bank{background:none; padding:4px 0; border:0} .etq{border-width:1px; padding:1px 6px; font-size:8.5pt}
   .dz{min-height:0; padding:3px 8px} .dz:not(.filled) .dz-v{visibility:hidden}
+  .plan-tray{display:none} .plan-scroll{overflow:visible} .plan-canvas{min-width:0} .plan-fig{break-inside:avoid}
+  .plan-canvas .dz{padding:1px 3px} .plan-canvas .dz-p{visibility:hidden}
 }
 </style>"""
 
@@ -3048,19 +3209,34 @@ DATA_RE = re.compile(r"data:image/(?:png|jpeg);base64,[A-Za-z0-9+/=]+")
 
 
 ETIQUETTES_JS = r"""<script>/* Étiquettes : glisser une étiquette sur une case, ou la toucher puis toucher la case.
-   La case garde le champ (masqué) que lit le moteur du gabarit ; on y écrit l'étiquette et on signale « input ». */
+   La case garde le champ (masqué) que lit le moteur du gabarit ; on y écrit l'étiquette et on signale « input ».
+   Chaque case porte la liste d'étiquettes qu'elle accepte (data-bank). Exercice 1.1 : les cases sont posées sur les
+   schémas ; sous chaque schéma, un bandeau réunit les étiquettes de la partie et des boutons qui relaient les
+   boutons « Valider » des questions ; la case du schéma reprend l'état (juste, faux) que le moteur donne au champ. */
 (function () {
   "use strict";
   var parts = document.getElementById("parts");
-  if (!parts || !parts.querySelector(".fast-q .bank")) return;
+  if (!parts || !parts.querySelector(".bank")) return;
   var sel = null, drag = null;
-  function grp(el) { return el.closest(".fast-q"); }
-  function inp(dz) { return dz.parentNode.querySelector("input"); }
-  function locked(el) { return !!el.closest(".fast-q").querySelector(".btn-fast:disabled") || document.body.classList.contains("graded"); }
+  function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+  function inp(dz) { return document.getElementById("in-" + dz.id.slice(3)); }
+  function banque(el) { return el.classList.contains("dz") ? document.getElementById(el.dataset.bank) : el.closest(".bank"); }
+  function cases(bk) { return $$('.dz[data-bank="' + bk.id + '"]'); }
+  function msgDe(el) { var pl = el.closest(".plan"); return pl ? pl.querySelector(".plan-msg") : el.closest(".fast-q").querySelector(".q-msg"); }
   function choisir(b) {
-    if (sel) { sel.setAttribute("aria-pressed", "false"); grp(sel).classList.remove("picking"); }
+    if (sel) { sel.setAttribute("aria-pressed", "false"); cases(banque(sel)).forEach(function (d) { d.classList.remove("cible"); }); }
     sel = b && b !== sel ? b : null;
-    if (sel) { sel.setAttribute("aria-pressed", "true"); grp(sel).classList.add("picking"); }
+    if (sel) { sel.setAttribute("aria-pressed", "true"); cases(banque(sel)).forEach(function (d) { if (!d.disabled) d.classList.add("cible"); }); }
+  }
+  /* case d'un schéma : le texte doit tenir dans le bloc dessiné ; on réduit la police s'il le faut */
+  function ajuster(dz) {
+    if (!dz.classList.contains("dz-f")) return;
+    var c = dz.querySelector(".dz-in"), t, min;
+    function deborde() { return c.offsetHeight > dz.clientHeight - 2 || c.scrollWidth > c.clientWidth + 1; }
+    dz.style.fontSize = ""; dz.classList.remove("coupe");
+    t = parseFloat(getComputedStyle(dz).fontSize); min = t * 0.7;
+    while (deborde() && t > min) { t -= 0.5; dz.style.fontSize = t + "px"; }
+    if (deborde()) dz.classList.add("coupe");  /* en dernier recours, un mot trop long se coupe */
   }
   function poser(dz, v) {
     var i = inp(dz);
@@ -3069,37 +3245,52 @@ ETIQUETTES_JS = r"""<script>/* Étiquettes : glisser une étiquette sur une case
     dz.classList.toggle("filled", !!v);
     dz.querySelector(".dz-v").textContent = v || "case vide";
     dz.draggable = !!v;
+    ajuster(dz);
+    msgDe(dz).textContent = "";
     i.dispatchEvent(new Event("input", { bubbles: true }));
   }
   parts.addEventListener("click", function (e) {
-    var b = e.target.closest(".etq"), dz = e.target.closest(".dz");
-    if (b && !b.disabled) { choisir(b); return; }
+    var b = e.target.closest(".etq"), dz = e.target.closest(".dz"), v = e.target.closest(".btn-plan");
+    if (v) { valider(v); return; }
+    if (b && !b.disabled) {
+      choisir(b);
+      if (sel && e.detail === 0) {  /* au clavier : on passe à la première case libre qui accepte l'étiquette */
+        var libres = cases(banque(sel)).filter(function (d) { return !d.disabled; });
+        var d = libres.filter(function (x) { return !inp(x).value; })[0] || libres[0];
+        if (d) d.focus();
+      }
+      return;
+    }
     if (!dz || dz.disabled) return;
-    if (sel && grp(sel) === grp(dz)) { poser(dz, sel.textContent); choisir(null); dz.focus(); }
+    if (sel && banque(sel) === banque(dz)) { poser(dz, sel.textContent); choisir(null); dz.focus(); }
+    else if (sel) msgDe(dz).textContent = "Cette case attend une étiquette de la liste « " + banque(dz).querySelector(".bank-t").textContent + " ».";
     else if (inp(dz).value) poser(dz, "");
-    else { choisir(null); grp(dz).querySelector(".q-msg").textContent = "Choisis d'abord une étiquette dans la liste, puis touche la case."; }
+    else msgDe(dz).textContent = "Choisis d'abord une étiquette dans la liste, puis touche la case.";
   });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && sel) choisir(null); });
   parts.addEventListener("dragstart", function (e) {
     var b = e.target.closest && e.target.closest(".etq, .dz");
-    if (!b || b.disabled || locked(b)) { e.preventDefault(); return; }
-    var v = b.classList.contains("dz") ? inp(b).value : b.textContent;
-    if (!v) { e.preventDefault(); return; }
-    drag = { v: v, from: b.classList.contains("dz") ? b : null, g: grp(b), el: b };
+    if (!b || b.disabled) { e.preventDefault(); return; }
+    var surCase = b.classList.contains("dz"), v = surCase ? inp(b).value : b.textContent;
+    if (!v || (surCase && inp(b).disabled)) { e.preventDefault(); return; }
     choisir(null);
+    drag = { v: v, from: surCase ? b : null, bk: banque(b), el: b };
     b.classList.add("is-drag");
+    cases(drag.bk).forEach(function (d) { if (!d.disabled && d !== b) d.classList.add("cible"); });
     e.dataTransfer.effectAllowed = "copyMove";
     e.dataTransfer.setData("text/plain", v);
   });
   parts.addEventListener("dragend", function () {
     if (drag) drag.el.classList.remove("is-drag");
-    Array.prototype.forEach.call(parts.querySelectorAll(".dz.over"), function (d) { d.classList.remove("over"); });
+    $$(".dz.over, .dz.cible", parts).forEach(function (d) { d.classList.remove("over", "cible"); });
     drag = null;
   });
   function cible(e) {
     if (!drag) return null;
     var t = e.target.closest && e.target.closest(".dz, .bank");
-    return t && grp(t) === drag.g && !(t.classList.contains("dz") && t.disabled) ? t : null;
+    if (!t) return null;
+    if (t.classList.contains("bank")) return t === drag.bk ? t : null;
+    return !t.disabled && banque(t) === drag.bk ? t : null;
   }
   parts.addEventListener("dragover", function (e) {
     var t = cible(e);
@@ -3123,19 +3314,62 @@ ETIQUETTES_JS = r"""<script>/* Étiquettes : glisser une étiquette sur une case
     poser(t, drag.v);
     if (drag.from) poser(drag.from, ancien);  /* glisser d'une case à l'autre : les deux étiquettes s'échangent */
   });
-  /* une case validée (entraînement) ou corrigée (examen) est verrouillée par le moteur : ses commandes aussi */
+
+  /* bandeau du schéma : chaque bouton relaie le bouton « Valider » de sa question, puis en reprend l'état */
+  function valider(v) {
+    var g = document.getElementById(v.dataset.g), btn = g.querySelector(".btn-fast");
+    if (btn.disabled) return;
+    btn.click();
+    relayer(g, true);
+  }
+  function relayer(g, clic) {
+    var v = document.querySelector('.btn-plan[data-g="' + g.id + '"]');
+    if (!v) return;
+    var btn = g.querySelector(".btn-fast"), m = v.closest(".plan").querySelector(".plan-msg"), lab = v.dataset.label;
+    var msg = g.querySelector(".q-msg").textContent;
+    if (btn.disabled) {
+      var n = $$(".sol", g).length, ok = $$(".sol.is-ok", g).length;
+      g.classList.add("fait");
+      v.disabled = true;
+      v.innerHTML = lab + " <small>· " + ok + "/" + n + "</small>";
+      v.classList.add(ok === n ? "ok" : ok ? "moy" : "ko");
+      if (clic) m.textContent = lab + " : " + g.querySelector(".q-status").textContent + ". La correction s'affiche sous le schéma.";
+    } else {
+      if (btn.dataset.confirm) v.innerHTML = lab + " <small>· valider quand même</small>";
+      if (clic && msg) m.textContent = lab + " : " + msg;
+    }
+  }
+  /* une case validée (entraînement) ou corrigée (examen) est verrouillée par le moteur : la case du schéma reprend
+     son état, et la liste d'étiquettes se verrouille quand toutes ses cases le sont */
+  function marquer(i) {
+    var dz = document.getElementById("dz-" + i.id.slice(3)), sol = i.closest(".sol");
+    if (!dz) return;
+    dz.disabled = true; dz.draggable = false; dz.classList.remove("cible");
+    if (dz.classList.contains("dz-f")) {
+      dz.classList.toggle("is-ok", sol.classList.contains("is-ok"));
+      dz.classList.toggle("is-ko", sol.classList.contains("is-ko"));
+      dz.querySelector(".dz-a").textContent = sol.classList.contains("is-ko") ? dz.dataset.attendu : "";
+      ajuster(dz);
+    }
+    var bk = banque(dz);
+    if (cases(bk).every(function (d) { return d.disabled; })) {
+      $$(".etq", bk).forEach(function (b) { b.disabled = true; b.draggable = false; });
+      if (sel && banque(sel) === bk) choisir(null);
+    }
+  }
   new MutationObserver(function (ms) {
     ms.forEach(function (m) {
-      var i = m.target, dz = i.tagName === "INPUT" && i.parentNode.querySelector(".dz");
-      if (!dz || !i.disabled || dz.disabled) return;  /* ne réagir qu'aux champs : sinon la boucle s'entretient */
-      dz.disabled = true; dz.draggable = false;
-      var g = grp(i);
-      if (!g.querySelector(".sol input:not(:disabled)")) {
-        Array.prototype.forEach.call(g.querySelectorAll(".etq"), function (b) { b.disabled = true; b.draggable = false; });
-        if (sel && grp(sel) === g) choisir(null);
-      }
+      var t = m.target;  /* ne réagir qu'aux champs et aux boutons du moteur : sinon la boucle s'entretient */
+      if (!t.disabled) return;
+      if (t.tagName === "INPUT") marquer(t);
+      else if (t.classList.contains("btn-fast")) relayer(t.closest(".fast-q"), false);
     });
   }).observe(parts, { subtree: true, attributes: true, attributeFilter: ["disabled"] });
+  /* le schéma change de taille (fenêtre, panneau des documents) : les textes des cases s'y réajustent */
+  if (window.ResizeObserver) {
+    var ro = new ResizeObserver(function (es) { es.forEach(function (x) { $$(".dz-f.filled, .dz-f:disabled", x.target).forEach(ajuster); }); });
+    $$(".plan-canvas", parts).forEach(function (c) { ro.observe(c); });
+  }
 })();
 </script>"""
 

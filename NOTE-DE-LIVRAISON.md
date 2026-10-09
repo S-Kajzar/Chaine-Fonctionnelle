@@ -148,6 +148,23 @@ géothermique, portail automatisé ; 14 questions, 57 champs).
   plusieurs fois ; glisser une case sur une autre échange leurs étiquettes ; ramener une étiquette dans la liste ou
   toucher une case remplie la vide. La case garde, masqué, le champ que lit le moteur du gabarit : correction, modes
   entraînement et examen, impression et notes sont inchangés.
+- **Les réponses se glissent directement sur les schémas** (figures 2, 4, 6 et 8) : chaque case numérotée en rouge
+  est une case à remplir, posée sur son bloc. Pour ne pas faire défiler la page d'une question à l'autre, chaque
+  partie réunit, autour de son schéma, les énoncés de ses questions (au-dessus), puis un **bandeau** avec ses listes
+  d'étiquettes et un bouton « Valider » par question ; ce bandeau reste collé au bas de l'écran tant que le schéma est
+  visible (sur téléphone ou sur un écran très bas, il reste sous la figure). Les questions qui utilisent les mêmes
+  étiquettes partagent leur liste (partie 1 : « Fonctions » pour Q1.1 et Q1.2) ; une étiquette touchée éclaire les
+  cases qui l'acceptent, une case d'une autre liste la refuse. Une fois la question validée, le schéma montre les
+  cases justes en vert, les fausses en rouge avec l'étiquette attendue, et la correction détaillée s'affiche sous le
+  schéma ; en examen, tout apparaît à la remise. Le texte d'une étiquette longue se réduit pour tenir dans sa case.
+  Seule la question 3.1 (groupe fonctionnel de neuf composants, qui ne porte pas sur le schéma) garde ses cases sous
+  son énoncé.
+- **Schémas redessinés** : les figures 2, 6 et 8 d'origine sont des captures dont les cases, trop petites, ne peuvent
+  pas recevoir une étiquette. Elles sont redessinées en SVG (`src/plans.py`) avec la même organisation (cadres des deux
+  chaînes, cases roses et bleues, flèches rouges et vertes, repères, pictogrammes de l'utilisateur), et des cases
+  plus grandes ; les originaux restent dans `src/images/originaux`. Ascenseur : sous les fonctions 10, 11 et 12,
+  le bloc reçoit aussi le composant qui la réalise (Q1.4, dont l'énoncé désigne désormais ces cases). Figure 4 :
+  les blocs du RAV4 sont un peu plus hauts pour recevoir le nom d'un composant.
 - La note n'est plus « bonnes réponses / 57 × 20 » : comme dans le dépôt RDM, chaque partie est notée sur 20 puis
   pondérée par sa durée ; modes entraînement et examen, chronomètre, impression, récapitulatif.
 - Documents rédigés : **DP1** (rappel de cours de la source et schéma général des deux chaînes) et **DT1** (rôle de
@@ -157,8 +174,8 @@ géothermique, portail automatisé ; 14 questions, 57 champs).
 
 Corrections et décisions :
 - **Schéma de l'ascenseur** : il reprenait les légendes du portail (« Vantail en position initiale / finale ») ; elles
-  deviennent « Usager à l'étage de départ / d'arrivée » (image corrigée par `outils/preparer-images.sh`, l'original
-  reste dans `src/images/originaux`). La démarche de la question Q1.2 le mentionne.
+  deviennent « Usager à l'étage de départ / d'arrivée » sur le schéma redessiné (l'original reste dans
+  `src/images/originaux`). La démarche de la question Q1.2 le mentionne.
 - **Partie 2 : la Toyota Prius devient le Toyota RAV4 hybride** (maquette validée), photo fournie, recadrée, plaque
   d'immatriculation floutée. Les figures 3 et 4 sont redessinées en SVG et « vivantes » (`src/rav4.py`) :
   - figure 3, la motorisation : cinq situations de conduite (arrêt, démarrage, accélération, croisière, freinage) et
@@ -226,17 +243,18 @@ aussi.
 
 ## Points signalés sans modification
 
-- Les figures de l'exercice sont de faible définition (282 à 900 px de large) ; elles sont intégrées telles quelles
-  (PNG quantifiés). La figure 3 du cours (ibd) est coupée en bas, comme dans le Word.
+- Les figures de présentation de l'exercice (ascenseur, chauffage, portail) sont de faible définition (282 à 900 px de
+  large) ; elles sont intégrées telles quelles (PNG quantifiés). La figure 3 du cours (ibd) est coupée en bas, comme dans le Word.
 - Quelques photos des tableaux du Word portent un logo de fabricant ; elles ne sont pas retouchées.
-- Poids : `index.html` 2,5 Mio (1,7 Mio d'images), `formulaire.html` 150 Kio.
+- Poids : `index.html` 2,6 Mio (1,9 Mio d'images), `formulaire.html` 150 Kio.
 
 ## Vérifications effectuées
 
-- `node --test tests/correction.test.js` : 7 tests — configuration (4 parties, 57 cases, 60 min), réponse de référence
+- `node --test tests/correction.test.js` : 8 tests — configuration (4 parties, 57 cases, 60 min), réponse de référence
   juste pour chaque case, 270 formulations d'origine acceptées, confusions et fautes de frappe, aucune fonction
   acceptée à la place d'une autre, saisie vide refusée, étiquettes (la bonne est proposée, les autres de la liste
-  sont refusées).
+  sont refusées), schémas (toutes les cases sauf celles de Q3.1 sont sur les figures ; l'étiquette montrée sur le
+  schéma corrigé est la bonne).
 - `node --test tests/qcm.test.js` : 4 tests — 6 parties, 76 questions, 1 h 20 ; pour chaque question à réponse
   unique, chaque bonne proposition acceptée et toutes les autres refusées (plus de 300 propositions) ; réponses
   multiples exigées complètes et sans intrus ; corrections de la source.
@@ -248,8 +266,9 @@ aussi.
   restitution, trame, octet, défi, ASCII, trois jeux, quiz 10/10, impression, téléphone) ; RAV4 (situations de
   conduite, chaîne synchronisée, version 4 roues motrices, fonctions dévoilées après correction, trajet) ; exercice en entraînement (cases vides, confirmation, verrouillage, 19,7 puis 20,0/20) ; exercice en examen (rien ne
   filtre avant la remise, y compris à l'impression ; remise en deux temps ; chronomètre arrêté ; 18,6/20) ;
-  étiquettes (toucher puis toucher, clavier, glisser-déposer, réutilisation, échange, retour dans la liste, verrouillage
-  après validation, téléphone) ; QCM (choix unique ou multiple, marques et explications, 20/20 en entraînement,
+  étiquettes sur les schémas (toucher puis toucher, cases éclairées, liste partagée, case d'une autre liste qui refuse,
+  clavier, glisser-déposer, réutilisation, échange, retour dans la liste, police réduite pour une étiquette longue,
+  verrouillage après validation, bandeau collé sous le schéma à 1366 × 768, téléphone) ; QCM (choix unique ou multiple, marques et explications, 20/20 en entraînement,
   examen avec réponses vides 2,0/20, figures chargées) ; documents et téléphone ; formulaire (liens vers l'accueil, fiche sans « Vu dans »,
   vues ouvertes depuis l'accueil).
 - Aucune erreur JavaScript dans aucun parcours.

@@ -20,6 +20,7 @@ OUT=src/images
 for f in "$SRC"/ex1-*.png "$SRC"/ce-fig-*.png; do
   b=$(basename "$f")
   [ "$b" = ex1-rav4-schema.png ] && continue  # sert seulement au montage d'accueil
+  case "$b" in ex1-*-chaines.png) continue ;; esac  # schémas à compléter : redessinés en SVG (src/plans.py)
   convert "$f" -background white -alpha remove -alpha off -strip -colors 256 "PNG8:$OUT/$b"
 done
 
@@ -34,14 +35,8 @@ done
 # Photo du RAV4
 convert "$SRC/ex1-rav4.jpg" -resize 900x -quality 78 -strip "$OUT/ex1-rav4.jpg"
 
-# 2. Exercice 1.1, ascenseur : le schéma d'origine reprenait les légendes du portail
-#    (« Vantail en position initiale / finale ») ; elles sont remplacées par la matière d'œuvre de l'ascenseur.
-convert "$SRC/ex1-ascenseur-chaines.png" \
-  -fill '#EAF1DD' -stroke none -draw 'rectangle 700,256 838,296' -draw 'rectangle 700,418 838,458' \
-  -font DejaVu-Sans-Bold -pointsize 11 -fill '#6E9150' -gravity NorthWest \
-  -annotate +722+260 "Usager à l'étage" -annotate +738+276 'de départ' \
-  -annotate +722+422 "Usager à l'étage" -annotate +740+438 "d'arrivée" \
-  -strip -colors 256 "PNG8:$OUT/ex1-ascenseur-chaines.png"
+# 2. Exercice 1.1 : les schémas à compléter (ex1-*-chaines.png) ne sont plus intégrés ; ils sont redessinés en SVG
+#    par src/plans.py, avec des cases assez grandes pour y glisser les étiquettes (les originaux restent la référence).
 
 # 3. Cours « Chaîne d'énergie » : photos et symboles découpés dans les tableaux du Word.
 #    decoupe <tableau> <géométrie> <nom> <fond> : fond = 1 → le fond de la cellule (beige ou orange)

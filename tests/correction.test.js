@@ -157,13 +157,17 @@ test("saisie vide refusée sans être notée", () => {
   for (const id of Object.keys(QCFG)) assert.equal(ok(id, "   "), "invalid", id);
 });
 
-// Étiquettes proposées dans chaque question (lues dans la page) : la réponse de référence en fait partie, et
-// aucune autre étiquette de la liste n'est acceptée, sauf les doubles réponses prévues par la correction.
-const ETIQUETTES = {};
+// Étiquettes proposées à chaque case (lues dans la page : la case nomme sa liste, sous l'énoncé ou dans le bandeau
+// du schéma) : la réponse de référence en fait partie, et aucune autre étiquette de la liste n'est acceptée, sauf
+// les doubles réponses prévues par la correction.
 const unesc = (s) => s.replace(/&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
-for (const m of html.matchAll(/<div class="fast-q grp" id="(\w+)">([\s\S]*?)<div class="fast-foot">/g)) {
-  const bank = [...m[2].matchAll(/class="etq"[^>]*>([^<]*)</g)].map((x) => unesc(x[1]));
-  for (const x of m[2].matchAll(/data-q="(\w+)"/g)) ETIQUETTES[x[1]] = bank;
+const LISTES = {};
+for (const m of html.matchAll(/<div class="bank" id="(bk-[\w-]+)"[^>]*>([\s\S]*?)<\/div>/g))
+  LISTES[m[1]] = [...m[2].matchAll(/class="etq"[^>]*>([^<]*)</g)].map((x) => unesc(x[1]));
+const ETIQUETTES = {}, ATTENDUES = {};
+for (const m of html.matchAll(/<button type="button" class="dz( dz-f)?" id="dz-(\w+)" data-bank="([\w-]+)"(?: data-attendu="([^"]*)")?/g)) {
+  ETIQUETTES[m[2]] = LISTES[m[3]];
+  if (m[1]) ATTENDUES[m[2]] = unesc(m[4]);
 }
 const DOUBLES = { a3_1_5: ["Agir", "Transmettre"] };  // plancher chauffant : Transmettre (Agir accepté)
 
@@ -177,4 +181,13 @@ test("étiquettes : la bonne est proposée, les autres de la liste sont refusée
     const acceptees = bank.filter((b) => ok(id, b) === 1).sort();
     assert.deepEqual(acceptees, DOUBLES[id] || [REP[id]], id);
   }
+});
+
+test("schémas : chaque question des figures 2, 4, 6 et 8 y a ses cases ; le schéma corrigé montre la bonne étiquette", () => {
+  // seule la question 3.1 (groupe fonctionnel de neuf composants) garde ses cases sous l'énoncé
+  const surSchema = Object.keys(QCFG).filter((id) => !id.startsWith("a3_1_"));
+  assert.deepEqual(Object.keys(ATTENDUES).sort(), surSchema.sort());
+  for (const [id, att] of Object.entries(ATTENDUES)) assert.equal(att, REP[id], id);
+  // une liste par sorte d'étiquettes et par partie, partagée par les questions qui l'utilisent
+  assert.deepEqual(Object.keys(LISTES).sort(), ["bk-1-1", "bk-1-2", "bk-1-3", "bk-2-1", "bk-3-1", "bk-4-1", "bk-a3_1"]);
 });
