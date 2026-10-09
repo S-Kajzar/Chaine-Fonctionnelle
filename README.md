@@ -11,7 +11,7 @@ dépendance externe, utilisable hors ligne), publiée par GitHub Pages depuis `i
 | `?ex=cours-chaine-energie` | Cours 2 — Chaîne d'énergie des produits (Niveau 2) : figures animées, 25 fiches de composants, oscilloscope, hacheur, transmissions, ordres de grandeur, énergie, effort et flux, rendements, autonomie, deux jeux, quiz |
 | `?ex=cours-chaine-information` | Cours 3 — Chaîne d'information des produits (Niveau 2) : machine à café animée, blocs internes, laboratoire des capteurs, chaîne d'acquisition, filtre, CAN, programme exécuté pas à pas, optocoupleur, trames, octet, hexadécimal, ASCII, trois jeux, quiz |
 | `?ex=qcm-energie` | QCM 2.1 — Énergie et chaîne d'énergie (Niveau 2) : 6 parties, 76 questions, 1 h 20 |
-| `?ex=chaines-information-energie` | Exercice 1.1 — Chaînes d'information et d'énergie (Niveau 1) : 4 parties, 14 questions, 57 cases à remplir en y glissant des étiquettes, 1 h |
+| `?ex=chaines-information-energie` | Exercice 1.1 — Chaînes d'information et d'énergie (Niveau 1) : 4 parties, 14 questions, 57 cases à remplir en y glissant des étiquettes, posées directement sur les schémas (figures 2, 4, 6 et 8), 1 h |
 | `formulaire.html#formulaire` | formulaire de la chaîne de puissance en carte mentale |
 | `formulaire.html#exercices` | séries d'exercices de calcul à valeurs aléatoires |
 
@@ -20,7 +20,7 @@ Chaque exercice propose le mode entraînement ou le mode examen, avec sa propre 
 parties. Corrections apportées aux contenus d'origine et décisions : [`NOTE-DE-LIVRAISON.md`](NOTE-DE-LIVRAISON.md).
 
 **Ajouter un exercice** : décrire ses parties dans `src/generer.py` (sur le modèle de `PARTS_EX1`, chaque question
-à cases recevant sa liste d'étiquettes comme dans `EX1_ETIQUETTES`), puis l'ajouter à `EXO_DEFS` ; **ajouter une étude de cas** : même chose avec `"etude": True`. La carte apparaît d'elle-même sur
+à cases recevant sa liste d'étiquettes comme dans `EX1_ETIQUETTES`, et ses cases sur un schéma comme dans `EX1_PLANS`), puis l'ajouter à `EXO_DEFS` ; **ajouter une étude de cas** : même chose avec `"etude": True`. La carte apparaît d'elle-même sur
 l'accueil (et remplace l'annonce « En cours d'édition »).
 
 ## Régénérer les pages
@@ -39,9 +39,9 @@ python3 src/generer.py           # écrit index.html et formulaire.html
 ## Tester
 
 ```sh
-node --test tests/correction.test.js                          # moteur de correction : 57 cases, 270 formulations d'origine, étiquettes
+node --test tests/correction.test.js                          # moteur de correction : 57 cases, 270 formulations d'origine, étiquettes, schémas
 node --test tests/qcm.test.js                                 # QCM : bonnes réponses acceptées, toutes les autres refusées
-NODE_PATH=$(npm root -g) node --test tests/navigateur.test.js # accueil, cours, entraînement, examen, étiquettes, documents, formulaire
+NODE_PATH=$(npm root -g) node --test tests/navigateur.test.js # accueil, cours, entraînement, examen, étiquettes sur les schémas, documents, formulaire
 ```
 
 `tests/reponses.js` contient la bonne étiquette de chaque case ; le parcours navigateur vérifie qu'un sujet entièrement
@@ -56,6 +56,7 @@ juste donne 20/20, sans erreur JavaScript.
 | `src/qcm.py`, `src/qcm-energie-source.html` | QCM 2.1 : lecture et corrections de la page fournie (conservée telle quelle), mise aux normes du gabarit |
 | `src/cours_information.py` | cours 3 : contenu, figures SVG, comportement et style |
 | `src/rav4.py` | exercice 1.1, partie 2 : figures animées du Toyota RAV4 hybride (motorisation, chaîne d'énergie) |
+| `src/plans.py` | exercice 1.1 : schémas à compléter de l'ascenseur, du chauffage géothermique et du portail (figures 2, 6, 8), redessinés en SVG avec leurs cases |
 | `src/portail-anime.html` | animation d'origine du portail automatique (source du cours 1) |
 | `src/formulaire-chaine-de-puissance.html` | formulaire d'origine (source de `formulaire.html`) |
 | `src/images/originaux/` | figures d'origine : exercice (`ex1-*`), cours Word (`ce-fig-*`, tableaux `ce-tab-*`) |

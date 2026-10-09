@@ -3,10 +3,12 @@
 Deux figures « vivantes », reprises de la maquette validée :
   - figure 3 : schéma technique de la motorisation, animé selon la situation de conduite (arrêt, démarrage,
     accélération, croisière, freinage), avec la version 4 roues motrices (AWD-i) en option ;
-  - figure 4 : chaîne d'énergie à compléter (repères 1 à 11), dont les blocs s'éclairent au même rythme.
+  - figure 4 : chaîne d'énergie à compléter (repères 1 à 11), dont les blocs s'éclairent au même rythme ; le
+    générateur pose sur ses blocs les cases où l'on glisse les étiquettes (cases(), positions de BLK).
 Les fonctions (Alimenter, Convertir…) des composants ne s'affichent qu'une fois la partie corrigée.
 Toutes les classes et tous les identifiants portent le préfixe « rv- » : le gabarit a déjà des « .modes », « .card »…
 """
+import json
 
 # ------------------------------------------------------------ figure 3 : schéma technique
 TECH_SVG = """<svg class="rv-tech" id="rv-tech" viewBox="0 0 960 520" role="img" aria-label="Schéma de la motorisation hybride du RAV4 : réservoir de carburant, système d'injection, moteur thermique, train épicycloïdal, génératrice, batterie, répartiteur de puissance, moteur électrique, arbre de sortie et pignons de renvoi, réducteur, différentiel et roues motrices">
@@ -129,19 +131,29 @@ def figure_tech():
 </figure>"""
 
 
-def figure_chaine():
-    return """<figure class="rv-fig rv-fig-ch">
-  <svg class="rv-chaine" id="rv-chaine" viewBox="0 0 760 540" role="img" aria-label="Chaîne d'énergie du RAV4 à compléter, cases repérées de 1 à 11 ; le bloc Transmettre — train épicycloïdal est donné">
+# figure 4 : blocs de la chaîne d'énergie (repère → x, y, fonction, composant donné) ; le script les dessine et le
+# générateur pose une case à remplir sous le nom de la fonction de chaque bloc repéré
+BLK = {
+    "1": [300, 20, "ALIMENTER"], "2": [170, 125, "DISTRIBUER"], "3": [300, 125, "CONVERTIR"],
+    "4": [590, 125, "CONVERTIR"], "T": [440, 200, "TRANSMETTRE", "Train épicycloïdal"],
+    "5": [40, 275, "ALIMENTER"], "6": [170, 275, "DISTRIBUER"], "7": [300, 275, "CONVERTIR"],
+    "8": [100, 400, "TRANSMETTRE"], "9": [230, 400, "TRANSMETTRE"], "10": [360, 400, "TRANSMETTRE"],
+    "11": [600, 400, "AGIR"]}
+BLK_W, BLK_H = 114, 84
+CHAINE_W, CHAINE_H = 760, 540
+
+SVG_CHAINE = """<svg class="rv-chaine" id="rv-chaine" viewBox="0 0 760 540" role="img" aria-label="Chaîne d'énergie du RAV4 à compléter, cases repérées de 1 à 11 ; le bloc Transmettre — train épicycloïdal est donné">
     <defs><marker id="rv-fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#1C2530"/></marker></defs>
     <g id="rv-c-tracks"></g><g id="rv-c-flows"></g><g id="rv-c-blocks"></g>
     <text class="rv-mo" x="657" y="350" text-anchor="middle">Matière d'œuvre entrante :</text><text class="rv-mo" x="657" y="364" text-anchor="middle">roues immobiles</text>
-    <path class="rv-arw" d="M657 372 V398" marker-end="url(#rv-fl)"/><path class="rv-arw" d="M657 470 V496" marker-end="url(#rv-fl)"/>
-    <text class="rv-mo" x="657" y="512" text-anchor="middle">Matière d'œuvre sortante :</text><text class="rv-mo" x="657" y="526" text-anchor="middle">roues entraînées</text>
-  </svg>
-  <figcaption>Figure 4 — Chaîne d'énergie à compléter : les 11 cases à remplir sont repérées en rouge. La case
-  <em>Transmettre — train épicycloïdal</em> est donnée. Les blocs en jeu dans la situation choisie sur la figure 3
-  s'éclairent.</figcaption>
-</figure>"""
+    <path class="rv-arw" d="M657 372 V398" marker-end="url(#rv-fl)"/><path class="rv-arw" d="M657 484 V506" marker-end="url(#rv-fl)"/>
+    <text class="rv-mo" x="657" y="521" text-anchor="middle">Matière d'œuvre sortante :</text><text class="rv-mo" x="657" y="535" text-anchor="middle">roues entraînées</text>
+  </svg>"""
+
+
+def cases():
+    """Cases à remplir de la figure 4 : sous le nom de la fonction de chaque bloc repéré (le bloc T est donné)."""
+    return {k: (b[0] + 4, b[1] + 25, BLK_W - 8, BLK_H - 29, "") for k, b in BLK.items() if k != "T"}
 
 
 RAV4_CSS = """
@@ -160,7 +172,6 @@ RAV4_CSS = """
 .rv-prog i{position:absolute; left:0; top:0; bottom:0; width:0; background:var(--jaune)}
 .rv-mode-d{margin:4px 0 8px; min-height:3em; font-size:.95rem}
 .rv-tech,.rv-chaine{width:100%; height:auto; display:block; background:#fff; border:1px solid var(--trait-fin); font-family:var(--f-texte)}
-.rv-chaine{max-width:760px; margin:0 auto}
 .rv-track{fill:none; stroke:#E1E4E1; stroke-linecap:round}
 .rv-flow{fill:none; stroke-linecap:round; opacity:0; transition:opacity .35s}
 .rv-flow.on{opacity:1; animation:rv-couler 1s linear infinite}
@@ -211,14 +222,13 @@ RAV4_CSS = """
 .rv-blk.act rect{fill:#EAF4EE; stroke:var(--vert); stroke-width:2.6}
 .rv-blk .rv-fn{font:700 13px var(--f-titre); fill:var(--encre); letter-spacing:.03em}
 .rv-blk .rv-nm{font-size:12.5px; fill:var(--encre-2)}
-.rv-rep circle{fill:var(--rouge)} .rv-rep text{fill:#fff; font:700 13px var(--f-texte)}
 .rv-arw{fill:none; stroke:var(--encre); stroke-width:1.8}
 .rv-mo{font-size:12px; font-style:italic; fill:var(--encre-2)}
 @media (prefers-reduced-motion:reduce){ .rv-flow.on,.rv-run .rv-spin,.rv-eng-on .rv-cyl,.rv-roll .rv-tread{animation-duration:3s} }
 @media print{ .rv-fig{break-inside:avoid; border:0; padding:0} .rv-flow,.rv-blk.act rect{animation:none} }
 """
 
-RAV4_JS = r"""<script>/* Exercice 1.1, partie 2 : schéma du RAV4 animé et chaîne d'énergie synchronisée */
+RAV4_JS_SOURCE = r"""<script>/* Exercice 1.1, partie 2 : schéma du RAV4 animé et chaîne d'énergie synchronisée */
 (function () {
   "use strict";
   var root = document.getElementById("rv-demo");
@@ -292,23 +302,14 @@ RAV4_JS = r"""<script>/* Exercice 1.1, partie 2 : schéma du RAV4 animé et cha�
     return GRP.length > 0 && GRP.every(function (g) { var b = document.querySelector("#" + g + " .btn-fast"); return b && b.disabled; });
   }
 
-  // figure 4 : chaîne d'énergie (repères 1 à 11)
-  var BLK = {
-    1: [300, 20, "ALIMENTER"], 2: [170, 125, "DISTRIBUER"], 3: [300, 125, "CONVERTIR"], 4: [590, 125, "CONVERTIR"],
-    T: [440, 200, "TRANSMETTRE", "Train épicycloïdal"],
-    5: [40, 275, "ALIMENTER"], 6: [170, 275, "DISTRIBUER"], 7: [300, 275, "CONVERTIR"],
-    8: [100, 400, "TRANSMETTRE"], 9: [230, 400, "TRANSMETTRE"], 10: [360, 400, "TRANSMETTRE"], 11: [600, 400, "AGIR"]
-  };
-  var W = 114, H = 68;
+  // figure 4 : chaîne d'énergie (repères 1 à 11) ; les cases à remplir et leurs repères sont posées par le générateur
+  var BLK = __BLK__;
+  var W = __BLK_W__, H = __BLK_H__;
   Object.keys(BLK).forEach(function (k) {
-    var b = BLK[k], g = el("g", { "class": "rv-blk", id: "rv-b-" + k }, $("#rv-c-blocks")), t;
+    var b = BLK[k], g = el("g", { "class": "rv-blk", id: "rv-b-" + k }, $("#rv-c-blocks"));
     el("rect", { x: b[0], y: b[1], width: W, height: H, rx: 4 }, g);
     el("text", { "class": "rv-fn", x: b[0] + W / 2, y: b[1] + 18, "text-anchor": "middle" }, g).textContent = b[2];
-    if (b[3]) el("text", { "class": "rv-nm", x: b[0] + W / 2, y: b[1] + 42, "text-anchor": "middle" }, g).textContent = b[3];
-    else {
-      t = el("g", { "class": "rv-rep" }, g); el("circle", { cx: b[0] + 18, cy: b[1] + H - 16, r: 11 }, t);
-      el("text", { x: b[0] + 18, y: b[1] + H - 11.5, "text-anchor": "middle" }, t).textContent = k;
-    }
+    if (b[3]) el("text", { "class": "rv-nm", x: b[0] + W / 2, y: b[1] + 50, "text-anchor": "middle" }, g).textContent = b[3];
   });
   function R(k) { return BLK[k][0] + W; } function L(k) { return BLK[k][0]; } function M(k) { return BLK[k][1] + H / 2; }
   var CF = {
@@ -412,3 +413,6 @@ RAV4_JS = r"""<script>/* Exercice 1.1, partie 2 : schéma du RAV4 animé et cha�
   appliquer("ev");
 })();
 </script>"""
+
+RAV4_JS = (RAV4_JS_SOURCE.replace("__BLK__", json.dumps(BLK, ensure_ascii=False))
+           .replace("__BLK_W__", str(BLK_W)).replace("__BLK_H__", str(BLK_H)))
