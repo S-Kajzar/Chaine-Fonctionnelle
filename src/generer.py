@@ -1668,6 +1668,36 @@ FICHES = {
 }
 
 
+# Moteurs : un exemple d'utilisation et ce qui distingue chacun des deux autres
+FICHES_PLUS = {
+    "moteur-cc": (
+        "Lève-vitre et essuie-glace de voiture, petits jouets, perceuse-visseuse d'entrée de gamme.",
+        "Il se branche directement sur du continu (pile, batterie) ; des balais frottent sur un collecteur pour "
+        "inverser le courant dans le rotor. Très simple à commander (vitesse proportionnelle à la tension) et bon "
+        "marché, mais les balais s'usent, font des étincelles et demandent de l'entretien."),
+    "moteur-asynchrone": (
+        "Pompe, ventilateur, compresseur, tapis roulant, machine-outil : c'est le moteur le plus répandu dans "
+        "l'industrie.",
+        "Il fonctionne sur le réseau alternatif, souvent triphasé (400 V) ; sans balais ni aimants, il est très "
+        "robuste et presque sans entretien. Sa vitesse est fixée par la fréquence du réseau (un peu moins de "
+        "1 500 tr/min sur un réseau à 50 Hz pour le modèle courant) : pour la faire varier, il faut un variateur de "
+        "fréquence."),
+    "moteur-brushless": (
+        "Drone, trottinette et vélo électriques (moteur dans la roue), ventilateur d'ordinateur, disque dur.",
+        "Sans balais : un contrôleur électronique alimente ses bobines à tour de rôle, depuis une batterie. Excellent "
+        "rendement, vitesses élevées, silencieux et durable ; en contrepartie, il ne tourne pas sans son électronique "
+        "de commande, plus chère."),
+}
+COMPARE_MOTEURS = [  # (moteur, alimentation, commutation, atouts, limites)
+    ("Courant continu", "Continu (pile, batterie)", "Mécanique : balais et collecteur",
+     "Simple, peu cher, commande facile", "Usure des balais, entretien"),
+    ("Asynchrone", "Alternatif, souvent triphasé", "Aucune : champ tournant du réseau",
+     "Robuste, presque sans entretien", "Vitesse liée au réseau, variateur nécessaire"),
+    ("Brushless", "Continu, via un contrôleur", "Électronique",
+     "Rendement, vitesse, durée de vie", "Contrôleur obligatoire, coût"),
+]
+
+
 def catalogue(cle, titre):
     items = FICHES[cle]
     btns = "".join(f'<button type="button" class="cata-it" data-fiche="{k}" aria-pressed="false">'
@@ -1680,7 +1710,9 @@ def catalogue(cle, titre):
             f'<article class="fiche-c" data-fiche="{k}" hidden><h4>{n}</h4><div class="fc-grid">'
             f'<figure class="fc-ph"><img alt="{esc(n)}"></figure><dl><dt>Fonction</dt><dd>{fct}</dd>'
             f'<dt>Caractéristiques principales</dt><dd>{car}</dd>'
-            + (f"<dt>Fonctionnement</dt><dd>{fon}</dd>" if fon else "") + f"</dl>{sym}</div></article>")
+            + (f"<dt>Fonctionnement</dt><dd>{fon}</dd>" if fon else "")
+            + (f"<dt>Exemple d'utilisation</dt><dd>{FICHES_PLUS[k][0]}</dd><dt>Ce qui le distingue</dt>"
+               f"<dd>{FICHES_PLUS[k][1]}</dd>" if k in FICHES_PLUS else "") + f"</dl>{sym}</div></article>")
     return (f'<div class="cata" data-cata="{cle}"><p class="cours-defi">À toi : clique sur chaque composant pour '
             f'ouvrir sa fiche.</p><div class="cata-list" role="group" aria-label="{titre}">{btns}</div>'
             f'<div class="cata-fiches">{"".join(fiches)}</div></div>')
@@ -1944,7 +1976,24 @@ def render_cours_energie():
         '<div class="osc-tip" id="ce-osc-tip" hidden></div></div><div class="osc-leg" id="ce-osc-leg"></div>'
         '<div class="simu-out simu-out4" id="ce-osc-out"></div>'
         '<p class="small">Survole le graphique (ou utilise les flèches du clavier) pour lire la tension à chaque '
-        'instant. <button type="button" class="btn ghost" id="ce-osc-replay">Rebalayer l\'écran</button></p></div>')
+        'instant. <button type="button" class="btn ghost" id="ce-osc-replay">Rebalayer l\'écran</button></p></div>'
+        '<div class="simu" id="ce-bat"><h3>Associer des batteries : en série ou en parallèle</h3>'
+        '<div class="ce-bat-ctrl"><div class="ce-bat-mode" role="radiogroup" aria-label="Montage">'
+        '<button type="button" role="radio" aria-checked="true" data-m="serie">En série</button>'
+        '<button type="button" role="radio" aria-checked="false" data-m="para">En parallèle</button></div>'
+        '<label>Nombre de batteries : <output id="ce-bat-n-o">2</output><input type="range" id="ce-bat-n" min="2" max="4" '
+        'step="1" value="2"></label><label>Batterie <select id="ce-bat-t"><option value="12,100" selected>12 V · 100 Ah '
+        "(plomb, camping-car)</option><option value=\"3.7,2.5\">3,7 V · 2,5 Ah (élément lithium-ion)</option>"
+        '<option value="36,7.8">36 V · 7,8 Ah (trottinette)</option></select></label></div>'
+        '<svg class="ce-bat-svg" id="ce-bat-svg" viewBox="0 0 960 300" role="img" aria-labelledby="ce-bat-tt">'
+        '<title id="ce-bat-tt">Batteries reliées en série (le + de l\'une au − de la suivante) ou en parallèle (tous '
+        "les + ensemble, tous les − ensemble), qui alimentent un récepteur ; le courant circule dans les fils.</title></svg>"
+        '<div class="ce-bat-res"><div class="ce-bat-big" id="ce-bat-big"></div><p class="ce-bat-msg" id="ce-bat-msg"></p></div>'
+        '<div class="simu-out"><div><span>Tension totale</span><b id="ce-bat-u"></b></div><div><span>Capacité totale</span>'
+        '<b id="ce-bat-c"></b></div><div><span>Énergie stockée E = U × C</span><b id="ce-bat-e"></b></div></div>'
+        '<p class="small">En série, les tensions s\'additionnent et la capacité reste celle d\'une batterie ; en '
+        "parallèle, les capacités s'additionnent et la tension reste la même. Dans les deux cas, l'énergie stockée est "
+        "multipliée par le nombre de batteries. On n'associe que des batteries identiques.</p></div>")
     s4 = course_section(4, "c2-dist", "Fonction Distribuer",
         "<p>Ce bloc explique comment l'énergie est distribuée à l'actionneur (bloc Convertir). Suivant les "
         "<b>ordres</b> de la chaîne d'information, il distribue l'énergie sous la forme qui convient. Les éléments les "
@@ -1971,6 +2020,12 @@ def render_cours_energie():
     s5 = course_section(5, "c2-conv", "Fonction Convertir",
         "<p>Ce bloc décrit comment l'énergie est convertie d'une forme à une autre dans le système. Les éléments les "
         "plus courants sont les suivants.</p>" + catalogue("conv", "Composants de la fonction Convertir") +
+        "<h3>Trois moteurs électriques : ce qui les différencie</h3>"
+        '<div class="tab-wrap"><table class="t ce-cmp"><thead><tr><th>Moteur</th><th>Alimentation</th><th>Inversion du '
+        "courant dans les bobines</th><th>Atouts</th><th>Limites</th><th>Exemple</th></tr></thead><tbody>" +
+        "".join(f"<tr><th>{m}</th><td>{a}</td><td>{c}</td><td>{p}</td><td>{l}</td><td>{FICHES_PLUS[k][0].split(',')[0]}</td></tr>"
+                for (m, a, c, p, l), k in zip(COMPARE_MOTEURS, ["moteur-cc", "moteur-asynchrone", "moteur-brushless"])) +
+        "</tbody></table></div>" +
         "<h3>Jeu : quelle énergie à la sortie ?</h3><p>Chaque convertisseur reçoit une énergie et en restitue une autre. "
         "Indique l'énergie restituée.</p>" + jeu_html(JEU_CONVERTIR, ENERGIES, "jeu-conv"))
     s6 = course_section(6, "c2-trans", "Fonction Transmettre",
@@ -2785,6 +2840,65 @@ COURS_2_JS = r"""
 
     // ---------- jeux, quiz, impression ----------
     qa(".jeu").forEach(initJeu);
+    // ---------- batteries en série ou en parallèle ----------
+    (function () {
+      var svg = q("#ce-bat-svg"), nIn = q("#ce-bat-n"), tIn = q("#ce-bat-t"), mode = "serie";
+      var LX = 830, LM = 890;  // bornes + et − du récepteur
+      function f(x, d) { return x.toLocaleString("fr-FR", { maximumFractionDigits: d }); }
+      function batterie(g, x, u, c) {
+        mk("rect", { x: x, y: 116, width: 150, height: 104, rx: 10, "class": "ce-bat-corps" }, g);
+        mk("rect", { x: x + 8, y: 108, width: 134, height: 14, rx: 4, "class": "ce-bat-cap" }, g);
+        tx(g, x + 75, 168, f(u, 1) + " V", "ce-bat-t1", "middle");
+        tx(g, x + 75, 192, f(c, 1) + " Ah", "ce-bat-t2", "middle");
+        mk("rect", { x: x + 22, y: 98, width: 16, height: 12, rx: 2, "class": "ce-bat-bm" }, g);
+        mk("rect", { x: x + 112, y: 98, width: 16, height: 12, rx: 2, "class": "ce-bat-bp" }, g);
+        tx(g, x + 30, 140, "−", "ce-bat-sg", "middle"); tx(g, x + 120, 140, "+", "ce-bat-sg p", "middle");
+      }
+      function fil(g, d) { mk("path", { d: d, "class": "ce-bat-fil" }, g); mk("path", { d: d, "class": "ce-bat-cur" }, g); }
+      function dessiner() {
+        while (svg.firstChild) svg.removeChild(svg.firstChild);
+        var n = +nIn.value, t = tIn.value.split(",").map(Number), u = t[0], c = t[1];
+        var U = mode === "serie" ? n * u : u, C = mode === "serie" ? c : n * c;
+        var pas = 640 / n, xs = [];
+        for (var i = 0; i < n; i++) xs.push(Math.round(40 + i * pas + (pas - 150) / 2));
+        var gf = mk("g", {}, svg), gb = mk("g", {}, svg);
+        if (mode === "serie") {
+          for (i = 0; i < n - 1; i++) fil(gf, "M" + (xs[i] + 120) + " 98 V78 H" + (xs[i + 1] + 30) + " V98");
+          fil(gf, "M" + (xs[n - 1] + 120) + " 98 V56 H" + LX + " V128");
+          fil(gf, "M" + LM + " 208 V262 H" + (xs[0] - 22) + " V86 H" + (xs[0] + 30) + " V98");
+        } else {
+          for (i = 0; i < n; i++) {
+            fil(gf, "M" + (xs[i] + 120) + " 98 V56 H" + LX + " V128");
+            fil(gf, "M" + LM + " 208 V262 H" + (xs[i] - 22) + " V86 H" + (xs[i] + 30) + " V98");
+          }
+        }
+        xs.forEach(function (x) { batterie(gb, x, u, c); });
+        // récepteur et voltmètre
+        mk("rect", { x: 800, y: 128, width: 120, height: 80, rx: 10, "class": "ce-bat-rec" }, gb);
+        mk("circle", { cx: 860, cy: 160, r: 18, "class": "ce-bat-lampe" }, gb);
+        mk("path", { d: "M848 160 l6 -8 l6 8 l6 -8 l6 8", "class": "ce-bat-fila" }, gb);
+        tx(gb, 860, 198, "U = " + f(U, 1) + " V", "ce-bat-volt", "middle");
+        tx(gb, 860, 230, "récepteur", "ce-bat-lbl", "middle");
+        q("#ce-bat-n-o").textContent = n;
+        q("#ce-bat-big").innerHTML = '<b class="' + (mode === "serie" ? "up" : "") + '">' + f(U, 1) + " V</b> <b class=\"" +
+          (mode === "para" ? "up" : "") + '">' + f(C, 1) + " Ah</b>";
+        q("#ce-bat-msg").textContent = mode === "serie" ? "En série : la tension augmente (" + n + " × " + f(u, 1) + " V), la capacité ne change pas."
+          : "En parallèle : la capacité augmente (" + n + " × " + f(c, 1) + " Ah), la tension ne change pas.";
+        setOut("ce-bat-u", f(U, 1) + " V"); setOut("ce-bat-c", f(C, 1) + " Ah");
+        var E = U * C;
+        setOut("ce-bat-e", E >= 1000 ? f(E / 1000, 2) + " kWh" : f(E, 1) + " Wh");
+      }
+      qa("#ce-bat .ce-bat-mode button").forEach(function (b) {
+        b.addEventListener("click", function () {
+          mode = b.getAttribute("data-m");
+          qa("#ce-bat .ce-bat-mode button").forEach(function (x) { x.setAttribute("aria-checked", x === b ? "true" : "false"); });
+          dessiner();
+        });
+      });
+      [nIn, tIn].forEach(function (i) { i.addEventListener("input", dessiner); i.addEventListener("change", dessiner); });
+      dessiner();
+    })();
+
     initQuiz(home);
     q(".cours-print").addEventListener("click", function () { window.print(); });
 
@@ -2863,6 +2977,34 @@ body.page-cours-chaine-energie .home-inner{max-width:1180px}
 .fiche-c dt{font:700 .8rem var(--f-titre); color:var(--encre-2); text-transform:uppercase; letter-spacing:.04em; margin-top:6px}
 .fiche-c dt:first-child{margin-top:0}
 .fiche-c dd{margin:2px 0 0}
+.ce-cmp th[scope],.ce-cmp tbody th{text-align:left; white-space:nowrap}
+.ce-cmp{font-size:.9rem}
+#c2-conv .tab-wrap{overflow-x:auto; max-width:100%}
+.ce-bat-ctrl label{flex-wrap:wrap} .ce-bat-ctrl select{max-width:100%; min-width:0}
+/* batteries en série ou en parallèle */
+.ce-bat-ctrl{display:flex; flex-wrap:wrap; gap:10px 22px; align-items:center; margin:0 0 8px}
+.ce-bat-ctrl label{display:flex; gap:8px; align-items:center; font-weight:600; font-size:.92rem}
+.ce-bat-ctrl select{padding:5px; border:1.5px solid var(--encre-2); background:#fff; font:inherit}
+.ce-bat-mode{display:flex; gap:0}
+.ce-bat-mode button{font:700 .95rem var(--f-titre); border:2px solid var(--bleu); background:#fff; color:var(--bleu); padding:7px 16px; cursor:pointer}
+.ce-bat-mode button+button{border-left:0}
+.ce-bat-mode button[aria-checked="true"]{background:var(--bleu); color:#fff}
+.ce-bat-svg{display:block; width:100%; height:auto; background:#fff; border:1px solid var(--trait-fin)}
+.ce-bat-corps{fill:#2B3138; stroke:#14181C; stroke-width:2} .ce-bat-cap{fill:#3D454E}
+.ce-bat-t1{font:800 24px var(--f-titre); fill:#fff} .ce-bat-t2{font:600 15px var(--f-texte); fill:#C9CFD3}
+.ce-bat-bp{fill:#D7262B} .ce-bat-bm{fill:#1C2530; stroke:#8A949B}
+.ce-bat-sg{font:800 20px var(--f-titre); fill:#C9CFD3} .ce-bat-sg.p{fill:#FF6B6B}
+.ce-bat-fil{fill:none; stroke:#46525C; stroke-width:5; stroke-linejoin:round}
+.ce-bat-cur{fill:none; stroke:var(--jaune); stroke-width:4; stroke-linecap:round; stroke-dasharray:3 15; animation:ce-bat-c 1s linear infinite}
+@keyframes ce-bat-c{to{stroke-dashoffset:-36}}
+.ce-bat-rec{fill:#F4F5F2; stroke:var(--encre); stroke-width:2}
+.ce-bat-lampe{fill:#FFE27A; stroke:var(--orange); stroke-width:2} .ce-bat-fila{fill:none; stroke:var(--orange); stroke-width:2}
+.ce-bat-volt{font:700 15px var(--f-titre); fill:var(--encre)} .ce-bat-lbl{font:600 13px var(--f-texte); fill:var(--encre-2); paint-order:stroke; stroke:#fff; stroke-width:5px; stroke-linejoin:round}
+.ce-bat-res{display:flex; flex-wrap:wrap; align-items:center; gap:6px 20px; margin:10px 0 0}
+.ce-bat-big{border:2.5px solid var(--bleu); background:#fff; padding:6px 18px; font:800 1.9rem var(--f-titre); color:var(--encre)}
+.ce-bat-big b{font-weight:800} .ce-bat-big b.up{color:var(--bleu)}
+.ce-bat-msg{margin:0; font-weight:700; color:var(--bleu)}
+@media (prefers-reduced-motion:reduce){ .ce-bat-cur{animation-duration:4s} }
 @media (max-width:900px){ .fc-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} .fiche-c dl{grid-column:1/-1; grid-row:1} }
 @media (max-width:520px){ .fc-grid{grid-template-columns:1fr} }
 /* graphiques et simulateurs */

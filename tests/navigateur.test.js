@@ -149,6 +149,21 @@ test("cours 2 (niveau 2) : figures animées, fiches, oscilloscope, hacheur, tran
   assert.equal(await page.locator(".cours-sec").count(), 10);
   // pas de tableau de compétences : le cours ne vise pas une seule filière
   assert.doesNotMatch(await text(page, ".c2-fiche"), /Compétences|CO\d\.\d/);
+  // batteries : en série la tension s'additionne, en parallèle la capacité
+  assert.equal(await text(page, "#ce-bat-u"), "24 V");
+  assert.equal(await text(page, "#ce-bat-c"), "100 Ah");
+  await page.click("#ce-bat [data-m=para]");
+  await set(page, "#ce-bat-n", "4");
+  assert.equal(await text(page, "#ce-bat-u"), "12 V");
+  assert.equal(await text(page, "#ce-bat-c"), "400 Ah");
+  assert.equal(await text(page, "#ce-bat-e"), "4,8 kWh");
+  assert.equal(await page.locator("#ce-bat-svg .ce-bat-corps").count(), 4);
+  await page.selectOption("#ce-bat-t", "3.7,2.5");
+  await page.click("#ce-bat [data-m=serie]");
+  assert.equal(await text(page, "#ce-bat-u"), "14,8 V");
+  // moteurs : exemple d'utilisation et différences
+  assert.match(await page.locator(".fiche-c[data-fiche='moteur-brushless']").textContent(), /Exemple d'utilisation[\s\S]*Drone[\s\S]*Ce qui le distingue[\s\S]*contrôleur/);
+  assert.equal(await page.locator(".ce-cmp tbody tr").count(), 3);
   // figure 1 : un flux s'anime ; figure 2 : un bloc explique son rôle
   await page.click(".ce-f1-b[data-f='f1-commandes']");
   assert.match(await text(page, "#ce-f1-txt"), /commande la chaîne de puissance/);
