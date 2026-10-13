@@ -866,7 +866,11 @@ body.page-cours-chaine-energie .home-inner{max-width:1180px}
 .ce-bat-bp{fill:#D7262B} .ce-bat-bm{fill:#1C2530; stroke:#8A949B}
 .ce-bat-sg{font:800 20px var(--f-titre); fill:#C9CFD3} .ce-bat-sg.p{fill:#FF6B6B}
 .ce-bat-fil{fill:none; stroke:#46525C; stroke-width:5; stroke-linejoin:round}
-.ce-bat-cur{fill:none; stroke:var(--jaune); stroke-width:4; stroke-linecap:round; stroke-dasharray:3 15; animation:ce-bat-c 1s linear infinite}
+.ce-bat-fil.p{stroke:#D7262B} .ce-bat-fil.m{stroke:#1C2530} .ce-bat-fil.n{stroke:#8A5A2B}
+.ce-bat-nd.p{fill:#D7262B} .ce-bat-nd.m{fill:#1C2530}
+.ce-bat-bus{font:700 14px var(--f-titre); paint-order:stroke; stroke:#fff; stroke-width:5px; stroke-linejoin:round}
+.ce-bat-bus.p{fill:#D7262B} .ce-bat-bus.m{fill:#1C2530}
+.ce-bat-cur{fill:none; stroke:var(--jaune); stroke-width:3; stroke-linecap:round; stroke-dasharray:3 15; animation:ce-bat-c 1s linear infinite}
 @keyframes ce-bat-c{to{stroke-dashoffset:-36}}
 .ce-bat-rec{fill:#F4F5F2; stroke:var(--encre); stroke-width:2}
 .ce-bat-lampe{fill:#FFE27A; stroke:var(--orange); stroke-width:2} .ce-bat-fila{fill:none; stroke:var(--orange); stroke-width:2}
@@ -4196,32 +4200,42 @@ filaire ou sans fil, en suivant un protocole.</title>
       var svg = q("#ce-bat-svg"), nIn = q("#ce-bat-n"), tIn = q("#ce-bat-t"), mode = "serie";
       var LX = 830, LM = 890;  // bornes + et − du récepteur
       function f(x, d) { return x.toLocaleString("fr-FR", { maximumFractionDigits: d }); }
+      // batterie : borne − en haut à gauche, borne + en haut à droite (centres x + 32 et x + 114)
       function batterie(g, x, u, c) {
-        mk("rect", { x: x, y: 116, width: 150, height: 104, rx: 10, "class": "ce-bat-corps" }, g);
-        mk("rect", { x: x + 8, y: 108, width: 134, height: 14, rx: 4, "class": "ce-bat-cap" }, g);
-        tx(g, x + 75, 168, f(u, 1) + " V", "ce-bat-t1", "middle");
-        tx(g, x + 75, 192, f(c, 1) + " Ah", "ce-bat-t2", "middle");
-        mk("rect", { x: x + 22, y: 98, width: 16, height: 12, rx: 2, "class": "ce-bat-bm" }, g);
-        mk("rect", { x: x + 112, y: 98, width: 16, height: 12, rx: 2, "class": "ce-bat-bp" }, g);
-        tx(g, x + 30, 140, "−", "ce-bat-sg", "middle"); tx(g, x + 120, 140, "+", "ce-bat-sg p", "middle");
+        mk("rect", { x: x, y: 118, width: 146, height: 104, rx: 10, "class": "ce-bat-corps" }, g);
+        mk("rect", { x: x + 8, y: 110, width: 130, height: 14, rx: 4, "class": "ce-bat-cap" }, g);
+        tx(g, x + 73, 170, f(u, 1) + " V", "ce-bat-t1", "middle");
+        tx(g, x + 73, 194, f(c, 1) + " Ah", "ce-bat-t2", "middle");
+        mk("rect", { x: x + 24, y: 98, width: 16, height: 14, rx: 2, "class": "ce-bat-bm" }, g);
+        mk("rect", { x: x + 106, y: 98, width: 16, height: 14, rx: 2, "class": "ce-bat-bp" }, g);
+        tx(g, x + 32, 144, "−", "ce-bat-sg", "middle"); tx(g, x + 114, 144, "+", "ce-bat-sg p", "middle");
       }
-      function fil(g, d) { mk("path", { d: d, "class": "ce-bat-fil" }, g); mk("path", { d: d, "class": "ce-bat-cur" }, g); }
+      // fil : « p » côté +, « m » côté −, « n » liaison entre batteries ; le courant (pointillés jaunes) suit le fil
+      function fil(g, d, k) { mk("path", { d: d, "class": "ce-bat-fil " + k }, g); mk("path", { d: d, "class": "ce-bat-cur" }, g); }
+      function noeud(g, x, y, k) { mk("circle", { cx: x, cy: y, r: 6, "class": "ce-bat-nd " + k }, g); }
       function dessiner() {
         while (svg.firstChild) svg.removeChild(svg.firstChild);
         var n = +nIn.value, t = tIn.value.split(",").map(Number), u = t[0], c = t[1];
         var U = mode === "serie" ? n * u : u, C = mode === "serie" ? c : n * c;
-        var pas = 640 / n, xs = [];
-        for (var i = 0; i < n; i++) xs.push(Math.round(40 + i * pas + (pas - 150) / 2));
-        var gf = mk("g", {}, svg), gb = mk("g", {}, svg);
+        var pas = 700 / n, xs = [];
+        for (var i = 0; i < n; i++) xs.push(Math.round(40 + i * pas + (pas - 146) / 2));
+        var gf = mk("g", {}, svg), gb = mk("g", {}, svg), gn = mk("g", {}, svg);
         if (mode === "serie") {
-          for (i = 0; i < n - 1; i++) fil(gf, "M" + (xs[i] + 120) + " 98 V78 H" + (xs[i + 1] + 30) + " V98");
-          fil(gf, "M" + (xs[n - 1] + 120) + " 98 V56 H" + LX + " V128");
-          fil(gf, "M" + LM + " 208 V262 H" + (xs[0] - 22) + " V86 H" + (xs[0] + 30) + " V98");
+          // le + de chaque batterie va au − de la suivante
+          for (i = 0; i < n - 1; i++) fil(gf, "M" + (xs[i] + 114) + " 98 V78 H" + (xs[i + 1] + 32) + " V98", "n");
+          fil(gf, "M" + (xs[n - 1] + 114) + " 98 V52 H" + LX + " V128", "p");
+          fil(gf, "M" + LM + " 208 V266 H" + (xs[0] - 18) + " V84 H" + (xs[0] + 32) + " V98", "m");
+          tx(gn, xs[n - 1] + 124, 46, "+ total", "ce-bat-bus p", "start");
+          tx(gn, xs[0] - 10, 288, "− total", "ce-bat-bus m", "start");
         } else {
+          // fil rouge : toutes les bornes + reliées en haut ; fil noir : toutes les bornes − reliées en bas
           for (i = 0; i < n; i++) {
-            fil(gf, "M" + (xs[i] + 120) + " 98 V56 H" + LX + " V128");
-            fil(gf, "M" + LM + " 208 V262 H" + (xs[i] - 22) + " V86 H" + (xs[i] + 30) + " V98");
+            fil(gf, "M" + (xs[i] + 114) + " 98 V52 H" + LX + " V128", "p");
+            fil(gf, "M" + LM + " 208 V266 H" + (xs[i] - 16) + " V86 H" + (xs[i] + 32) + " V98", "m");
+            noeud(gn, xs[i] + 114, 52, "p"); noeud(gn, xs[i] - 16, 266, "m");
           }
+          tx(gn, xs[0] + 100, 40, "toutes les bornes + reliées", "ce-bat-bus p", "start");
+          tx(gn, xs[0] - 16, 290, "toutes les bornes − reliées", "ce-bat-bus m", "start");
         }
         xs.forEach(function (x) { batterie(gb, x, u, c); });
         // récepteur et voltmètre
@@ -4229,7 +4243,7 @@ filaire ou sans fil, en suivant un protocole.</title>
         mk("circle", { cx: 860, cy: 160, r: 18, "class": "ce-bat-lampe" }, gb);
         mk("path", { d: "M848 160 l6 -8 l6 8 l6 -8 l6 8", "class": "ce-bat-fila" }, gb);
         tx(gb, 860, 198, "U = " + f(U, 1) + " V", "ce-bat-volt", "middle");
-        tx(gb, 860, 230, "récepteur", "ce-bat-lbl", "middle");
+        tx(gb, 848, 232, "récepteur", "ce-bat-lbl", "middle");
         q("#ce-bat-n-o").textContent = n;
         q("#ce-bat-big").innerHTML = '<b class="' + (mode === "serie" ? "up" : "") + '">' + f(U, 1) + " V</b> <b class=\"" +
           (mode === "para" ? "up" : "") + '">' + f(C, 1) + " Ah</b>";
