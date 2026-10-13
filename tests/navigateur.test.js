@@ -161,6 +161,13 @@ test("cours 2 (niveau 2) : figures animées, fiches, oscilloscope, hacheur, tran
   await page.selectOption("#ce-bat-t", "3.7,2.5");
   await page.click("#ce-bat [data-m=serie]");
   assert.equal(await text(page, "#ce-bat-u"), "14,8 V");
+  // pastille « Explication » : l'analogie des pompes s'ouvre et se referme
+  assert.ok(!(await page.isVisible("#ce-bat-expl")));
+  await page.click("#ce-bat-expl-b");
+  assert.ok(await page.isVisible("#ce-bat-expl .pp-svg"));
+  assert.match(await text(page, "#ce-bat-expl"), /En série, les tensions s'additionnent[\s\S]*En parallèle, les capacités s'additionnent[\s\S]*l'énergie double/);
+  await page.click("#ce-bat-expl-b");
+  assert.ok(!(await page.isVisible("#ce-bat-expl")));
   // moteurs : exemple d'utilisation et différences
   assert.match(await page.locator(".fiche-c[data-fiche='moteur-brushless']").textContent(), /Exemple d'utilisation[\s\S]*Drone[\s\S]*Ce qui le distingue[\s\S]*contrôleur/);
   assert.equal(await page.locator(".ce-cmp tbody tr").count(), 3);
