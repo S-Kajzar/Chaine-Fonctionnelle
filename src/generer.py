@@ -1931,23 +1931,23 @@ en parallèle, deux pompes côte à côte montent l'eau à la même hauteur, cha
 <text x="690" y="24" text-anchor="middle" class="pp-h">En parallèle : les pompes sont côte à côte</text>
 <line x1="460" y1="40" x2="460" y2="345" class="pp-sep"/>
 <!-- série -->
-<rect x="70" y="300" width="330" height="36" rx="4" class="pp-bac"/><rect x="72" y="310" width="326" height="24" class="pp-eau"/>
+<rect x="70" y="300" width="330" height="36" rx="4" class="pp-cuve"/><rect x="72" y="310" width="326" height="24" class="pp-eau"/>
 <text x="235" y="352" text-anchor="middle" class="pp-t">réserve : 100 Ah</text>
 {eau("M140 310 V246")}{pompe(140, 224)}{eau("M140 202 V176")}
-<rect x="100" y="160" width="90" height="16" rx="3" class="pp-bac"/><rect x="102" y="164" width="86" height="10" class="pp-eau"/>
+<rect x="100" y="160" width="90" height="16" rx="3" class="pp-cuve"/><rect x="102" y="164" width="86" height="10" class="pp-eau"/>
 {eau("M140 168 V128")}{pompe(140, 106)}{eau("M140 84 V64")}
-<rect x="100" y="48" width="200" height="16" rx="3" class="pp-bac"/><rect x="102" y="52" width="196" height="10" class="pp-eau"/>
+<rect x="100" y="48" width="200" height="16" rx="3" class="pp-cuve"/><rect x="102" y="52" width="196" height="10" class="pp-eau"/>
 {eau("M300 56 H330 V170")}{roue(330, 196, 1)}{eau("M330 222 V300")}
 {cote(84, 304, 170, "12 V")}{cote(84, 166, 58, "12 V")}
 <text x="196" y="226" class="pp-t">pompe 1</text><text x="196" y="110" class="pp-t">pompe 2</text>
 <text x="200" y="150" class="pp-big">= 24 V</text>
 <!-- parallèle -->
-<rect x="500" y="300" width="150" height="36" rx="4" class="pp-bac"/><rect x="502" y="310" width="146" height="24" class="pp-eau"/>
-<rect x="670" y="300" width="150" height="36" rx="4" class="pp-bac"/><rect x="672" y="310" width="146" height="24" class="pp-eau"/>
+<rect x="500" y="300" width="150" height="36" rx="4" class="pp-cuve"/><rect x="502" y="310" width="146" height="24" class="pp-eau"/>
+<rect x="670" y="300" width="150" height="36" rx="4" class="pp-cuve"/><rect x="672" y="310" width="146" height="24" class="pp-eau"/>
 <text x="660" y="352" text-anchor="middle" class="pp-t">réserves : 100 Ah + 100 Ah = 200 Ah</text>
 {eau("M575 310 V246")}{pompe(575, 224)}{eau("M575 202 V176")}
 {eau("M745 310 V246")}{pompe(745, 224)}{eau("M745 202 V176")}
-<rect x="540" y="160" width="250" height="16" rx="3" class="pp-bac"/><rect x="542" y="164" width="246" height="10" class="pp-eau"/>
+<rect x="540" y="160" width="250" height="16" rx="3" class="pp-cuve"/><rect x="542" y="164" width="246" height="10" class="pp-eau"/>
 {eau("M790 168 H860 V170")}{roue(860, 196, -1)}{eau("M860 222 V318 H822")}
 {cote(520, 304, 170, "12 V")}
 <text x="600" y="140" class="pp-big">12 V</text>
@@ -3104,7 +3104,7 @@ body.page-cours-chaine-energie .home-inner{max-width:1180px}
 .pp-h{font:700 16px var(--f-titre); fill:var(--encre)} .pp-t{font:600 13px var(--f-texte); fill:var(--encre-2)}
 .pp-v{font:700 15px var(--f-titre); fill:var(--encre)} .pp-big{font:800 26px var(--f-titre); fill:var(--bleu)}
 .pp-sep{stroke:var(--trait); stroke-dasharray:6 6}
-.pp-bac{fill:#fff; stroke:#46525C; stroke-width:2} .pp-eau{fill:#8EC3F0}
+.pp-cuve{fill:#fff; stroke:#46525C; stroke-width:2} .pp-eau{fill:#8EC3F0}
 .pp-tuyau{fill:none; stroke:#5B9BD5; stroke-width:10; stroke-linecap:round; stroke-linejoin:round}
 .pp-flux{fill:none; stroke:#fff; stroke-width:3; stroke-dasharray:4 12; stroke-linecap:round; animation:pp-c 1s linear infinite}
 @keyframes pp-c{to{stroke-dashoffset:-32}}

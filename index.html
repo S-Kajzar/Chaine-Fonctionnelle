@@ -892,7 +892,7 @@ body.page-cours-chaine-energie .home-inner{max-width:1180px}
 .pp-h{font:700 16px var(--f-titre); fill:var(--encre)} .pp-t{font:600 13px var(--f-texte); fill:var(--encre-2)}
 .pp-v{font:700 15px var(--f-titre); fill:var(--encre)} .pp-big{font:800 26px var(--f-titre); fill:var(--bleu)}
 .pp-sep{stroke:var(--trait); stroke-dasharray:6 6}
-.pp-bac{fill:#fff; stroke:#46525C; stroke-width:2} .pp-eau{fill:#8EC3F0}
+.pp-cuve{fill:#fff; stroke:#46525C; stroke-width:2} .pp-eau{fill:#8EC3F0}
 .pp-tuyau{fill:none; stroke:#5B9BD5; stroke-width:10; stroke-linecap:round; stroke-linejoin:round}
 .pp-flux{fill:none; stroke:#fff; stroke-width:3; stroke-dasharray:4 12; stroke-linecap:round; animation:pp-c 1s linear infinite}
 @keyframes pp-c{to{stroke-dashoffset:-32}}
@@ -3036,23 +3036,23 @@ en parallèle, deux pompes côte à côte montent l'eau à la même hauteur, cha
 <text x="690" y="24" text-anchor="middle" class="pp-h">En parallèle : les pompes sont côte à côte</text>
 <line x1="460" y1="40" x2="460" y2="345" class="pp-sep"/>
 <!-- série -->
-<rect x="70" y="300" width="330" height="36" rx="4" class="pp-bac"/><rect x="72" y="310" width="326" height="24" class="pp-eau"/>
+<rect x="70" y="300" width="330" height="36" rx="4" class="pp-cuve"/><rect x="72" y="310" width="326" height="24" class="pp-eau"/>
 <text x="235" y="352" text-anchor="middle" class="pp-t">réserve : 100 Ah</text>
 <path class="pp-tuyau" d="M140 310 V246"/><path class="pp-flux" d="M140 310 V246"/><g class="pp-pompe"><circle cx="140" cy="224" r="22"/><g class="pp-roue" style="transform-origin:140px 224px"><path d="M140 209 V239 M125 224 H155 M129 213 L151 235 M129 235 L151 213"/></g></g><path class="pp-tuyau" d="M140 202 V176"/><path class="pp-flux" d="M140 202 V176"/>
-<rect x="100" y="160" width="90" height="16" rx="3" class="pp-bac"/><rect x="102" y="164" width="86" height="10" class="pp-eau"/>
+<rect x="100" y="160" width="90" height="16" rx="3" class="pp-cuve"/><rect x="102" y="164" width="86" height="10" class="pp-eau"/>
 <path class="pp-tuyau" d="M140 168 V128"/><path class="pp-flux" d="M140 168 V128"/><g class="pp-pompe"><circle cx="140" cy="106" r="22"/><g class="pp-roue" style="transform-origin:140px 106px"><path d="M140 91 V121 M125 106 H155 M129 95 L151 117 M129 117 L151 95"/></g></g><path class="pp-tuyau" d="M140 84 V64"/><path class="pp-flux" d="M140 84 V64"/>
-<rect x="100" y="48" width="200" height="16" rx="3" class="pp-bac"/><rect x="102" y="52" width="196" height="10" class="pp-eau"/>
+<rect x="100" y="48" width="200" height="16" rx="3" class="pp-cuve"/><rect x="102" y="52" width="196" height="10" class="pp-eau"/>
 <path class="pp-tuyau" d="M300 56 H330 V170"/><path class="pp-flux" d="M300 56 H330 V170"/><g class="pp-recep"><circle cx="330" cy="196" r="26"/><g class="pp-roue lent" style="transform-origin:330px 196px"><path d="M330 196 L354 196"/><path d="M330 196 L330 220"/><path d="M330 196 L306 196"/><path d="M330 196 L330 172"/><path d="M330 196 L346.8 212.8"/><path d="M330 196 L313.2 212.8"/><path d="M330 196 L346.8 179.2"/><path d="M330 196 L313.2 179.2"/></g><text x="364" y="201" text-anchor="start" class="pp-t">récepteur</text></g><path class="pp-tuyau" d="M330 222 V300"/><path class="pp-flux" d="M330 222 V300"/>
 <path class="pp-cote" d="M84 304 V170" marker-start="url(#pp-f)" marker-end="url(#pp-f)"/><text x="76" y="242.0" text-anchor="end" class="pp-v">12 V</text><path class="pp-cote" d="M84 166 V58" marker-start="url(#pp-f)" marker-end="url(#pp-f)"/><text x="76" y="117.0" text-anchor="end" class="pp-v">12 V</text>
 <text x="196" y="226" class="pp-t">pompe 1</text><text x="196" y="110" class="pp-t">pompe 2</text>
 <text x="200" y="150" class="pp-big">= 24 V</text>
 <!-- parallèle -->
-<rect x="500" y="300" width="150" height="36" rx="4" class="pp-bac"/><rect x="502" y="310" width="146" height="24" class="pp-eau"/>
-<rect x="670" y="300" width="150" height="36" rx="4" class="pp-bac"/><rect x="672" y="310" width="146" height="24" class="pp-eau"/>
+<rect x="500" y="300" width="150" height="36" rx="4" class="pp-cuve"/><rect x="502" y="310" width="146" height="24" class="pp-eau"/>
+<rect x="670" y="300" width="150" height="36" rx="4" class="pp-cuve"/><rect x="672" y="310" width="146" height="24" class="pp-eau"/>
 <text x="660" y="352" text-anchor="middle" class="pp-t">réserves : 100 Ah + 100 Ah = 200 Ah</text>
 <path class="pp-tuyau" d="M575 310 V246"/><path class="pp-flux" d="M575 310 V246"/><g class="pp-pompe"><circle cx="575" cy="224" r="22"/><g class="pp-roue" style="transform-origin:575px 224px"><path d="M575 209 V239 M560 224 H590 M564 213 L586 235 M564 235 L586 213"/></g></g><path class="pp-tuyau" d="M575 202 V176"/><path class="pp-flux" d="M575 202 V176"/>
 <path class="pp-tuyau" d="M745 310 V246"/><path class="pp-flux" d="M745 310 V246"/><g class="pp-pompe"><circle cx="745" cy="224" r="22"/><g class="pp-roue" style="transform-origin:745px 224px"><path d="M745 209 V239 M730 224 H760 M734 213 L756 235 M734 235 L756 213"/></g></g><path class="pp-tuyau" d="M745 202 V176"/><path class="pp-flux" d="M745 202 V176"/>
-<rect x="540" y="160" width="250" height="16" rx="3" class="pp-bac"/><rect x="542" y="164" width="246" height="10" class="pp-eau"/>
+<rect x="540" y="160" width="250" height="16" rx="3" class="pp-cuve"/><rect x="542" y="164" width="246" height="10" class="pp-eau"/>
 <path class="pp-tuyau" d="M790 168 H860 V170"/><path class="pp-flux" d="M790 168 H860 V170"/><g class="pp-recep"><circle cx="860" cy="196" r="26"/><g class="pp-roue lent" style="transform-origin:860px 196px"><path d="M860 196 L884 196"/><path d="M860 196 L860 220"/><path d="M860 196 L836 196"/><path d="M860 196 L860 172"/><path d="M860 196 L876.8 212.8"/><path d="M860 196 L843.2 212.8"/><path d="M860 196 L876.8 179.2"/><path d="M860 196 L843.2 179.2"/></g><text x="874" y="158" text-anchor="middle" class="pp-t">récepteur</text></g><path class="pp-tuyau" d="M860 222 V318 H822"/><path class="pp-flux" d="M860 222 V318 H822"/>
 <path class="pp-cote" d="M520 304 V170" marker-start="url(#pp-f)" marker-end="url(#pp-f)"/><text x="512" y="242.0" text-anchor="end" class="pp-v">12 V</text>
 <text x="600" y="140" class="pp-big">12 V</text>
