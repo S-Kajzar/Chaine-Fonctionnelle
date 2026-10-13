@@ -93,6 +93,15 @@ Corrections, interprétations et compléments :
   par défaut de la chaîne de la trottinette 0,90 ; 0,95 ; 0,85 ; 0,90. Ces hypothèses sont écrites à côté de chaque
   simulateur.
 
+**Ajouts au cours 2** :
+- **Alimenter / Stocker**, sous l'oscilloscope : simulateur « Associer des batteries » ; en série ou en parallèle,
+  de 2 à 4 batteries (12 V · 100 Ah, élément lithium-ion 3,7 V · 2,5 Ah, batterie de trottinette 36 V · 7,8 Ah) ;
+  câblage redessiné à chaque réglage, courant animé dans les fils, tension, capacité et énergie totales, avec la
+  règle mise en évidence (« la tension augmente » ou « la capacité augmente »).
+- **Convertir** : les fiches du moteur à courant continu, du moteur asynchrone et du moteur brushless donnent un
+  exemple d'utilisation et ce qui distingue chacun ; un tableau compare les trois (alimentation, inversion du
+  courant dans les bobines, atouts, limites, exemple).
+
 ## Cours 3 — Chaîne d'information des produits (Niveau 2, `?ex=cours-chaine-information`)
 
 **Source** : le cours Word « Thème 3 — Chaîne d'information des produits » (leçon de référence, environ 3 h). Mis en
