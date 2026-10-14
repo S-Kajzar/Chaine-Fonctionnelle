@@ -1905,6 +1905,55 @@ def fmt_puissance(p):
             return f"{fr(v, 0) if v == int(v) else fr(v, 1)} {u}"
 
 
+def figure_pompes():
+    """Analogie hydraulique des batteries : la tension est une hauteur, la capacité une réserve d'eau."""
+    def pompe(x, y):
+        return (f'<g class="pp-pompe"><circle cx="{x}" cy="{y}" r="22"/><g class="pp-roue" style="transform-origin:{x}px {y}px">'
+                f'<path d="M{x} {y - 15} V{y + 15} M{x - 15} {y} H{x + 15} M{x - 11} {y - 11} L{x + 11} {y + 11} '
+                f'M{x - 11} {y + 11} L{x + 11} {y - 11}"/></g></g>')
+    def roue(x, y, cote_texte):
+        return (f'<g class="pp-recep"><circle cx="{x}" cy="{y}" r="26"/><g class="pp-roue lent" style="transform-origin:{x}px {y}px">'
+                + "".join(f'<path d="M{x} {y} L{x + 24 * c} {y + 24 * s_}"/>' for c, s_ in
+                          [(1, 0), (0, 1), (-1, 0), (0, -1), (.7, .7), (-.7, .7), (.7, -.7), (-.7, -.7)])
+                + f'</g><text x="{x + 34 if cote_texte > 0 else x + 14}" y="{y + 5 if cote_texte > 0 else y - 38}" text-anchor="{"start" if cote_texte > 0 else "middle"}" '
+                f'class="pp-t">récepteur</text></g>')
+    def eau(d):
+        return f'<path class="pp-tuyau" d="{d}"/><path class="pp-flux" d="{d}"/>'
+    def cote(x, y1, y2, t):
+        return (f'<path class="pp-cote" d="M{x} {y1} V{y2}" marker-start="url(#pp-f)" marker-end="url(#pp-f)"/>'
+                f'<text x="{x - 8}" y="{(y1 + y2) / 2 + 5}" text-anchor="end" class="pp-v">{t}</text>')
+    return f"""<svg class="pp-svg" viewBox="0 0 920 360" role="img" aria-labelledby="pp-t">
+<title id="pp-t">Analogie des pompes : en série, deux pompes empilées montent l'eau deux fois plus haut (la tension double) ;
+en parallèle, deux pompes côte à côte montent l'eau à la même hauteur, chacune depuis sa réserve (la capacité double).</title>
+<defs><marker id="pp-f" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+<path d="M0 0 L10 5 L0 10 z" fill="#46525C"/></marker></defs>
+<text x="225" y="24" text-anchor="middle" class="pp-h">En série : les pompes sont empilées</text>
+<text x="690" y="24" text-anchor="middle" class="pp-h">En parallèle : les pompes sont côte à côte</text>
+<line x1="460" y1="40" x2="460" y2="345" class="pp-sep"/>
+<!-- série -->
+<rect x="70" y="300" width="330" height="36" rx="4" class="pp-cuve"/><rect x="72" y="310" width="326" height="24" class="pp-eau"/>
+<text x="235" y="352" text-anchor="middle" class="pp-t">réserve : 100 Ah</text>
+{eau("M140 310 V246")}{pompe(140, 224)}{eau("M140 202 V176")}
+<rect x="100" y="160" width="90" height="16" rx="3" class="pp-cuve"/><rect x="102" y="164" width="86" height="10" class="pp-eau"/>
+{eau("M140 168 V128")}{pompe(140, 106)}{eau("M140 84 V64")}
+<rect x="100" y="48" width="200" height="16" rx="3" class="pp-cuve"/><rect x="102" y="52" width="196" height="10" class="pp-eau"/>
+{eau("M300 56 H330 V170")}{roue(330, 196, 1)}{eau("M330 222 V300")}
+{cote(84, 304, 170, "12 V")}{cote(84, 166, 58, "12 V")}
+<text x="196" y="226" class="pp-t">pompe 1</text><text x="196" y="110" class="pp-t">pompe 2</text>
+<text x="200" y="150" class="pp-big">= 24 V</text>
+<!-- parallèle -->
+<rect x="500" y="300" width="150" height="36" rx="4" class="pp-cuve"/><rect x="502" y="310" width="146" height="24" class="pp-eau"/>
+<rect x="670" y="300" width="150" height="36" rx="4" class="pp-cuve"/><rect x="672" y="310" width="146" height="24" class="pp-eau"/>
+<text x="660" y="352" text-anchor="middle" class="pp-t">réserves : 100 Ah + 100 Ah = 200 Ah</text>
+{eau("M575 310 V246")}{pompe(575, 224)}{eau("M575 202 V176")}
+{eau("M745 310 V246")}{pompe(745, 224)}{eau("M745 202 V176")}
+<rect x="540" y="160" width="250" height="16" rx="3" class="pp-cuve"/><rect x="542" y="164" width="246" height="10" class="pp-eau"/>
+{eau("M790 168 H860 V170")}{roue(860, 196, -1)}{eau("M860 222 V318 H822")}
+{cote(520, 304, 170, "12 V")}
+<text x="600" y="140" class="pp-big">12 V</text>
+</svg>"""
+
+
 def render_cours_energie():
     obj = "".join(f"<li>{o}</li>" for o in OBJECTIFS)
     pre = "".join(f"<li>{p}</li>" for p in PREREQUIS)
@@ -1988,7 +2037,26 @@ def render_cours_energie():
         '<svg class="ce-bat-svg" id="ce-bat-svg" viewBox="0 0 960 300" role="img" aria-labelledby="ce-bat-tt">'
         '<title id="ce-bat-tt">Batteries reliées en série (le + de l\'une au − de la suivante) ou en parallèle (tous '
         "les + ensemble, tous les − ensemble), qui alimentent un récepteur ; le courant circule dans les fils.</title></svg>"
-        '<div class="ce-bat-res"><div class="ce-bat-big" id="ce-bat-big"></div><p class="ce-bat-msg" id="ce-bat-msg"></p></div>'
+        '<div class="ce-bat-res"><div class="ce-bat-big" id="ce-bat-big"></div><p class="ce-bat-msg" id="ce-bat-msg"></p>'
+        '<button type="button" class="ce-bat-expl-b" id="ce-bat-expl-b" aria-expanded="false" aria-controls="ce-bat-expl">'
+        'Explication</button></div>'
+        '<div class="ce-bat-expl" id="ce-bat-expl" hidden><h4>Pourquoi ? L\'image des pompes à eau</h4>'
+        "<p>Une batterie est comme une <b>pompe</b> qui monte l'eau d'un réservoir : la <b>hauteur</b> à laquelle elle "
+        "monte l'eau, c'est la <b>tension</b> (en V : l'énergie donnée à chaque charge électrique) ; la <b>quantité "
+        "d'eau</b> dans sa réserve, c'est la <b>capacité</b> (en Ah : la quantité de charges qu'elle peut faire "
+        "circuler). L'eau qui redescend fait tourner le récepteur.</p>" + figure_pompes() +
+        '<div class="ce-bat-expl-2"><div><h5>En série, les tensions s\'additionnent</h5><p>Il n\'y a qu\'<b>un seul '
+        "chemin</b> : chaque charge traverse <b>toutes</b> les batteries l'une après l'autre et reçoit une poussée "
+        "de 12 V à chaque fois : 12 + 12 = <b>24 V</b>. Le même courant traverse toutes les batteries, qui se vident "
+        "au même rythme : la capacité reste <b>100 Ah</b>.</p></div>"
+        "<div><h5>En parallèle, les capacités s'additionnent</h5><p>Il y a <b>plusieurs chemins côte à côte</b> : "
+        "chaque charge ne traverse <b>qu'une</b> batterie, la tension reste <b>12 V</b> (toutes les bornes + sont "
+        "reliées, donc au même potentiel). Le courant demandé se <b>partage</b> entre les batteries : chacune se vide "
+        "deux fois moins vite, l'ensemble tient deux fois plus longtemps : <b>200 Ah</b>.</p></div></div>"
+        "<p class=\"ce-bat-expl-e\"><b>Dans les deux cas, l'énergie double</b> : 24 V × 100 Ah = 12 V × 200 Ah = "
+        "2,4 kWh. Le montage ne crée pas d'énergie, il choisit sa forme : plus de tension (série) ou plus d'autonomie "
+        "(parallèle). On n'associe que des batteries identiques : en parallèle, des tensions différentes se "
+        "déchargeraient l'une dans l'autre ; en série, la plus faible se viderait la première.</p></div>"
         '<div class="simu-out"><div><span>Tension totale</span><b id="ce-bat-u"></b></div><div><span>Capacité totale</span>'
         '<b id="ce-bat-c"></b></div><div><span>Énergie stockée E = U × C</span><b id="ce-bat-e"></b></div></div>'
         '<p class="small">En série, les tensions s\'additionnent et la capacité reste celle d\'une batterie ; en '
@@ -2906,6 +2974,11 @@ COURS_2_JS = r"""
         });
       });
       [nIn, tIn].forEach(function (i) { i.addEventListener("input", dessiner); i.addEventListener("change", dessiner); });
+      q("#ce-bat-expl-b").addEventListener("click", function () {
+        var p = q("#ce-bat-expl"), ouvert = p.hidden;
+        p.hidden = !ouvert; this.setAttribute("aria-expanded", ouvert ? "true" : "false");
+        this.textContent = ouvert ? "Masquer l'explication" : "Explication";
+      });
       dessiner();
     })();
 
@@ -3018,6 +3091,29 @@ body.page-cours-chaine-energie .home-inner{max-width:1180px}
 .ce-bat-big{border:2.5px solid var(--bleu); background:#fff; padding:6px 18px; font:800 1.9rem var(--f-titre); color:var(--encre)}
 .ce-bat-big b{font-weight:800} .ce-bat-big b.up{color:var(--bleu)}
 .ce-bat-msg{margin:0; font-weight:700; color:var(--bleu)}
+.ce-bat-expl-b{margin-left:auto; font:700 .9rem var(--f-titre); color:#fff; background:var(--orange); border:0; border-radius:999px; padding:7px 16px 7px 34px; cursor:pointer; position:relative}
+.ce-bat-expl-b::before{content:"?"; position:absolute; left:8px; top:50%; transform:translateY(-50%); width:20px; height:20px; border-radius:50%; background:#fff; color:var(--orange); font-size:.85rem; line-height:20px; text-align:center}
+.ce-bat-expl-b[aria-expanded="true"]{background:var(--encre)} .ce-bat-expl-b[aria-expanded="true"]::before{color:var(--encre)}
+.ce-bat-expl{margin:12px 0 4px; background:#fff; border:2px solid var(--orange); border-left-width:8px; padding:10px 16px}
+.ce-bat-expl h4{margin:2px 0 6px; font:700 1.1rem var(--f-titre)} .ce-bat-expl h5{margin:4px 0; font:700 1rem var(--f-titre); color:var(--bleu)}
+.ce-bat-expl p{margin:4px 0}
+.ce-bat-expl-2{display:grid; grid-template-columns:1fr 1fr; gap:10px 22px}
+@media (max-width:760px){ .ce-bat-expl-2{grid-template-columns:1fr} }
+.ce-bat-expl-e{background:var(--jaune-pale); padding:6px 10px; margin-top:8px!important}
+.pp-svg{display:block; width:100%; max-width:920px; height:auto; margin:8px auto; background:#F7FAFD; border:1px solid var(--trait-fin)}
+.pp-h{font:700 16px var(--f-titre); fill:var(--encre)} .pp-t{font:600 13px var(--f-texte); fill:var(--encre-2)}
+.pp-v{font:700 15px var(--f-titre); fill:var(--encre)} .pp-big{font:800 26px var(--f-titre); fill:var(--bleu)}
+.pp-sep{stroke:var(--trait); stroke-dasharray:6 6}
+.pp-cuve{fill:#fff; stroke:#46525C; stroke-width:2} .pp-eau{fill:#8EC3F0}
+.pp-tuyau{fill:none; stroke:#5B9BD5; stroke-width:10; stroke-linecap:round; stroke-linejoin:round}
+.pp-flux{fill:none; stroke:#fff; stroke-width:3; stroke-dasharray:4 12; stroke-linecap:round; animation:pp-c 1s linear infinite}
+@keyframes pp-c{to{stroke-dashoffset:-32}}
+.pp-pompe circle,.pp-recep circle{fill:#fff; stroke:var(--orange); stroke-width:3} .pp-pompe path{stroke:var(--orange); stroke-width:3}
+.pp-recep circle{stroke:var(--vert)} .pp-recep path{stroke:var(--vert); stroke-width:3}
+.pp-roue{animation:pp-r 1.4s linear infinite} .pp-roue.lent{animation-duration:2.4s}
+@keyframes pp-r{to{transform:rotate(360deg)}}
+.pp-cote{stroke:#46525C; stroke-width:1.5; fill:none}
+@media (prefers-reduced-motion:reduce){ .pp-flux,.pp-roue{animation:none} }
 @media (prefers-reduced-motion:reduce){ .ce-bat-cur{animation-duration:4s} }
 @media (max-width:900px){ .fc-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} .fiche-c dl{grid-column:1/-1; grid-row:1} }
 @media (max-width:520px){ .fc-grid{grid-template-columns:1fr} }
